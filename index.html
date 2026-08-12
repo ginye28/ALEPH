@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JIN | Portfolio</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: Arial, "Noto Sans KR", sans-serif;
+            background: #f7f7f5;
+            color: #202020;
+            line-height: 1.6;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* Header */
+        header {
+            width: 100%;
+            padding: 24px 6%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e5e5;
+            background: rgba(247, 247, 245, 0.95);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        nav {
+            display: flex;
+            gap: 24px;
+            font-size: 14px;
+        }
+
+        nav a {
+            transition: opacity 0.2s;
+        }
+
+        nav a:hover,
+        nav a:focus {
+            opacity: 0.5;
+        }
+
+        /* Hero */
+        .hero {
+            min-height: calc(100vh - 73px);
+            padding: 100px 6%;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-content {
+            max-width: 900px;
+        }
+
+        .eyebrow {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            font-size: clamp(48px, 8vw, 96px);
+            line-height: 1.05;
+            letter-spacing: -4px;
+            margin-bottom: 28px;
+        }
+
+        .hero-description {
+            font-size: clamp(18px, 2vw, 24px);
+            color: #555;
+            max-width: 700px;
+        }
+
+	        .hero-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 40px;
+            max-width: 1000px;
+        }
+
+        .summary-item {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .summary-label {
+            display: block;
+            font-size: 11px;
+            color: #888;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .summary-item strong {
+            display: block;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .scroll-button {
+            display: inline-block;
+            margin-top: 40px;
+            padding: 12px 20px;
+            border: 1px solid #202020;
+            border-radius: 999px;
+            transition: 0.2s;
+        }
+
+        .scroll-button:hover,
+        .scroll-button:focus {
+            background: #202020;
+            color: white;
+        }
+
+        /* Common section */
+        section {
+            padding: 100px 6%;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .section-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Target */
+        .target-box {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid #e5e5e5;
+        }
+
+        .target-box h2 {
+            font-size: 32px;
+            line-height: 1.45;
+            letter-spacing: -1px;
+        }
+
+        /* Public range */
+        .range-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .range-card {
+            background: white;
+            padding: 32px;
+            border-radius: 20px;
+            border: 1px solid #e5e5e5;
+        }
+
+        .range-card h3 {
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .range-card ul {
+            list-style: none;
+        }
+
+        .range-card li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .range-card li:last-child {
+            border-bottom: none;
+        }
+
+        /* Strengths */
+        .strengths {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .strength-card {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 20px;
+            padding: 30px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .strength-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        .strength-number {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 18px;
+        }
+
+        .strength-card h3 {
+            font-size: 22px;
+            margin-bottom: 24px;
+            letter-spacing: -0.5px;
+        }
+
+        .story {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .story-item {
+            padding-bottom: 14px;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .story-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .story-label {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .story-text {
+            font-size: 14px;
+            color: #444;
+        }
+
+        /* Proof */
+        .proof-box {
+            background: #202020;
+            color: white;
+            border-radius: 20px;
+            padding: 40px;
+        }
+
+        .proof-box .section-label {
+            color: #aaa;
+            font-size: 13px;
+            margin-bottom: 14px;
+        }
+
+        .proof-box h3 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .proof-box p {
+            color: #ccc;
+            max-width: 750px;
+        }
+
+        .proof-note {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 6%;
+            text-align: center;
+            color: #888;
+            font-size: 13px;
+            border-top: 1px solid #e5e5e5;
+        }
+
+
+        /* Interactive detail */
+        .detail-button {
+            margin-top: 24px;
+            padding: 10px 16px;
+            border: 1px solid #202020;
+            border-radius: 999px;
+            background: transparent;
+            color: #202020;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+        .detail-button:hover {
+            background: #202020;
+            color: white;
+        }
+
+        .detail-content {
+            margin-top: 16px;
+            padding: 16px;
+            background: #f7f7f5;
+            border-radius: 12px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        /* Keyboard focus */
+        :focus-visible {
+            outline: 3px solid #202020;
+            outline-offset: 4px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .strengths {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 700px) {
+            header {
+                padding: 18px 5%;
+            }
+
+            nav {
+                gap: 12px;
+                font-size: 12px;
+            }
+
+            .hero {
+                min-height: auto;
+                padding: 90px 5%;
+            }
+
+            h1 {
+                letter-spacing: -2px;
+            }
+
+            section {
+                padding: 70px 5%;
+            }
+
+            .target-box {
+                padding: 28px;
+            }
+
+            .target-box h2 {
+                font-size: 24px;
+            }
+
+            .range-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .range-card,
+            .strength-card,
+            .proof-box {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <a href="#" class="logo">JIN.</a>
+
+    <nav aria-label="주요 메뉴">
+        <a href="#about">About</a>
+        <a href="#range">공개 범위</a>
+        <a href="#strengths">Strengths</a>
+        <a href="#proof">Proof</a>
+    </nav>
+</header>
+
+
+<main>
+
+    <!-- Hero -->
+<section class="hero">
+    <div class="hero-content">
+
+        <p class="eyebrow">IT PORTFOLIO</p>
+
+        <h1>
+            Hello,<br>
+            I'm JIN.
+        </h1>
+
+        <p class="hero-description">
+            IT 분야를 공부하며 직접 부딪히고,
+            문제를 해결하며 배우고 있습니다.
+        </p>
+
+        <div class="hero-summary">
+
+            <div class="summary-item">
+                <span class="summary-label">INTRODUCTION</span>
+                <strong>문제가 생기면 원인을 찾습니다.</strong>
+            </div>
+
+            <div class="summary-item">
+                <span class="summary-label">ACTIVITY</span>
+                <strong>Java · Spring Boot · Git · GitHub</strong>
+            </div>
+
+            <div class="summary-item">
+                <span class="summary-label">PROOF</span>
+                <strong>소셜 로그인 오류를 분석하고 해결한 경험</strong>
+            </div>
+
+        </div>
+
+        <a href="#about" class="scroll-button">
+            자세히 보기 ↓
+        </a>
+
+    </div>
+</section>
+
+
+    <!-- 대상 -->
+    <section id="about">
+        <div class="section-inner">
+
+            <p class="section-title">01 — About this page</p>
+
+            <div class="target-box">
+                <h2>
+                    이 페이지는 IT 분야 취업을 준비하는 나를
+                    처음 보는 사람에게 나의 강점과 관심 분야를
+                    보여주기 위한 것이다.
+                </h2>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- 공개 범위 -->
+    <section id="range">
+        <div class="section-inner">
+
+            <p class="section-title">02 — Public & Private</p>
+
+            <div class="range-grid">
+
+                <div class="range-card">
+                    <h3>공개할 것</h3>
+
+                    <ul>
+                        <li>개발 관심 분야</li>
+                        <li>사용해 본 기술</li>
+                        <li>프로젝트 및 학습 경험</li>
+                    </ul>
+                </div>
+
+
+                <div class="range-card">
+                    <h3>공개하지 않을 것</h3>
+
+                    <ul>
+                        <li>실명</li>
+                        <li>전화번호 및 이메일</li>
+                        <li>학교 및 거주지 등 개인 정보</li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- 강점 -->
+    <section id="strengths">
+        <div class="section-inner">
+
+            <p class="section-title">03 — My Strengths</p>
+
+            <div class="strengths">
+
+                <!-- Strength 1 -->
+                <article class="strength-card">
+                    <p class="strength-number">01</p>
+
+                    <h3>문제가 생기면 원인을 찾는다</h3>
+
+                    <div class="story">
+
+                        <div class="story-item">
+                            <span class="story-label">상황</span>
+                            <p class="story-text">
+                                학원 팀 프로젝트에서 소셜 로그인 기능을 구현하던 중
+                                특정 로그인 과정에서 오류가 발생했다.
+                            </p>
+                        </div>
+
+                        <div class="story-item">
+                            <span class="story-label">행동</span>
+                            <p class="story-text">
+                                오류 메시지와 로그인 데이터를 확인하면서
+                                전달되는 값의 타입과 데이터베이스 구조를 비교했다.
+                            </p>
+                        </div>
+
+                        <div class="story-item">
+                            <span class="story-label">결과</span>
+                            <p class="story-text">
+                                원인을 찾아 데이터 타입을 수정했고
+                                해당 로그인 과정이 정상적으로 동작하도록 해결했다.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="detail-button"
+                        aria-expanded="false"
+                        aria-controls="strength-detail">
+                        자세히 보기
+                    </button>
+
+                    <div id="strength-detail" class="detail-content" hidden>
+                        오류 메시지만 확인하는 데 그치지 않고, 전달되는 데이터와
+                        데이터베이스 구조를 비교하면서 원인을 좁혀갔습니다.
+                        문제를 단순히 수정하는 것보다 왜 발생했는지 확인하는
+                        과정에 집중했습니다.
+                    </div>
+                </article>
+
+
+                <!-- Strength 2 -->
+                <article class="strength-card">
+                    <p class="strength-number">02</p>
+
+                    <h3>배운 것을 직접 적용한다</h3>
+
+                    <div class="story">
+
+                        <div class="story-item">
+                            <span class="story-label">상황</span>
+                            <p class="story-text">
+                                학원에서 Java와 Spring Boot, 데이터베이스 등
+                                새로운 개발 기술을 단계적으로 배웠다.
+                            </p>
+                        </div>
+
+                        <div class="story-item">
+                            <span class="story-label">행동</span>
+                            <p class="story-text">
+                                수업에서 배운 개념을 단순히 따라가는 데 그치지 않고
+                                직접 코드를 작성하고 실행하면서 확인했다.
+                            </p>
+                        </div>
+
+                        <div class="story-item">
+                            <span class="story-label">결과</span>
+                            <p class="story-text">
+                                Java 기반 웹 애플리케이션의 구조와
+                                여러 기능이 실제로 동작하는 과정을 경험했다.
+                            </p>
+                        </div>
+
+                    </div>
+                </article>
+
+
+                <!-- Strength 3 -->
+                <article class="strength-card">
+                    <p class="strength-number">03</p>
+
+                    <h3>작업 과정을 직접 관리한다</h3>
+
+                    <div class="story">
+
+                        <div class="story-item">
+                            <span class="story-label">상황</span>
+                            <p class="story-text">
+                                학원에서 프로젝트와 실습을 진행하면서
+                                작성한 코드를 관리할 필요가 있었다.
+                            </p>
+                        </div>
+
+                        <div class="story-item">
+                            <span class="story-label">행동</span>
+                            <p class="story-text">
+                                Git을 이용해 변경 내용을 커밋하고
+                                GitHub에 작업물을 push하며 작업 과정을 관리했다.
+                            </p>
+                        </div>
+
+                        <div class="story-item">
+                            <span class="story-label">결과</span>
+                            <p class="story-text">
+                                작업 내용을 원격 저장소에 남기고
+                                이전 작업과 현재 작업을 구분해서 관리할 수 있었다.
+                            </p>
+                        </div>
+
+                    </div>
+                </article>
+
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- 공개 가능한 근거 -->
+    <section id="proof">
+        <div class="section-inner">
+
+            <p class="section-title">04 — Proof</p>
+
+            <div class="proof-box">
+
+                <p class="section-label">PUBLIC EVIDENCE</p>
+
+                <h3>직접 해결한 문제의 기록</h3>
+
+                <p>
+                    학원 팀 프로젝트에서 소셜 로그인 기능을 구현하는 과정에서
+                    로그인 데이터와 데이터베이스의 타입 차이로 발생한 오류를 확인하고,
+                    원인을 분석하여 데이터 타입을 수정한 경험이 있습니다.
+                </p>
+
+                <p class="proof-note">
+                    개인정보와 계정 정보는 공개하지 않고,
+                    확인 가능한 문제 해결 과정과 결과만 기록했습니다.
+                </p>
+
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+
+<footer>
+    <p>JIN. Personal Portfolio</p>
+</footer>
+
+
+
+    <script>
+        const detailButton = document.querySelector(".detail-button");
+        const detailContent = document.getElementById("strength-detail");
+
+        detailButton.addEventListener("click", () => {
+            const willOpen = detailContent.hidden;
+            detailContent.hidden = !willOpen;
+            detailButton.setAttribute("aria-expanded", String(willOpen));
+            detailButton.textContent = willOpen ? "접기" : "자세히 보기";
+        });
+    </script>
+
+</body>
+</html>
