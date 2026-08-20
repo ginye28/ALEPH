@@ -1,4 +1,10 @@
-export const TIME_LIMIT_MS = 18000;
+// 1단계: 30초로 20회를 재어 보니 10회 모두 성공하고 가장 느린 판도 9.6초가 남아
+// 제한 시간이 승패를 가르지 못했습니다. 중앙값 14.88초를 기준으로 18초로 줄였습니다.
+export const BASIC_TIME_LIMIT_MS = 18000;
+
+// 2·3단계: 카드가 14장·16장으로 늘어 같은 18초로는 짝을 다 찾기 어렵습니다.
+// 난이도가 이미 카드 수로 올라가 있어 제한 시간은 30초를 유지합니다.
+export const WIDE_TIME_LIMIT_MS = 30000;
 
 export const WARNING_MS = 5000;
 
@@ -51,7 +57,7 @@ export const DIFFICULTIES = {
         name: "숫자 맞추기",
         rule: "같은 숫자 카드 두 장을 찾으세요.",
         columns: 6,
-        timeLimitMs: TIME_LIMIT_MS,
+        timeLimitMs: BASIC_TIME_LIMIT_MS,
         createSeeds: () => pickNumbers(6).flatMap(num => ([
             { pairKey: `num-${num}`, label: `${num}`, sub: "", note: "" },
             { pairKey: `num-${num}`, label: `${num}`, sub: "", note: "" },
@@ -63,7 +69,7 @@ export const DIFFICULTIES = {
         name: "OSI 7계층",
         rule: "계층 이름과 계층 번호를 짝지으세요.",
         columns: 7,
-        timeLimitMs: TIME_LIMIT_MS,
+        timeLimitMs: WIDE_TIME_LIMIT_MS,
         createSeeds: () => OSI_LAYERS.flatMap(layer => ([
             {
                 pairKey: `osi-${layer.level}`,
@@ -85,7 +91,7 @@ export const DIFFICULTIES = {
         name: "포트 번호",
         rule: "포트 번호와 서비스 이름을 짝지으세요.",
         columns: 8,
-        timeLimitMs: TIME_LIMIT_MS,
+        timeLimitMs: WIDE_TIME_LIMIT_MS,
         createSeeds: () => WELL_KNOWN_PORTS.flatMap(item => ([
             {
                 pairKey: `port-${item.port}`,

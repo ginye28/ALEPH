@@ -483,7 +483,8 @@ function Game() {
                                     onClick={() => handleDifficultyOnClick(item.key)}>
                                     <strong>{item.label} {item.name}</strong>
                                     <span>{item.rule}</span>
-                                    <em>{settings.bestRecords[item.key]
+                                    <em>제한 {Math.round(item.timeLimitMs / 1000)}초 · {
+                                        settings.bestRecords[item.key]
                                         ? `최고 ${formatTime(settings.bestRecords[item.key])}초 · ${settings.bestScores[item.key] ?? 0}점`
                                         : "기록 없음"}</em>
                                 </button>)}
