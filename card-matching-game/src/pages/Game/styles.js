@@ -323,6 +323,82 @@ export const startButton = css`
     }
 `;
 
+export const logHead = css`
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    width: 100%;
+`;
+
+export const logActions = css`
+    display: flex;
+    gap: 6px;
+`;
+
+export const miniButton = css`
+    box-sizing: border-box;
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    padding: 5px 12px;
+    font-size: 11px;
+    color: #b9b9b9;
+    background-color: #171717;
+    cursor: pointer;
+
+    &:hover {
+        border-color: #5c5c5c;
+    }
+
+    &:focus-visible {
+        outline: 2px solid #83a66d;
+        outline-offset: 2px;
+    }
+`;
+
+export const logScroll = css`
+    box-sizing: border-box;
+    border: 1px solid #2c2c2c;
+    border-radius: 8px;
+    width: 100%;
+    max-height: 320px;
+    overflow-y: auto;
+    overflow-x: auto;
+`;
+
+export const logTable = css`
+    border-collapse: collapse;
+    width: 100%;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+    color: #c5c5c5;
+
+    & th, & td {
+        border-bottom: 1px solid #262626;
+        padding: 7px 10px;
+        text-align: left;
+        white-space: nowrap;
+    }
+
+    & th {
+        position: sticky;
+        top: 0;
+        font-weight: 600;
+        color: #8f8f8f;
+        background-color: #161616;
+    }
+
+    & tbody tr:last-of-type td {
+        border-bottom: none;
+    }
+`;
+
+export const resultCell = (isSuccess) => css`
+    font-weight: 600;
+    color: ${isSuccess ? "#8fd1a8" : "#e8837e"};
+`;
+
 export const hint = css`
     margin: 0;
     font-size: 12px;

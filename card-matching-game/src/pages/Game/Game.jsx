@@ -5,6 +5,7 @@ import * as s from "./styles";
 import GameCard from "../../components/GameCard/GameCard";
 import { DIFFICULTIES, DIFFICULTY_LIST, WARNING_MS, createDeck } from "../../constants/difficulty";
 import { loadSettings, saveSettings } from "../../utils/storage";
+import { appendPlayLog, clearPlayLog, loadPlayLog, toCsv } from "../../utils/playLog";
 import { playSound } from "../../utils/sound";
 
 const STATUS = {
@@ -20,6 +21,8 @@ const MATCH_SCORE = 100;
 const COMBO_BONUS = 50;
 
 const readNow = () => Date.now();
+
+const stamp = () => new Date().toISOString().slice(0, 19).replace("T", " ");
 
 const formatTime = (ms) => {
     const safeMs = Math.max(0, ms);
@@ -46,12 +49,16 @@ function Game() {
     const [ missIds, setMissIds ] = useState([]);
     const [ isNewRecord, setIsNewRecord ] = useState(false);
     const [ settings, setSettings ] = useState(loadSettings);
+    const [ playLog, setPlayLog ] = useState(loadPlayLog);
+    const [ showLog, setShowLog ] = useState(false);
+    const [ copyNotice, setCopyNotice ] = useState("");
 
     const intervalRef = useRef(null);
     const flipTimeoutRef = useRef(null);
     const deadlineRef = useRef(0);
     const lockRef = useRef(false);
     const mutedRef = useRef(false);
+    const roundRef = useRef({ matchedPairs: 0, totalPairs: 0, attempts: 0, score: 0 });
 
     const difficulty = DIFFICULTIES[difficultyKey];
     const isPlaying = status === STATUS.PLAYING;
@@ -85,7 +92,7 @@ function Game() {
         setIsNewRecord(false);
     }
 
-    const finishRound = (matchScore) => {
+    const finishRound = (matchScore, finalAttempts) => {
         clearInterval(intervalRef.current);
 
         const leftMs = Math.max(0, deadlineRef.current - readNow());
@@ -98,6 +105,17 @@ function Game() {
         setRecordMs(elapsedMs);
         setFinalScore(totalScore);
         setIsNewRecord(isFastest || isHighScore);
+        setPlayLog(appendPlayLog({
+            playedAt: stamp(),
+            difficulty: `${difficulty.label} ${difficulty.name}`,
+            result: "success",
+            elapsedMs,
+            timeLimitMs: difficulty.timeLimitMs,
+            matchedPairs: totalPairs,
+            totalPairs,
+            attempts: finalAttempts,
+            score: totalScore,
+        }));
         setSettings(prev => ({
             ...prev,
             bestRecords: {
@@ -143,6 +161,27 @@ function Game() {
 
     const handleMotionOnClick = () => {
         setSettings(prev => ({ ...prev, reducedMotion: !prev.reducedMotion }));
+    }
+
+    const handleLogOnClick = () => {
+        setCopyNotice("");
+        setShowLog(prev => !prev);
+    }
+
+    const handleCopyLogOnClick = () => {
+        const csv = toCsv(playLog);
+        if (!navigator.clipboard) {
+            setCopyNotice("이 브라우저에서는 복사를 지원하지 않습니다.");
+            return;
+        }
+        navigator.clipboard.writeText(csv)
+            .then(() => setCopyNotice(`${playLog.length}회 기록을 복사했습니다. 표 계산기에 붙여 넣으세요.`))
+            .catch(() => setCopyNotice("복사에 실패했습니다. 표를 직접 옮겨 적어 주세요."));
+    }
+
+    const handleClearLogOnClick = () => {
+        setPlayLog(clearPlayLog());
+        setCopyNotice("기록을 지웠습니다.");
     }
 
     const handleCardOpenOnClick = (id) => {
@@ -199,7 +238,7 @@ function Game() {
         setCards(matchedCards);
 
         if (matchedCards.every(card => card.isAnswer)) {
-            finishRound(nextScore);
+            finishRound(nextScore, attempts + 1);
         }
     }
 
@@ -207,6 +246,10 @@ function Game() {
         mutedRef.current = settings.muted;
         saveSettings(settings);
     }, [settings]);
+
+    useEffect(() => {
+        roundRef.current = { matchedPairs, totalPairs, attempts, score };
+    });
 
     useEffect(() => {
         if (status !== STATUS.PLAYING || isPaused) {
@@ -220,6 +263,14 @@ function Game() {
                 setRemainMs(0);
                 setStatus(STATUS.FAILED);
                 play("fail");
+                setPlayLog(appendPlayLog({
+                    playedAt: stamp(),
+                    difficulty: `${difficulty.label} ${difficulty.name}`,
+                    result: "fail",
+                    elapsedMs: difficulty.timeLimitMs,
+                    timeLimitMs: difficulty.timeLimitMs,
+                    ...roundRef.current,
+                }));
                 return;
             }
             setRemainMs(left);
@@ -283,6 +334,13 @@ function Game() {
                         onClick={handlePauseOnClick}>
                         {isPaused ? "이어하기" : "일시정지"}
                     </button>
+                    <button type="button"
+                        css={s.toggleButton(showLog)}
+                        aria-pressed={showLog}
+                        disabled={isPlaying}
+                        onClick={handleLogOnClick}>
+                        기록 {playLog.length}회
+                    </button>
                 </div>
                 <div css={s.timerBox(isWarning)}>
                     <span css={s.timerLabel}>남은 시간</span>
@@ -330,7 +388,60 @@ function Game() {
             }
 
             {
-                !isPlaying &&
+                !isPlaying && showLog &&
+                <div css={s.panel}>
+                    <div css={s.logHead}>
+                        <span css={s.sectionTitle}>플레이 기록 · 최근 {playLog.length}회</span>
+                        <div css={s.logActions}>
+                            <button type="button" css={s.miniButton} onClick={handleCopyLogOnClick}>
+                                표로 복사
+                            </button>
+                            <button type="button" css={s.miniButton} onClick={handleClearLogOnClick}>
+                                기록 지우기
+                            </button>
+                        </div>
+                    </div>
+
+                    {
+                        playLog.length === 0
+                        ? <div css={s.result("ready")}>
+                            <strong>기록이 없습니다</strong>
+                            <p>한 판을 끝내면 결과가 자동으로 여기에 쌓입니다.</p>
+                        </div>
+                        : <div css={s.logScroll}>
+                            <table css={s.logTable}>
+                                <thead>
+                                    <tr>
+                                        <th>회차</th><th>난이도</th><th>결과</th><th>소요</th>
+                                        <th>맞춘 쌍</th><th>시도</th><th>점수</th><th>제한</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {playLog.map((entry, index) =>
+                                        <tr key={`${entry.playedAt}-${index}`}>
+                                            <td>{index + 1}</td>
+                                            <td>{entry.difficulty}</td>
+                                            <td css={s.resultCell(entry.result === "success")}>
+                                                {entry.result === "success" ? "성공" : "실패"}
+                                            </td>
+                                            <td>{formatTime(entry.elapsedMs)}초</td>
+                                            <td>{entry.matchedPairs} / {entry.totalPairs}</td>
+                                            <td>{entry.attempts}</td>
+                                            <td>{entry.score}</td>
+                                            <td>{Math.round(entry.timeLimitMs / 1000)}초</td>
+                                        </tr>)}
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+
+                    <p css={s.hint}>{copyNotice || "기록은 이 브라우저에 최대 40회까지 자동 저장됩니다."}</p>
+                    <button type="button" css={s.startButton} onClick={handleLogOnClick}>돌아가기</button>
+                </div>
+            }
+
+            {
+                !isPlaying && !showLog &&
                 <div css={s.panel}>
                     {
                         status === STATUS.CLEARED &&
