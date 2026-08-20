@@ -68,6 +68,7 @@ function Game() {
     const isWarning = isPlaying && !isPaused && remainMs <= WARNING_MS;
     const bestMs = settings.bestRecords[difficultyKey];
     const bestScore = settings.bestScores[difficultyKey];
+    const limitSec = Math.round(difficulty.timeLimitMs / 1000);
 
     const play = (name) => {
         if (!mutedRef.current) {
@@ -350,7 +351,7 @@ function Game() {
                     <span css={s.timerMeta}>
                         {isPlaying
                             ? `${matchedPairs} / ${totalPairs} 쌍 · ${score}점 · 시도 ${attempts}회`
-                            : "제한 시간 30초"}
+                            : `제한 시간 ${limitSec}초`}
                     </span>
                 </div>
             </div>
@@ -458,7 +459,7 @@ function Game() {
                         <div css={s.result("fail")} role="status">
                             <strong>실패 · 시간 초과</strong>
                             <p>
-                                30초 안에 {totalPairs}쌍을 맞추지 못했습니다.
+                                {limitSec}초 안에 {totalPairs}쌍을 맞추지 못했습니다.
                                 <br />{matchedPairs}쌍 성공 · {score}점 · 시도 {attempts}회
                             </p>
                         </div>
@@ -466,7 +467,7 @@ function Game() {
                     {
                         status === STATUS.READY &&
                         <div css={s.result("ready")}>
-                            <strong>제한 시간 30초</strong>
+                            <strong>제한 시간 {limitSec}초</strong>
                             <p>시간이 끝나기 전에 모든 짝을 찾으세요. 연속으로 맞추면 점수가 올라갑니다.</p>
                         </div>
                     }

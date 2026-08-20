@@ -1,4 +1,4 @@
-export const TIME_LIMIT_MS = 30000;
+export const TIME_LIMIT_MS = 18000;
 
 export const WARNING_MS = 5000;
 
