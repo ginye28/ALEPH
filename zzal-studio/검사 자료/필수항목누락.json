@@ -1,0 +1,102 @@
+{
+  "app": "zzal-studio",
+  "version": 1,
+  "exportedAt": "2026-08-21T00:00:00.000Z",
+  "items": [
+    {
+      "version": 1,
+      "id": "11111111-1111-4111-8111-111111111111",
+      "name": "밈 자막",
+      "ratio": "1:1",
+      "background": "#111114",
+      "image": {
+        "fit": "cover",
+        "offsetX": 0.5,
+        "offsetY": 0.5,
+        "scale": 1
+      },
+      "text": {
+        "content": "조스 아조씨 껄껄",
+        "x": 0.5,
+        "y": 0.88,
+        "align": "center",
+        "sizeRatio": 0.085,
+        "maxWidthRatio": 0.86,
+        "lineHeight": 1.25,
+        "color": "#FFFFFF",
+        "stroke": {
+          "color": "#000000",
+          "widthRatio": 0.006
+        },
+        "box": {
+          "color": "#000000",
+          "opacity": 0,
+          "paddingRatio": 0.02
+        }
+      }
+    },
+    {
+      "version": 1,
+      "id": "22222222-2222-4222-8222-222222222222",
+      "name": "카드 표지",
+      "background": "#111114",
+      "image": {
+        "fit": "cover",
+        "offsetX": 0.5,
+        "offsetY": 0.5,
+        "scale": 1
+      },
+      "text": {
+        "content": "KORIT",
+        "x": 0.5,
+        "y": 0.5,
+        "align": "center",
+        "sizeRatio": 0.12,
+        "maxWidthRatio": 0.86,
+        "lineHeight": 1.25,
+        "color": "#000000",
+        "stroke": {
+          "color": "#000000",
+          "widthRatio": 0.006
+        },
+        "box": {
+          "color": "#000000",
+          "opacity": 0,
+          "paddingRatio": 0.02
+        }
+      }
+    },
+    {
+      "version": 1,
+      "id": "33333333-3333-4333-8333-333333333333",
+      "name": "자료 캡처",
+      "ratio": "9:16",
+      "background": "#111114",
+      "image": {
+        "fit": "cover",
+        "offsetX": 0.5,
+        "offsetY": 0.5,
+        "scale": 1
+      },
+      "text": {
+        "content": "오늘 한 내용",
+        "x": 0.5,
+        "y": 0.62,
+        "align": "center",
+        "sizeRatio": 0.07,
+        "maxWidthRatio": 0.86,
+        "lineHeight": 1.25,
+        "color": "#FFFFFF",
+        "stroke": {
+          "color": "#000000",
+          "widthRatio": 0.006
+        },
+        "box": {
+          "color": "#000000",
+          "opacity": 0.55,
+          "paddingRatio": 0.02
+        }
+      }
+    }
+  ]
+}
