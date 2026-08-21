@@ -6,6 +6,12 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["--prefix", "card-matching-game", "run", "dev"],
       "port": 5173
+    },
+    {
+      "name": "zzal-studio",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "zzal-studio", "run", "dev", "--", "--port", "5174", "--strictPort"],
+      "port": 5174
     }
   ]
 }
