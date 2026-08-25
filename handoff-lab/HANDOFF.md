@@ -49,18 +49,25 @@ node handoff-lab/tools/check.mjs
 
 ## 남은 문제
 
-검사에서 남은 항목은 없다. 다만 아직 정리되지 않은 것이 둘 있다.
+검사에서 남은 항목은 없다. 공개 주소 <https://aleph-daup.vercel.app> 에서도 10개 전부 통과했다.
 
-- **공개 주소가 아직 과제 4 상태다.** 과제 4가 심사 중이라 `push`를 막아 뒀다
-  (`git remote set-url --push origin`으로 차단). 심사가 끝나야 이 변경이 배포된다.
-- **증빙을 개발 서버에서 찍었다.** 배포 뒤 공개 주소로 다시 찍어 보고서를 갱신해야 한다.
+앞으로 주의할 것은 하나뿐이다 — **과제 4와 같은 저장소를 쓰되 폴더와 배포가 다르다.**
+`today-dashboard/`(과제 4)는 제출 증거라 건드리면 안 된다. 이 저장소에서 과제 5는
+`handoff-lab/` 안에서만 작업한다.
+
+| 과제 | 폴더 | 공개 주소 |
+|---|---|---|
+| 4 | `today-dashboard/` | <https://aleph-dash.vercel.app> |
+| 5 | `handoff-lab/` | <https://aleph-daup.vercel.app> |
 
 ## 다음 행동
 
-1. 과제 4 심사가 끝나면 push 차단을 풀고 배포한다 —
-   `git remote set-url --push origin https://github.com/ginye28/ALEPH.git`
-2. 배포 뒤 공개 주소로 증빙을 다시 찍는다 — `BOARD_URL=<공개주소> node tools/capture-t05.mjs`
-3. 검사를 공개 주소에서 한 번 더 돌린다 — `BOARD_URL=<공개주소> node tools/check.mjs`
+이어받는 사람이 화면을 바꿨다면 아래 순서로 확인하고 배포한다.
+
+1. `node handoff-lab/tools/check.mjs`로 10개 전부 `PASS` 확인 (회귀 8·9·10 포함)
+2. `git push` — Vercel이 `handoff-lab`을 자동 배포한다
+3. 배포 뒤 공개 주소로 증빙과 보고서를 다시 만든다 —
+   `BOARD_URL=https://aleph-daup.vercel.app node tools/capture-t05.mjs` 다음 `node tools/report-t05.mjs`
 
 ## 건드리면 안 되는 부분
 
