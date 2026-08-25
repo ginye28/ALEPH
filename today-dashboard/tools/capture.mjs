@@ -1,18 +1,20 @@
 /**
  * 증빙 화면 자동 촬영기.
  *
- * 개발 서버(http://localhost:5175)가 떠 있는 상태에서 실행합니다.
  * 헤드리스 브라우저로 앱을 실제로 조작해 화면을 찍고,
  * 그동안 나간 네트워크 요청 주소를 모두 기록해 비밀값 0건 검사에 씁니다.
  *
- *   node today-dashboard/tools/capture.mjs
+ * 공개 주소에서 촬영합니다 (채점자가 실제로 여는 주소).
+ *   $env:BOARD_URL="https://aleph-dash.vercel.app"; node today-dashboard/tools/capture.mjs
+ *
+ * BOARD_URL을 주지 않으면 개발 서버(http://localhost:5175)에서 촬영합니다.
  */
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import os from "node:os";
 
-const URL_APP = "http://localhost:5175";
+const URL_APP = (process.env.BOARD_URL ?? "http://localhost:5175").replace(/\/$/, "");
 const ROOT = path.resolve(import.meta.dirname, "..", "..");
 const SHOT_DIR = path.join(ROOT, "정보판 증빙 화면");
 const PROFILE = fs.mkdtempSync(path.join(os.tmpdir(), "board-profile-"));
@@ -203,12 +205,21 @@ await sleep(400);
     write("03_원자료_페이지", data);
 }
 const rawValue = await evaluate(`(() => {
-    const json = JSON.parse(document.body.innerText);
-    return { current: json.current.temperature_2m, unit: json.current_units.temperature_2m, time: json.current.time };
+    const text = document.body.innerText;
+    const json = JSON.parse(text);
+    // JSON.parse는 31.0을 31로 바꿔 버립니다.
+    // 대조표에는 응답에 적힌 글자 그대로를 실어야 화면값과 헛되이 어긋나 보이지 않습니다.
+    const matched = text.match(/"current":\\{[^}]*?"temperature_2m":(-?[0-9.]+)/);
+    return {
+        current: json.current.temperature_2m,
+        currentText: matched ? matched[1] : String(json.current.temperature_2m),
+        unit: json.current_units.temperature_2m,
+        time: json.current.time,
+    };
 })()`);
 log.push({
     name: "03_원자료_페이지",
-    status: `원자료 current.temperature_2m = ${rawValue.current} ${rawValue.unit} (기준 ${rawValue.time})`,
+    status: `원자료 current.temperature_2m = ${rawValue.currentText} ${rawValue.unit} (기준 ${rawValue.time})`,
     note: `화면값 ${snapshot.screenValue} °C 와 대조`,
 });
 

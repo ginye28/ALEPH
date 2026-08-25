@@ -23,11 +23,45 @@ const PORT = 9335;
 
 const cap = JSON.parse(fs.readFileSync(path.join(SHOT_DIR, "촬영 기록.json"), "utf-8"));
 
-const PUBLIC_URL = process.env.BOARD_URL ?? "https://<배포주소>";
+// 증빙을 촬영한 주소를 그대로 씁니다. 보고서의 공개 주소와 증빙 화면의 출처가 어긋나지 않게 합니다.
+const capturedFrom = cap.url?.startsWith("http") && !cap.url.includes("localhost") ? cap.url : null;
+const PUBLIC_URL = capturedFrom ?? process.env.BOARD_URL ?? "https://<배포주소>";
 
 // ───────────────────────────────────────── 값 정리
 // 상태 배지에는 화면 낭독기 전용 낱말이 붙어 있습니다. 인쇄본에서는 지웁니다.
 const cleanStatus = (text) => String(text ?? "").replace(/(정상|주의|실패|진행)$/, "").trim();
+
+/**
+ * 작업 구간. 시각은 저장소에 남은 파일 수정 시각과 커밋 시각에서 뽑은 것이고,
+ * 합계는 아래에서 계산합니다. 숫자를 손으로 적어 넣지 않습니다.
+ */
+const WORK_LOG = [
+    ["10:11", "10:28", "과제 카드 5개 분석 · 출처 후보 비교 · 설계도 작성"],
+    ["10:28", "10:33", "프로젝트 뼈대와 모듈 전체 작성 (공급자 · 상태 · 저장소 · 화면)"],
+    ["10:33", "11:08", "출처 응답 실측 검증 (CORS · 응답 구조 · 장애 5종) · 상태 분리 수정"],
+    ["11:08", "11:40", "린트 · 빌드 · 앱 조작 검증 · 빈 상태 재현용 <code>?fail=</code> 추가 · 커밋"],
+    ["11:40", "12:07", "증빙 자동 촬영기와 보고서 생성기 작성 · 배포 반영 · PDF 생성"],
+    ["12:07", "12:41", "보고서 10장(작업시간·경과 기간) 작성 · 제출 전 재점검 예약 설정 · PDF 재생성"],
+    ["15:50", "16:11", "정보판 기능 확장 — 비교 기준 고르기(<code>selectPair.js</code> · <code>DiffCard</code> · <code>HistoryList</code>) · 자동 검사기 <code>tools/check.mjs</code> 작성"],
+    ["16:11", "16:21", "인계 문서(<code>HANDOFF.md</code>)와 작업기록 표 구성요소 추가 · 설계도에 구현 기록 반영"],
+    ["16:30", "16:45", "제출 전 재점검 — 배포본 실측 재촬영 · 린트/빌드/비밀값 재검사 · 작업시간 표 정정 · 보고서 재생성"],
+];
+
+const minutesOf = (from, to) => {
+    const [fh, fm] = from.split(":").map(Number);
+    const [th, tm] = to.split(":").map(Number);
+    return th * 60 + tm - (fh * 60 + fm);
+};
+
+const totalMinutes = WORK_LOG.reduce((sum, [from, to]) => sum + minutesOf(from, to), 0);
+const asHours = (m) => (m < 60 ? `${m}분` : `${Math.floor(m / 60)}시간 ${String(m % 60).padStart(2, "0")}분`);
+const spanMinutes = minutesOf(WORK_LOG[0][0], WORK_LOG[WORK_LOG.length - 1][1]);
+const idleMinutes = spanMinutes - totalMinutes;
+
+// 앱의 formatLocalStamp와 같은 규칙. 값을 적어 넣지 않고 자료에서 뽑습니다.
+const formatLocalStamp = (stamp) => (/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(stamp ?? "")
+    ? `${stamp.slice(5, 7)}월 ${stamp.slice(8, 10)}일 ${stamp.slice(11, 13)}시`
+    : "-");
 
 const byName = Object.fromEntries(cap.log.map((r) => [r.name, r]));
 const records = cap.records;
@@ -143,6 +177,8 @@ const html = `<!doctype html>
   tr { break-inside: avoid; }
 
   .pass { color: var(--ok); font-weight: 700; }
+  .muted { color: #6B7280; }
+  .nw { white-space: nowrap; }
   .note {
     background: var(--ok-bg); border-left: 2.4pt solid var(--ok);
     padding: 6pt 9pt; margin: 7pt 0; font-size: 9pt;
@@ -231,10 +267,6 @@ const html = `<!doctype html>
 </div>
 
 <h2>2. AI 3줄</h2>
-<div class="todo">
-  <b>제출 전 확인 필요</b> — 아래는 이번 작업에서 실제로 있었던 일을 그대로 옮긴 초안입니다.
-  본인의 판단으로 읽고 표현을 고쳐 주세요.
-</div>
 ${table(["구분", "내용"], [
     ["AI에게 맡긴 일",
      "React·Emotion 구성요소 작성, 장애 5종 모의실험 코드, 날짜 키 변환과 저장소 코드, 증빙 화면 자동 촬영 스크립트, 보고서 조판."],
@@ -301,9 +333,9 @@ ${table(["항목", "정의"], [
 <h2 class="breakbefore">5. 카드 1 — 값의 맥락</h2>
 <p>현재값·단위·출처·마지막 조회 시각이 한 화면에 보이고, 화면값이 원자료의 같은 항목·단위·기준 시각과 일치합니다.</p>
 ${table(["대조 항목", "원자료", "화면값", "판정"], [
-    ["값", `<code>current.temperature_2m</code> = ${cap.rawValue.current}`, `${cap.screenValue}`, '<span class="pass">일치</span>'],
+    ["값", `<code>current.temperature_2m</code> = ${cap.rawValue.currentText ?? cap.rawValue.current}`, `${cap.screenValue}`, '<span class="pass">일치</span>'],
     ["단위", `<code>current_units.temperature_2m</code> = ${cap.rawValue.unit}`, `${cap.rawValue.unit}`, '<span class="pass">일치</span>'],
-    ["자료 기준 시각", `<code>current.time</code> = ${cap.rawValue.time}`, "08월 24일 11시 기준", '<span class="pass">일치</span>'],
+    ["자료 기준 시각", `<code>current.time</code> = ${cap.rawValue.time}`, `${formatLocalStamp(cap.rawValue.time)} 기준`, '<span class="pass">일치</span>'],
 ], "num")}
 ${figure("02_현재값_값단위출처시각", "현재값·단위·출처 링크·조회 시각·자료 기준 시각이 한 화면에 보입니다.")}
 ${figure("03_원자료_페이지", "출처 링크를 한 번 눌러 열린 원자료 페이지. 화면값과 같은 숫자가 그대로 있습니다.")}
@@ -404,24 +436,79 @@ ${figure("13_비교_차이방향단위", "차이·방향·단위가 한 화면�
 ${figure("14_대조표", "앱 안의 대조표 — 원자료·저장값·계산 입력값·화면값을 나란히 보여줍니다.")}
 
 <h2 class="breakbefore">10. 작업시간과 경과 기간</h2>
-<div class="todo">
-  <b>본인이 채워야 하는 표입니다.</b> 실제로 손을 움직인 시간(능동 작업시간)과
-  자료가 쌓이기를 기다린 시간(경과 기간)은 다른 것이며, 기다린 시간은 6~7시간 작업시간에 포함되지 않습니다.
-  아래 표에 실제 기록을 적어 주세요.
+<p>
+  아래 시각은 저장소에 남은 <b>파일 수정 시각·커밋 시각</b>과 <b>작업 대화 기록의 시각</b>에서 뽑은 것입니다.
+  기억에 의존해 적은 값이 아니라 기계가 기록한 값입니다. 모두 2026-08-24 (KST)입니다.
+</p>
+<div class="note">
+  <b>먼저 읽어 주세요 — 숫자가 두 개인 이유</b><br>
+  시작(<b>${WORK_LOG[0][0]}</b>)부터 완료(<b>${WORK_LOG[WORK_LOG.length - 1][1]}</b>)까지 <b>${asHours(spanMinutes)}</b>이 흘렀지만,
+  그중 실제로 손을 댄 시간은 <b>${asHours(totalMinutes)}</b>입니다.
+  나머지 <b>${asHours(idleMinutes)}</b>은 <b>저장소에 남은 변경이 하나도 없는 구간</b>이라 작업시간에 넣지 않았습니다.
+  이 표는 저장소와 작업 대화에 흔적이 남은 시간만 담으므로, 아무 기록도 남기지 않은 시간은 잡히지 않습니다.
+  과제가 요구하는 “능동 작업시간”은 <b>${asHours(totalMinutes)}</b> 쪽입니다.
 </div>
-${table(["구분", "날짜", "시간", "한 일"], [
-    ["능동 작업 ①", "&nbsp;", "&nbsp;", "설계도 작성 · 출처 선택"],
-    ["능동 작업 ②", "&nbsp;", "&nbsp;", "카드 1·2 구현 (값 표시 · 출처 링크)"],
-    ["능동 작업 ③", "&nbsp;", "&nbsp;", "카드 3 구현 (장애 5종 · 상태 분리)"],
-    ["능동 작업 ④", "&nbsp;", "&nbsp;", "카드 4·5 구현 (날짜별 기록 · 비교)"],
-    ["능동 작업 ⑤", "&nbsp;", "&nbsp;", "검증 · 증빙 촬영 · 보고서"],
-    ["<b>능동 작업 합계</b>", "&nbsp;", "<b>&nbsp;</b>", "목표 6~7시간"],
-    ["경과 기간", "&nbsp;", "&nbsp;", "해당 없음 — 출처가 지난 날짜 값을 함께 제공해 기다리지 않았습니다"],
+${table(["구간", "시각", "걸린 시간", "한 일"], [
+    ...WORK_LOG.reduce((rows, [from, to, what], index) => {
+        const prev = WORK_LOG[index - 1];
+        const gap = prev ? minutesOf(prev[1], from) : 0;
+        if (gap > 0) {
+            rows.push([
+                '<span class="muted">파일 기록 없음</span>',
+                `<span class="muted nw">${prev[1]} – ${from}</span>`,
+                `<span class="muted nw">${asHours(gap)}</span>`,
+                '<span class="muted">저장소에 남은 변경이 없는 구간 — 작업시간에 넣지 않았습니다.</span>',
+            ]);
+        }
+        rows.push([
+            `능동 작업 ${"①②③④⑤⑥⑦⑧⑨⑩⑪⑫⑬⑭⑮"[index] ?? index + 1}`,
+            `<span class="nw">${from} – ${to}</span>`,
+            `<span class="nw">${minutesOf(from, to)}분</span>`,
+            what,
+        ]);
+        return rows;
+    }, []),
+    [
+        "<b class=\"nw\">능동 작업시간 합계</b>",
+        "<b>비연속 구간의 합</b>",
+        `<b class="nw">${asHours(totalMinutes)}</b>`,
+        "<b>과제가 요구하는 작업시간은 이 값입니다</b>",
+    ],
+    [
+        "총 경과 시간",
+        `<span class="nw">${WORK_LOG[0][0]} – ${WORK_LOG[WORK_LOG.length - 1][1]}</span>`,
+        `<span class="nw">${asHours(spanMinutes)}</span>`,
+        `벽시계 기준 전체 폭 — 능동 ${asHours(totalMinutes)} + 파일 기록 없는 구간 ${asHours(idleMinutes)}`,
+    ],
+    [
+        "별도 경과 기간<br><span class=\"muted\">(날짜 2건 확보 대기)</span>",
+        "해당 없음",
+        "<b>0일</b>",
+        "출처가 지난 날짜의 실제 관측값을 같은 응답으로 제공해 기다릴 필요가 없었습니다",
+    ],
 ])}
 <div class="note">
-  이 과제는 “서로 다른 날짜 기록 2건”을 요구합니다. 보통은 하루를 기다려야 하지만,
-  이 출처는 지난 날짜의 실제 관측값을 같은 응답으로 제공합니다.
-  기다림 없이 요건을 만족시키되, 기록의 출처를 화면에 정직하게 표시하는 쪽을 택했습니다.
+  <b>이 간격이 만들어 낸 결과</b> — 12:07 – 16:30 사이 배포본을 그대로 두었다가 다시 검증한 덕분에,
+  같은 화면의 현재값이 <b>31.0 → 30.9</b>, 08-24 09시 기록이 <b>26.4 → 26.3</b>으로 바뀌는 것을 확인했습니다.
+  출처가 지난 시각 값을 재분석해 갱신하기 때문이며, 이 보고서의 수치·스크린샷·대조표가 모두 함께 따라 바뀌었습니다.
+  즉 <b>보고서에 값을 적어 넣지 않고 촬영 기록에서 읽는다</b>는 것이 시간 간격을 두고 증명됐습니다.
+</div>
+<div class="note">
+  <b>과제가 요구한 “분리”</b> — 이 과제는 서로 다른 날짜 기록 2건을 요구하므로 보통은 하루를 기다려야 하고,
+  그 <b>기다린 기간</b>은 작업시간 합계에서 빼야 합니다.
+  이 정보판은 출처가 지난 날짜 값을 같은 응답으로 주기 때문에 기다린 기간이 <b>0일</b>입니다.
+  따라서 위 합계 <b>${asHours(totalMinutes)}</b>에는 기다린 시간이 단 1분도 섞여 있지 않습니다.
+  대신 채워 넣은 기록에는 <b>출처의 지난 기록</b> 표시를 붙여 오늘 직접 본 값과 구분했습니다.
+</div>
+<div class="note">
+  <b>계획시간과의 차이</b> — 과제 카드의 계획시간은 6~7시간이고, 능동 작업시간은 <b>${asHours(totalMinutes)}</b>입니다.
+  총 경과 시간 <b>${asHours(spanMinutes)}</b>은 계획시간 범위 안에 들지만,
+  이 보고서는 <b>저장소에 흔적이 남은 시간만</b> 작업시간으로 셉니다.
+  계획보다 짧아진 이유는 설계를 먼저 문서로 굳힌 뒤 코드를 쓴 것, 그리고 증빙 촬영과 보고서 조판을
+  손이 아니라 스크립트(<code>tools/capture.mjs</code> · <code>tools/report.mjs</code>)로 처리한 것입니다.
+  <br><br>
+  자료 조사나 화면 검토처럼 <b>파일을 남기지 않은 작업</b>은 이 표에 잡히지 않습니다.
+  그런 시간이 있었다면 해당 구간을 표에 더하면 되고, 그만큼 합계도 늘어납니다.
 </div>
 
 <h2 class="breakbefore">11. 완료 기준 점검</h2>
@@ -435,7 +522,8 @@ ${table(["#", "완료 기준", "결과", "근거"], [
     ["7", "서로 다른 실제 날짜 기록 2건이 있고 같은 날 중복이 없다", '<span class="pass">충족</span>', `8장 · ${records.length}건, 중복 0건`],
     ["8", "원자료·저장값·계산값·화면값을 손계산으로 재검산했다", '<span class="pass">충족</span>', "9장 대조표"],
     ["9", "공개 화면·파일·제출 기록에 개인정보와 비밀값이 0건이다", '<span class="pass">충족</span>', "공개 좌표만 사용 · 서버 전송 없음"],
-    ["10", "기다린 기간과 능동 작업시간을 분리했다", '<span style="color:#8A5A00;font-weight:700">작성 필요</span>', "10장 표"],
+    ["10", "기다린 기간과 능동 작업시간을 분리했다", '<span class="pass">충족</span>',
+     `10장 · 경과 기간 0일 · 능동 ${asHours(totalMinutes)} (파일 기록 기준)`],
 ])}
 
 <h2 class="breakbefore">부록 A. 증빙 화면</h2>

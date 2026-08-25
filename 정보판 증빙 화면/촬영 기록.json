@@ -1,22 +1,23 @@
 {
-  "capturedAt": "2026-08-24T02:27:04.498Z",
-  "url": "http://localhost:5175",
-  "screenValue": "30.2",
+  "capturedAt": "2026-08-24T07:32:02.134Z",
+  "url": "https://aleph-dash.vercel.app",
+  "screenValue": "30.9",
   "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul",
   "rawValue": {
-    "current": 30.2,
+    "current": 30.9,
+    "currentText": "30.9",
     "unit": "°C",
-    "time": "2026-08-24T11:15"
+    "time": "2026-08-24T16:30"
   },
   "records": [
     {
       "providerKey": "weather-openmeteo-seoul",
       "itemLabel": "서울 현재 기온",
       "dateKey": "2026-08-24",
-      "value": 26.4,
+      "value": 26.3,
       "unit": "°C",
       "observedAt": "2026-08-24T09:00",
-      "fetchedAt": "2026-08-24T02:26:54.042Z",
+      "fetchedAt": "2026-08-24T07:31:51.672Z",
       "origin": "live",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
@@ -27,7 +28,7 @@
       "value": 25.2,
       "unit": "°C",
       "observedAt": "2026-08-23T09:00",
-      "fetchedAt": "2026-08-24T02:26:54.042Z",
+      "fetchedAt": "2026-08-24T07:31:51.672Z",
       "origin": "backfill",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
@@ -38,7 +39,7 @@
       "value": 23.9,
       "unit": "°C",
       "observedAt": "2026-08-22T09:00",
-      "fetchedAt": "2026-08-24T02:26:54.042Z",
+      "fetchedAt": "2026-08-24T07:31:51.672Z",
       "origin": "backfill",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
@@ -49,7 +50,7 @@
       "value": 23.8,
       "unit": "°C",
       "observedAt": "2026-08-21T09:00",
-      "fetchedAt": "2026-08-24T02:26:54.042Z",
+      "fetchedAt": "2026-08-24T07:31:51.672Z",
       "origin": "backfill",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     }
@@ -59,10 +60,10 @@
       "providerKey": "weather-openmeteo-seoul",
       "itemLabel": "서울 현재 기온",
       "dateKey": "2026-08-24",
-      "value": 26.4,
+      "value": 26.3,
       "unit": "°C",
       "observedAt": "2026-08-24T09:00",
-      "fetchedAt": "2026-08-24T02:26:54.042Z",
+      "fetchedAt": "2026-08-24T07:31:51.672Z",
       "origin": "live",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
@@ -73,11 +74,11 @@
       "value": 25.2,
       "unit": "°C",
       "observedAt": "2026-08-23T09:00",
-      "fetchedAt": "2026-08-24T02:26:54.042Z",
+      "fetchedAt": "2026-08-24T07:31:51.672Z",
       "origin": "backfill",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
-    "rawDelta": 1.1999999999999993
+    "rawDelta": 1.1000000000000014
   },
   "externalRequests": [
     "https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap",
@@ -109,7 +110,7 @@
     "https://api.open-meteo.com/favicon.ico",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.109.woff2"
   ],
-  "requestCount": 389,
+  "requestCount": 178,
   "log": [
     {
       "name": "02_현재값_값단위출처시각",
@@ -118,8 +119,8 @@
     },
     {
       "name": "03_원자료_페이지",
-      "status": "원자료 current.temperature_2m = 30.2 °C (기준 2026-08-24T11:15)",
-      "note": "화면값 30.2 °C 와 대조"
+      "status": "원자료 current.temperature_2m = 30.9 °C (기준 2026-08-24T16:30)",
+      "note": "화면값 30.9 °C 와 대조"
     },
     {
       "name": "04_장애_제한시간초과",
@@ -168,7 +169,7 @@
     },
     {
       "name": "13_비교_차이방향단위",
-      "status": "25.2 → 26.4 °C, 원본 차이 1.1999999999999993",
+      "status": "25.2 → 26.3 °C, 원본 차이 1.1000000000000014",
       "note": "화면 표기는 반올림 1자리"
     },
     {
