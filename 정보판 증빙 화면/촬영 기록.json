@@ -1,13 +1,13 @@
 {
-  "capturedAt": "2026-08-26T05:46:37.517Z",
+  "capturedAt": "2026-08-26T06:21:48.527Z",
   "url": "http://localhost:5175",
-  "screenValue": "29.4",
+  "screenValue": "29.2",
   "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul",
   "rawValue": {
-    "current": 29.4,
-    "currentText": "29.4",
+    "current": 29.2,
+    "currentText": "29.2",
     "unit": "°C",
-    "time": "2026-08-26T14:45"
+    "time": "2026-08-26T15:15"
   },
   "records": [
     {
@@ -17,7 +17,7 @@
       "value": 24,
       "unit": "°C",
       "observedAt": "2026-08-26T09:00",
-      "fetchedAt": "2026-08-26T05:46:15.359Z",
+      "fetchedAt": "2026-08-26T06:21:26.162Z",
       "origin": "live",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
@@ -28,7 +28,7 @@
       "value": 25.1,
       "unit": "°C",
       "observedAt": "2026-08-25T09:00",
-      "fetchedAt": "2026-08-26T05:46:15.359Z",
+      "fetchedAt": "2026-08-26T06:21:26.162Z",
       "origin": "backfill",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
@@ -39,7 +39,7 @@
       "value": 26.3,
       "unit": "°C",
       "observedAt": "2026-08-24T09:00",
-      "fetchedAt": "2026-08-26T05:46:15.359Z",
+      "fetchedAt": "2026-08-26T06:21:26.162Z",
       "origin": "backfill",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
@@ -50,7 +50,7 @@
       "value": 25.2,
       "unit": "°C",
       "observedAt": "2026-08-23T09:00",
-      "fetchedAt": "2026-08-26T05:46:15.359Z",
+      "fetchedAt": "2026-08-26T06:21:26.162Z",
       "origin": "backfill",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     }
@@ -63,7 +63,7 @@
       "value": 24,
       "unit": "°C",
       "observedAt": "2026-08-26T09:00",
-      "fetchedAt": "2026-08-26T05:46:15.359Z",
+      "fetchedAt": "2026-08-26T06:21:26.162Z",
       "origin": "live",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
@@ -74,7 +74,7 @@
       "value": 25.1,
       "unit": "°C",
       "observedAt": "2026-08-25T09:00",
-      "fetchedAt": "2026-08-26T05:46:15.359Z",
+      "fetchedAt": "2026-08-26T06:21:26.162Z",
       "origin": "backfill",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
@@ -108,9 +108,10 @@
     "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.98.woff2",
     "https://api.open-meteo.com/favicon.ico",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.108.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.109.woff2"
   ],
-  "requestCount": 540,
+  "requestCount": 564,
   "log": [
     {
       "name": "02_현재값_값단위출처시각",
@@ -119,8 +120,8 @@
     },
     {
       "name": "03_원자료_페이지",
-      "status": "원자료 current.temperature_2m = 29.4 °C (기준 2026-08-26T14:45)",
-      "note": "화면값 29.4 °C 와 대조"
+      "status": "원자료 current.temperature_2m = 29.2 °C (기준 2026-08-26T15:15)",
+      "note": "화면값 29.2 °C 와 대조"
     },
     {
       "name": "04_장애_제한시간초과",

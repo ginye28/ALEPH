@@ -81,3 +81,10 @@ export const resultRow = css`
         font-weight: 700;
     }
 `;
+
+/** 출처 주소는 길어서 한 칸에 접어 보여줍니다. 잘라내면 영수증에 옮길 때 틀립니다. */
+export const wrapCell = css`
+    max-width: 320px;
+    white-space: normal;
+    word-break: break-all;
+`;

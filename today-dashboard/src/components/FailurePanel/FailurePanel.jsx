@@ -92,6 +92,45 @@ function FailurePanel({ lastMode, isLoading, diff, digits, onSimulate, onRefill,
                     </p>
                 </div>
             )}
+
+            {/*
+             * 과정영수증(t04_day)에 넣을 값입니다.
+             * 영수증 payload와 앱 저장값·화면값이 글자 그대로 같아야 하므로(C23),
+             * 눈으로 옮겨 적지 않고 여기서 그대로 복사할 수 있게 둡니다.
+             */}
+            {diff.ok && (
+                <div>
+                    <span css={c.label}>과정영수증에 넣을 값 — 날짜마다 한 건씩</span>
+                    <div css={s.tableWrap}>
+                        <table css={s.table}>
+                            <thead>
+                                <tr>
+                                    <th>record_date</th>
+                                    <th>source_url</th>
+                                    <th>source_observed_at</th>
+                                    <th>normalized_value</th>
+                                    <th>unit</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {[diff.previous, diff.latest].map((record) => (
+                                    <tr key={`receipt-${record.dateKey}`}>
+                                        <td>{record.dateKey}</td>
+                                        <td css={s.wrapCell}>{record.sourceUrl}</td>
+                                        <td>{record.observedAt}</td>
+                                        <td>{record.value}</td>
+                                        <td>{record.unit}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                    <p css={c.note}>
+                        이 값들은 화면에 보이는 값과 같은 저장 기록에서 나옵니다. 영수증을 남길 때
+                        여기 있는 글자를 그대로 쓰면 앱·저장값·영수증이 어긋나지 않습니다.
+                    </p>
+                </div>
+            )}
         </section>
     );
 }
