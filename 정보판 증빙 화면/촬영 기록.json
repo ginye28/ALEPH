@@ -1,15 +1,37 @@
 {
-  "capturedAt": "2026-08-24T07:32:02.134Z",
-  "url": "https://aleph-dash.vercel.app",
-  "screenValue": "30.9",
+  "capturedAt": "2026-08-26T05:46:37.517Z",
+  "url": "http://localhost:5175",
+  "screenValue": "29.4",
   "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul",
   "rawValue": {
-    "current": 30.9,
-    "currentText": "30.9",
+    "current": 29.4,
+    "currentText": "29.4",
     "unit": "°C",
-    "time": "2026-08-24T16:30"
+    "time": "2026-08-26T14:45"
   },
   "records": [
+    {
+      "providerKey": "weather-openmeteo-seoul",
+      "itemLabel": "서울 현재 기온",
+      "dateKey": "2026-08-26",
+      "value": 24,
+      "unit": "°C",
+      "observedAt": "2026-08-26T09:00",
+      "fetchedAt": "2026-08-26T05:46:15.359Z",
+      "origin": "live",
+      "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
+    },
+    {
+      "providerKey": "weather-openmeteo-seoul",
+      "itemLabel": "서울 현재 기온",
+      "dateKey": "2026-08-25",
+      "value": 25.1,
+      "unit": "°C",
+      "observedAt": "2026-08-25T09:00",
+      "fetchedAt": "2026-08-26T05:46:15.359Z",
+      "origin": "backfill",
+      "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
+    },
     {
       "providerKey": "weather-openmeteo-seoul",
       "itemLabel": "서울 현재 기온",
@@ -17,8 +39,8 @@
       "value": 26.3,
       "unit": "°C",
       "observedAt": "2026-08-24T09:00",
-      "fetchedAt": "2026-08-24T07:31:51.672Z",
-      "origin": "live",
+      "fetchedAt": "2026-08-26T05:46:15.359Z",
+      "origin": "backfill",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
     {
@@ -28,29 +50,7 @@
       "value": 25.2,
       "unit": "°C",
       "observedAt": "2026-08-23T09:00",
-      "fetchedAt": "2026-08-24T07:31:51.672Z",
-      "origin": "backfill",
-      "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
-    },
-    {
-      "providerKey": "weather-openmeteo-seoul",
-      "itemLabel": "서울 현재 기온",
-      "dateKey": "2026-08-22",
-      "value": 23.9,
-      "unit": "°C",
-      "observedAt": "2026-08-22T09:00",
-      "fetchedAt": "2026-08-24T07:31:51.672Z",
-      "origin": "backfill",
-      "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
-    },
-    {
-      "providerKey": "weather-openmeteo-seoul",
-      "itemLabel": "서울 현재 기온",
-      "dateKey": "2026-08-21",
-      "value": 23.8,
-      "unit": "°C",
-      "observedAt": "2026-08-21T09:00",
-      "fetchedAt": "2026-08-24T07:31:51.672Z",
+      "fetchedAt": "2026-08-26T05:46:15.359Z",
       "origin": "backfill",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     }
@@ -59,26 +59,26 @@
     "latest": {
       "providerKey": "weather-openmeteo-seoul",
       "itemLabel": "서울 현재 기온",
-      "dateKey": "2026-08-24",
-      "value": 26.3,
+      "dateKey": "2026-08-26",
+      "value": 24,
       "unit": "°C",
-      "observedAt": "2026-08-24T09:00",
-      "fetchedAt": "2026-08-24T07:31:51.672Z",
+      "observedAt": "2026-08-26T09:00",
+      "fetchedAt": "2026-08-26T05:46:15.359Z",
       "origin": "live",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
     "previous": {
       "providerKey": "weather-openmeteo-seoul",
       "itemLabel": "서울 현재 기온",
-      "dateKey": "2026-08-23",
-      "value": 25.2,
+      "dateKey": "2026-08-25",
+      "value": 25.1,
       "unit": "°C",
-      "observedAt": "2026-08-23T09:00",
-      "fetchedAt": "2026-08-24T07:31:51.672Z",
+      "observedAt": "2026-08-25T09:00",
+      "fetchedAt": "2026-08-26T05:46:15.359Z",
       "origin": "backfill",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
-    "rawDelta": 1.1000000000000014
+    "rawDelta": -1.1000000000000014
   },
   "externalRequests": [
     "https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap",
@@ -103,14 +103,14 @@
     "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC0OIKTZFstupOfBjNSl5zPnvB_dOjwqCu.112.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.104.woff2",
     "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC0OIKTZFstupOfBjNSl5zPnvB_dOjwqCu.115.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.114.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.110.woff2",
     "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.98.woff2",
-    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.110.woff2",
-    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.114.woff2",
     "https://api.open-meteo.com/favicon.ico",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.109.woff2"
   ],
-  "requestCount": 178,
+  "requestCount": 540,
   "log": [
     {
       "name": "02_현재값_값단위출처시각",
@@ -119,8 +119,8 @@
     },
     {
       "name": "03_원자료_페이지",
-      "status": "원자료 current.temperature_2m = 30.9 °C (기준 2026-08-24T16:30)",
-      "note": "화면값 30.9 °C 와 대조"
+      "status": "원자료 current.temperature_2m = 29.4 °C (기준 2026-08-26T14:45)",
+      "note": "화면값 29.4 °C 와 대조"
     },
     {
       "name": "04_장애_제한시간초과",
@@ -134,12 +134,12 @@
     },
     {
       "name": "06_장애_호출제한",
-      "status": "오래된 데이터 · 요청이 많아 잠시 제한됐어요주의",
+      "status": "오래된 데이터 · 접근 권한에 문제가 있어요주의",
       "note": "호출 제한 재현 — 마지막 정상값 유지 확인"
     },
     {
       "name": "07_장애_오프라인",
-      "status": "오래된 데이터 · 인터넷 연결을 확인해주세요주의",
+      "status": "오래된 데이터 · 접근 권한에 문제가 있어요주의",
       "note": "오프라인 재현 — 마지막 정상값 유지 확인"
     },
     {
@@ -159,7 +159,7 @@
     },
     {
       "name": "11_날짜별기록_최초저장",
-      "status": "4건 저장 — 2026-08-24(live), 2026-08-23(backfill), 2026-08-22(backfill), 2026-08-21(backfill)",
+      "status": "4건 저장 — 2026-08-26(live), 2026-08-25(backfill), 2026-08-24(backfill), 2026-08-23(backfill)",
       "note": "첫 조회에서 오늘 1건 + 출처의 지난 날짜 자동 확보"
     },
     {
@@ -169,8 +169,43 @@
     },
     {
       "name": "13_비교_차이방향단위",
-      "status": "25.2 → 26.3 °C, 원본 차이 1.1000000000000014",
+      "status": "25.1 → 24 °C, 원본 차이 -1.1000000000000014",
       "note": "화면 표기는 반올림 1자리"
+    },
+    {
+      "name": "16_합성재생_정상_일별저장",
+      "status": "fresh/none · 행 2건 · 값 120 pt",
+      "note": "D1-A→D1-B는 같은 행 갱신(C20), D2는 새 행(C21)"
+    },
+    {
+      "name": "17_합성재생_실패_timeout",
+      "status": "stale/timeout · 마지막 정상값 105 pt 유지 · 오래된 값 표시 있음",
+      "note": "기대 error_code timeout — 마지막 정상값과 행을 지우지 않음 (C17·C18)"
+    },
+    {
+      "name": "18_합성재생_실패_auth",
+      "status": "stale/auth · 마지막 정상값 105 pt 유지 · 오래된 값 표시 있음",
+      "note": "기대 error_code auth — 마지막 정상값과 행을 지우지 않음 (C17·C18)"
+    },
+    {
+      "name": "19_합성재생_실패_rate_limit",
+      "status": "stale/rate_limit · 마지막 정상값 105 pt 유지 · 오래된 값 표시 있음",
+      "note": "기대 error_code rate_limit — 마지막 정상값과 행을 지우지 않음 (C17·C18)"
+    },
+    {
+      "name": "20_합성재생_실패_offline",
+      "status": "stale/offline · 마지막 정상값 105 pt 유지 · 오래된 값 표시 있음",
+      "note": "기대 error_code offline — 마지막 정상값과 행을 지우지 않음 (C17·C18)"
+    },
+    {
+      "name": "21_합성재생_실패_schema_error",
+      "status": "stale/schema_error · 마지막 정상값 105 pt 유지 · 오래된 값 표시 있음",
+      "note": "기대 error_code schema_error — 마지막 정상값과 행을 지우지 않음 (C17·C18)"
+    },
+    {
+      "name": "22_합성재생_회복_recover_d2",
+      "status": "stale/timeout 행 1 → fresh/none 행 2 · 값 120 pt",
+      "note": "T04-RECOVER-D2 재생 — 2026-08-25 신규 행 1건 (C19)"
     },
     {
       "name": "15_모바일_375",

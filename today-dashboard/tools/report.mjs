@@ -77,6 +77,14 @@ const capturedKst = new Intl.DateTimeFormat("ko-KR", {
 const hostsOf = (urls) => [...new Set(urls.map((u) => new URL(u).host))].sort();
 const externalHosts = hostsOf(cap.externalRequests);
 
+// 공개 자산 꾸러미 — 숫자를 적어 넣지 않고 계약 파일에서 그대로 읽습니다.
+const PKG_DIR = path.join(ROOT, "t04-real-information-board-public-v1");
+const contract = JSON.parse(fs.readFileSync(path.join(PKG_DIR, "public-contract.json"), "utf-8"));
+const assetManifest = JSON.parse(fs.readFileSync(path.join(PKG_DIR, "asset-manifest.json"), "utf-8"));
+const ASSET_PACKAGE = contract.package_id;
+const assetCount = assetManifest[Object.keys(assetManifest).find((k) => Array.isArray(assetManifest[k]))].length;
+const CONDITION_COUNT = contract.condition_count;
+
 // 주소의 &는 반드시 엔티티로 바꿉니다. 그냥 두면 &current= 가 ¤t= 로 깨져 인쇄됩니다.
 const esc = (text) => String(text)
     .replace(/&/g, "&amp;")
@@ -380,6 +388,41 @@ ${["04_장애_제한시간초과", "05_장애_인증실패", "06_장애_호출�
 <p>정상값을 한 번도 받지 못한 상태에서는 값이 있는 것처럼 표시하지 않습니다. 출처와 시각도 모두 <code>-</code>로 비웁니다.</p>
 ${figure("09_정상값없음_빈상태", "빈 상태 — “아직 정상값이 없습니다 / 값을 지어내지 않고 비워 둡니다.”")}
 ${figure("10_복구_정상", "다시 확인 한 번으로 정상 상태로 복구됩니다.")}
+
+<h3 class="breakbefore">공개 fixture 합성 재생 (C12~C21)</h3>
+
+<p>
+  판정 조건은 자체 흉내가 아니라 <b>공개 자산 꾸러미의 fixture 9종</b>을 그대로 재생해 확인합니다.
+  꾸러미는 <code>${esc(ASSET_PACKAGE)}</code>이고, 자산 ${assetCount}개의 SHA-256이
+  <code>asset-manifest.json</code>과 <b>전부 일치</b>합니다. 앱에 묶어 둔 사본도 원본과 해시가 같습니다
+  (<code>tools/verify-t04.mjs</code>가 실행할 때마다 대조).
+</p>
+
+<div class="note">
+  <b>합성 상태는 실제 기록과 분리돼 있습니다.</b> 계약의 <code>reset_semantics</code>가
+  “합성 평가 상태만 빈 상태로 되돌린다”이므로, 재생은 <code>localStorage</code>를 쓰지 않고
+  메모리에서만 굴러갑니다. 합성 재생이 실제 공개 원천 기록(C22~C24의 증거)을 지우지 않습니다.
+</div>
+
+<p>
+  상태는 <code>freshness</code>와 <code>error_code</code>를 <b>서로 다른 필드</b>로 보존합니다
+  (<code>reading-status.schema.json</code>). 실패 5종의 <code>error_code</code>가 모두 다릅니다.
+</p>
+
+${table(["재생 순서", "화면에 찍힌 상태", "조건"], [
+    ["<code>D1-A</code> → <code>D1-B</code> → <code>D2</code>", esc(byName["16_합성재생_정상_일별저장"]?.status ?? "-"), "C20 · C21"],
+    ["정상 2회 + <code>TIMEOUT</code>", esc(byName["17_합성재생_실패_timeout"]?.status ?? "-"), "C12 · C17 · C18"],
+    ["정상 2회 + <code>AUTH-401</code>", esc(byName["18_합성재생_실패_auth"]?.status ?? "-"), "C13"],
+    ["정상 2회 + <code>RATE-429</code>", esc(byName["19_합성재생_실패_rate_limit"]?.status ?? "-"), "C14"],
+    ["정상 2회 + <code>OFFLINE</code>", esc(byName["20_합성재생_실패_offline"]?.status ?? "-"), "C15"],
+    ["정상 2회 + <code>SCHEMA-BREAK</code>", esc(byName["21_합성재생_실패_schema_error"]?.status ?? "-"), "C16"],
+    ["<code>TIMEOUT</code> → 다시 시도 → <code>RECOVER-D2</code>", esc(byName["22_합성재생_회복_recover_d2"]?.status ?? "-"), "C19"],
+])}
+
+${figure("16_합성재생_정상_일별저장", "같은 합성 날짜 두 번은 <b>같은 <code>record_id</code>로 한 행</b>(C20), 다음 날짜는 새 행(C21). 전일 대비 15가 저장값에서 다시 계산됩니다.")}
+${figure("17_합성재생_실패_timeout", `실패 재생 — ${esc(byName["17_합성재생_실패_timeout"]?.status ?? "")}`)}
+${figure("21_합성재생_실패_schema_error", "HTTP 200이지만 <code>normalized_value</code>가 문자열이라 <code>schema_error</code>로 기록됩니다. 형식 변경을 성공으로 착각하지 않습니다.")}
+${figure("22_합성재생_회복_recover_d2", `회복 — ${esc(byName["22_합성재생_회복_recover_d2"]?.status ?? "")}. 재생 기록에 네 단계가 그대로 남습니다.`)}
 
 <h2 class="breakbefore">8. 카드 4 — 하루 한 번 기록</h2>
 <p>기준 시간대는 <b>Asia/Seoul (KST, UTC+9)</b>이고, 저장 식별값은 <code>공급자 : 날짜</code>입니다. 저장 전에 반드시 기존 목록을 먼저 읽어 같은 날짜가 있으면 저장하지 않습니다.</p>

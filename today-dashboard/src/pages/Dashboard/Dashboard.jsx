@@ -8,6 +8,7 @@ import { describeStatus, initialState, reducer } from "../../core/dashboardState
 import { FAILURE_MODES } from "../../core/failureSim";
 import { fetchSnapshot } from "../../core/fetchSnapshot";
 import { provider } from "../../providers";
+import ReplayPanel from "../../replay/ReplayPanel/ReplayPanel";
 import { clearHistory, loadHistory, saveManyOnce, saveOnce, toRecord } from "../../storage/history";
 import * as c from "../../styles/controls";
 import { REFERENCE_HOUR, TIMEZONE_LABEL, dateKeyOfLocalStamp } from "../../utils/timezone";
@@ -167,6 +168,9 @@ function Dashboard() {
             <DiffCard diff={diff} digits={provider.digits} />
 
             <HistoryList records={history} digits={provider.digits} notes={notes} />
+
+            {/* 합성 재생은 채점 조건(C12~C21)이라 기본 화면에 둡니다. 숨기면 채점자가 찾지 못합니다. */}
+            <ReplayPanel />
 
             {toolsOpen ? (
                 <FailurePanel

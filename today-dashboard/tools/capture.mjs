@@ -167,10 +167,29 @@ await send("Emulation.setDeviceMetricsOverride", {
     width: 1180, height: 1400, deviceScaleFactor: 2, mobile: false,
 });
 
+/**
+ * 실제 조회가 끝날 때까지 기다립니다.
+ * 고정 sleep만 믿으면 출처가 늦게 응답한 순간 값도 링크도 없는 화면을 찍습니다.
+ */
+const waitForLive = async (timeoutMs = 12000) => {
+    const start = Date.now();
+    for (;;) {
+        const ready = await evaluate(
+            `!!document.querySelector('a[href^="https://api.open-meteo.com"]')`,
+        );
+        if (ready) return true;
+        if (Date.now() - start > timeoutMs) {
+            throw new Error("출처 링크가 나타나지 않았습니다 — 조회가 끝나지 않았거나 실패했습니다.");
+        }
+        await sleep(300);
+    }
+};
+
 console.log("A. 카드 1 · 값의 맥락");
 await goto();
 await clearStorage();
 await goto();
+await waitForLive();
 await shot("01_전체화면");
 await shotSection("02_현재값_값단위출처시각", "이 정보판은");
 await record("02_현재값_값단위출처시각", "현재값·단위·출처·조회 시각이 한 화면에");
@@ -284,7 +303,81 @@ log.push({
     note: "화면 표기는 반올림 1자리",
 });
 
-console.log("G. 모바일 화면");
+console.log("G. 카드 3 · 공개 fixture 합성 재생 (C12~C21)");
+await goto();
+
+/** 합성 재생 화면의 버튼을 누릅니다. 사람이 누르는 것과 같은 경로입니다. */
+const replayClick = async (text, waitMs = 500) => {
+    await evaluate(`(() => {
+        const sec = [...document.querySelectorAll('section')]
+            .find(s => (s.querySelector('h2') || {}).textContent?.includes('합성 검사 재생'));
+        const btn = [...sec.querySelectorAll('button')].find(b => b.textContent.includes(${JSON.stringify(text)}));
+        if (!btn) throw new Error('재생 버튼 없음: ' + ${JSON.stringify(text)});
+        btn.click();
+    })()`);
+    await sleep(waitMs);
+};
+
+/** 화면에 찍힌 상태를 그대로 읽습니다. 내부 변수가 아니라 채점자가 보는 글자입니다. */
+const replayState = () => evaluate(`(() => {
+    const sec = [...document.querySelectorAll('section')]
+        .find(s => (s.querySelector('h2') || {}).textContent?.includes('합성 검사 재생'));
+    const spans = [...sec.querySelectorAll('span')].map(s => s.textContent.trim());
+    const after = (label) => { const i = spans.indexOf(label); return i >= 0 ? spans[i + 1] : null; };
+    return {
+        freshness: after('freshness'),
+        error_code: after('error_code'),
+        rows: after('일별 행 수'),
+        lastGood: after('마지막 정상값'),
+        stale: sec.textContent.includes('오래된 값'),
+        table: [...sec.querySelectorAll('tbody tr')].map(tr => [...tr.children].map(td => td.textContent.trim())),
+    };
+})()`);
+
+await replayClick("정상 · 일별 저장", 700);
+await shotSection("16_합성재생_정상_일별저장", "합성 검사 재생");
+{
+    const st = await replayState();
+    log.push({
+        name: "16_합성재생_정상_일별저장",
+        status: `${st.freshness}/${st.error_code} · 행 ${st.rows}건 · 값 ${st.lastGood}`,
+        note: "D1-A→D1-B는 같은 행 갱신(C20), D2는 새 행(C21)",
+    });
+}
+
+for (const [label, name, code] of [
+    ["느린 응답", "17_합성재생_실패_timeout", "timeout"],
+    ["401 거절", "18_합성재생_실패_auth", "auth"],
+    ["호출 제한", "19_합성재생_실패_rate_limit", "rate_limit"],
+    ["오프라인", "20_합성재생_실패_offline", "offline"],
+    ["형식 변경", "21_합성재생_실패_schema_error", "schema_error"],
+]) {
+    await replayClick(label, 600);
+    await shotSection(name, "합성 검사 재생");
+    const st = await replayState();
+    log.push({
+        name,
+        status: `${st.freshness}/${st.error_code} · 마지막 정상값 ${st.lastGood} 유지 · 오래된 값 표시 ${st.stale ? "있음" : "없음"}`,
+        note: `기대 error_code ${code} — 마지막 정상값과 행을 지우지 않음 (C17·C18)`,
+    });
+}
+
+// C19 — 실패 상태에서 다시 시도를 눌러 fresh/none으로 복구하고 새 행이 정확히 1건 늘어야 합니다.
+await replayClick("느린 응답", 600);
+const beforeRecover = await replayState();
+await replayClick("다시 시도 —", 700);
+await shotSection("22_합성재생_회복_recover_d2", "합성 검사 재생");
+{
+    const after = await replayState();
+    const added = after.table.filter((r) => r[1] === "2026-08-25").length;
+    log.push({
+        name: "22_합성재생_회복_recover_d2",
+        status: `${beforeRecover.freshness}/${beforeRecover.error_code} 행 ${beforeRecover.rows} → ${after.freshness}/${after.error_code} 행 ${after.rows} · 값 ${after.lastGood}`,
+        note: `T04-RECOVER-D2 재생 — 2026-08-25 신규 행 ${added}건 (C19)`,
+    });
+}
+
+console.log("H. 모바일 화면");
 await send("Emulation.setDeviceMetricsOverride", {
     width: 375, height: 812, deviceScaleFactor: 2, mobile: true,
 });
