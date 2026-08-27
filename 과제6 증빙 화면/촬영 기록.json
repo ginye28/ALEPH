@@ -1,0 +1,91 @@
+{
+  "capturedAt": "2026-08-27T06:50:42.504Z",
+  "url": "http://localhost:5177",
+  "externalRequests": [
+    "https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.118.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5CgmG0X7t.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.117.woff2",
+    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC6OAKTZFstupOfBjNSl5zPnvB_dOjwqCu.117.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.119.woff2",
+    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC0OIKTZFstupOfBjNSl5zPnvB_dOjwqCu.119.woff2",
+    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC6OA6T_N7.woff2",
+    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC6OAKTZFstupOfBjNSl5zPnvB_dOjwqCu.119.woff2",
+    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC6OAKTZFstupOfBjNSl5zPnvB_dOjwqCu.118.woff2",
+    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC6OAKTZFstupOfBjNSl5zPnvB_dOjwqCu.116.woff2",
+    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC6OAKTZFstupOfBjNSl5zPnvB_dOjwqCu.115.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.116.woff2",
+    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC0OI6T_N7.woff2",
+    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC0OIKTZFstupOfBjNSl5zPnvB_dOjwqCu.118.woff2",
+    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC0OIKTZFstupOfBjNSl5zPnvB_dOjwqCu.117.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.115.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.113.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.112.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.110.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.49.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.103.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.114.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.102.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.111.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.59.woff2",
+    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC0OIKTZFstupOfBjNSl5zPnvB_dOjwqCu.116.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.109.woff2"
+  ],
+  "log": [
+    {
+      "name": "02_기록추가_필드와단위",
+      "status": "단위 분 · 기준 시간대 Asia/Seoul (UTC+9)",
+      "note": "필드·단위·기준 시간대가 폼 머리에 보임"
+    },
+    {
+      "name": "03_추가후_목록과합계",
+      "status": "목록 5→6건 · 합계 250→285분",
+      "note": "추가 한 건이 목록과 요약에 함께 반영"
+    },
+    {
+      "name": "04_수정후_그행과요약",
+      "status": "그 행 35→80분 · 합계 285→330분 · 다른 5행 그대로",
+      "note": "수정이 id 한 건에만 반영되고 요약이 함께 바뀜"
+    },
+    {
+      "name": "05_필수값_오류이유",
+      "status": "6건 유지 · 이유 2개 — 과목이 비었습니다 / 값이 비었습니다",
+      "note": "빈 필수값은 저장되지 않고 칸마다 이유가 붙음"
+    },
+    {
+      "name": "06_손상파일_기존유지",
+      "status": "기존 6건 → 6건 · \"broken.json — 파일을 JSON으로 읽지 못했습니다 (위치 2). 기존 기록 6건은 그대로입니다.\"",
+      "note": "읽기→검사→쓰기 순서라 손상 파일이 기존 기록을 지우지 않음"
+    },
+    {
+      "name": "07_자료형식_변환상태",
+      "status": "자료 형식 v2이전 형식 5건을 v2로 변환했습니다현재 5건",
+      "note": "저장된 기록 5건이 전부 v2 · tag 기본값 채워짐 (true)"
+    },
+    {
+      "name": "07_자료형식_변환상태_재실행",
+      "status": "5건·250분 → 다시 읽어도 5건·250분",
+      "note": "변환을 두 번 돌려도 기록이 늘거나 값이 바뀌지 않음"
+    },
+    {
+      "name": "08_주간요약_기간과집계",
+      "status": "2026-08-24(월) ~ 2026-08-30(일) · 합계 85분 · 이번 주 3건 · 보류 7건",
+      "note": "월요일 10분 + 일요일 20분 + 55분 = 85분. 다음 주 40분은 제외"
+    },
+    {
+      "name": "09_보류목록_이유",
+      "status": "보류 7건 — 값이 비었습니다 / 숫자가 아닙니다 / 1 이상이어야 합니다 / 1440 이하여야 합니다 (하루는 1440분) / 없는 달입니다 / 없는 날짜입니다 / id 중복 — 앞엣것만 셉니다",
+      "note": "잘못된 값은 버리지 않고 이유와 함께 남기되 집계에서 뺌"
+    },
+    {
+      "name": "10_전체삭제_0건",
+      "status": "삭제 후 0건 → 새로고침 후 0건 · 저장소 비었음",
+      "note": "메모리만 비우지 않고 저장소에서 다시 읽어 그림"
+    },
+    {
+      "name": "11_모바일_375",
+      "status": "가로 스크롤 없음 (본문 폭 375px)",
+      "note": "375px 화면"
+    }
+  ]
+}
