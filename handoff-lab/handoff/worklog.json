@@ -25,7 +25,8 @@
     "totalRuns": "그 AI가 자신의 작업 중 실제로 검사 10개를 실행한 횟수. --json으로 남긴 기록에 근거하며, 기록 없이 눈으로만 확인한 실행은 셀 수 없어 실제보다 적게 잡힐 수 있다",
     "withinTimeCap": "실제 작업시간이 caps.minutes 이하인가 (T05-C50·C51)",
     "withinRequestCap": "실제 요청 수가 caps.requests 이하인가 (T05-C52·C53)",
-    "differentServiceOrModel": "AI B가 AI A와 다른 서비스 또는 다른 모델을 썼는가 (T05-C39). null이면 아직 확인 안 됨 — 사람이 채워야 함"
+    "differentServiceOrModel": "AI B가 AI A와 다른 서비스 또는 다른 모델을 썼는가 (T05-C39). null이면 아직 확인 안 됨 — 사람이 채워야 함",
+    "differentServiceOrModelConfidence": "위 값의 확신 정도. 기록·로그로 확인한 것과 기억에 의존한 것을 구분한다"
   },
 
   "checks": [
@@ -95,7 +96,8 @@
       "totalRuns": 1,
       "withinTimeCap": true,
       "withinRequestCap": true,
-      "differentServiceOrModel": null,
+      "differentServiceOrModel": true,
+      "differentServiceOrModelConfidence": "낮음 — 오너가 '달랐을걸'로 기억. 어느 서비스/모델이었는지 로그로 확인된 것은 아님",
       "note": "첫 대화 전문 없이 인계 묶음(HANDOFF.md + 관련 소스 4개)만 받아 검사 6·7을 구현해 10개 전부 통과시킴 (자체 검증: 검사 기록/2026-08-24-17-10.json, runsWithFailure 0/1). AI B가 '직전 요청에서 저장소를 이미 검사했다'고 스스로 단서를 달았으나, 실제로는 같은 인계 묶음을 읽은 것을 그렇게 표현한 것이고 저장소에 접근한 적은 없음 — vanished 단서도 묶음에 포함된 selectPair.js 전문에서 나온 것이라 인계 자료 안에서 나온 이해임. 이후 재검사에서 검사기(check.mjs) 자체의 타이밍 결함으로 6·8이 일시적으로 FAIL 표시된 적이 있었으나 AI B의 코드와는 무관함이 확인됨 (검사 기록/2026-08-24-17-18.json) — 이 재검사는 AI B 본인의 실행이 아니라 이후 검증 과정이라 runsWithFailure에 넣지 않음."
     }
   ],
