@@ -2,25 +2,25 @@ import { css } from "@emotion/react";
 
 export const reset = css`
     :root {
-        --ground: #101418;
-        --surface: #171c22;
-        --surface-2: #1e242c;
-        --line: #2b333d;
-        --line-soft: #232a32;
-        --ink: #e6ecf2;
-        --ink-soft: #9aa7b4;
-        --ink-faint: #6d7986;
-        --accent: #4cc2ff;
-        --accent-bg: #102b3a;
-        --good: #56d6a0;
-        --good-bg: #122c22;
-        --warn: #ffb454;
-        --warn-bg: #33240f;
-        --bad: #ff7a7a;
-        --bad-bg: #331717;
+        --ground: #1b140f;
+        --surface: #241b14;
+        --surface-2: #2e2218;
+        --line: #4a3728;
+        --line-soft: #3a2c20;
+        --ink: #f3e9dc;
+        --ink-soft: #c7b39d;
+        --ink-faint: #93816d;
+        --accent: #f0a05c;
+        --accent-bg: #3a2712;
+        --good: #8fd18f;
+        --good-bg: #1e2f1c;
+        --warn: #f4cf6b;
+        --warn-bg: #3a3113;
+        --bad: #f4897c;
+        --bad-bg: #3a1e19;
 
         --font-body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-        --font-display: "Gothic A1", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+        --font-display: "Noto Serif KR", "Apple SD Gothic Neo", "Malgun Gothic", serif;
         --font-mono: ui-monospace, "D2Coding", "Consolas", monospace;
     }
 
@@ -40,8 +40,8 @@ export const reset = css`
         background-color: var(--ground);
         color: var(--ink);
         font-family: var(--font-body);
-        font-size: 15px;
-        line-height: 1.65;
+        font-size: 16px;
+        line-height: 1.8;
         -webkit-font-smoothing: antialiased;
     }
 

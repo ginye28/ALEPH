@@ -3,10 +3,10 @@ import { css } from "@emotion/react";
 export const panel = css`
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    padding: 18px;
+    gap: 16px;
+    padding: 22px 24px;
     border: 1px solid var(--line);
-    border-radius: 14px;
+    border-radius: 16px;
     background: var(--surface);
 `;
 
@@ -20,22 +20,23 @@ export const panelHead = css`
 
 export const panelTitle = css`
     font-family: var(--font-display);
-    font-size: 15px;
+    font-size: 18px;
     font-weight: 700;
     letter-spacing: -0.01em;
 `;
 
 export const panelHint = css`
-    font-size: 12px;
+    font-size: 13px;
+    line-height: 1.6;
     color: var(--ink-faint);
 `;
 
 export const button = css`
-    padding: 9px 14px;
+    padding: 10px 16px;
     border: 1px solid var(--line);
     border-radius: 9px;
     background: var(--surface-2);
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 500;
     transition: border-color 0.15s ease, background 0.15s ease;
 
@@ -54,7 +55,7 @@ export const primaryButton = css`
 
 export const label = css`
     display: block;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 500;
     color: var(--ink-soft);
 `;
@@ -65,6 +66,7 @@ export const mono = css`
 `;
 
 export const note = css`
-    font-size: 12.5px;
+    font-size: 13.5px;
+    line-height: 1.75;
     color: var(--ink-soft);
 `;

@@ -9,21 +9,32 @@ export const tableWrap = css`
 export const table = css`
     width: 100%;
     border-collapse: collapse;
-    font-size: 13px;
+    font-size: 14.5px;
 
     th,
     td {
-        padding: 9px 11px;
+        padding: 13px 14px;
         text-align: left;
         border-bottom: 1px solid var(--line-soft);
         white-space: nowrap;
+        vertical-align: top;
+    }
+
+    td:nth-of-type(2),
+    td:nth-of-type(5) {
+        white-space: normal;
     }
 
     th {
         background: var(--surface-2);
         color: var(--ink-soft);
         font-weight: 500;
-        font-size: 11.5px;
+        font-size: 12.5px;
+        letter-spacing: 0.01em;
+    }
+
+    tbody tr:nth-of-type(even) {
+        background: var(--line-soft);
     }
 
     tr:last-of-type td {
@@ -31,9 +42,12 @@ export const table = css`
     }
 `;
 
-/** 수정 중인 행을 눈에 띄게 둡니다 — 어느 행을 고치는지 헷갈리면 다른 행을 덮어씁니다. */
+/**
+ * 수정 중인 행을 눈에 띄게 둡니다 — 어느 행을 고치는지 헷갈리면 다른 행을 덮어씁니다.
+ * 얼룩무늬(짝수 행) 배경보다 우선해야 해서 active일 때만 !important로 덮습니다.
+ */
 export const row = (active) => css`
-    background: ${active ? "var(--accent-bg)" : "transparent"};
+    background: ${active ? "var(--accent-bg) !important" : undefined};
     box-shadow: ${active ? "inset 3px 0 0 var(--accent)" : "none"};
 `;
 
@@ -49,25 +63,25 @@ export const memo = css`
 
 export const tag = css`
     display: inline-block;
-    padding: 1px 7px;
+    padding: 2px 9px;
     border-radius: 999px;
     border: 1px solid var(--line);
     color: var(--ink-soft);
-    font-size: 11px;
+    font-size: 12px;
 `;
 
 export const rowActions = css`
     display: flex;
-    gap: 6px;
+    gap: 7px;
 `;
 
 export const smallButton = (danger) => css`
-    padding: 4px 9px;
+    padding: 6px 11px;
     border: 1px solid ${danger ? "var(--bad)" : "var(--line)"};
-    border-radius: 6px;
+    border-radius: 7px;
     background: transparent;
     color: ${danger ? "var(--bad)" : "var(--ink-soft)"};
-    font-size: 11.5px;
+    font-size: 12.5px;
 
     &:hover {
         border-color: ${danger ? "var(--bad)" : "var(--accent)"};
@@ -77,15 +91,15 @@ export const smallButton = (danger) => css`
 
 export const empty = css`
     margin: 0;
-    padding: 22px;
+    padding: 28px;
     text-align: center;
     color: var(--ink-faint);
-    font-size: 13px;
-    line-height: 1.7;
+    font-size: 14px;
+    line-height: 1.8;
 `;
 
 export const idCell = css`
     font-family: var(--font-mono);
-    font-size: 10.5px;
+    font-size: 11px;
     color: var(--ink-faint);
 `;

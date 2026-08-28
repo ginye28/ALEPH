@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import DataTools from "../../components/DataTools/DataTools";
 import HeldList from "../../components/HeldList/HeldList";
 import RecordForm from "../../components/RecordForm/RecordForm";
@@ -45,6 +45,14 @@ function Diary() {
     const [converted, setConverted] = useState(first.converted);
     const [editingId, setEditingId] = useState(null);
     const [message, setMessage] = useState(null);
+    const formRef = useRef(null);
+
+    // 목록은 폼보다 한참 아래에 있어서, 행에서 "수정"을 누르면 폼이 화면 밖입니다.
+    // 값이 바뀌는 곳으로 시선을 직접 옮겨 줍니다.
+    const handleEdit = (id) => {
+        setEditingId(id);
+        formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+    };
 
     // 어느 주를 보고 있는지. 기록이 있으면 그 기록의 주부터 보여줍니다 —
     // 합성 자료를 넣었는데 빈 주가 나오면 채점자가 집계를 확인할 수 없습니다.
@@ -160,20 +168,22 @@ function Diary() {
             </p>
 
             {/* key가 바뀌면 폼이 다시 마운트되며 그 기록의 값으로 채워집니다. */}
-            <RecordForm
-                key={editingId ?? "new"}
-                editing={editing}
-                onAdd={handleAdd}
-                onUpdate={handleUpdate}
-                onCancel={() => setEditingId(null)}
-            />
+            <div ref={formRef}>
+                <RecordForm
+                    key={editingId ?? "new"}
+                    editing={editing}
+                    onAdd={handleAdd}
+                    onUpdate={handleUpdate}
+                    onCancel={() => setEditingId(null)}
+                />
+            </div>
 
             <WeeklySummary summary={summary} onMove={(days) => setAnchor((prev) => shiftDate(prev, days))} />
 
             <RecordList
                 records={summary.valid}
                 editingId={editingId}
-                onEdit={setEditingId}
+                onEdit={handleEdit}
                 onRemove={handleRemove}
             />
 

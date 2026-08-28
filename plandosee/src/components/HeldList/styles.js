@@ -10,20 +10,25 @@ export const tableWrap = css`
 export const table = css`
     width: 100%;
     border-collapse: collapse;
-    font-size: 12.5px;
+    font-size: 13.5px;
 
     th,
     td {
-        padding: 8px 11px;
+        padding: 12px 14px;
         text-align: left;
-        border-bottom: 1px solid rgba(255, 180, 84, 0.22);
+        border-bottom: 1px solid rgba(244, 207, 107, 0.22);
         white-space: nowrap;
+        vertical-align: top;
+    }
+
+    td:nth-of-type(4) {
+        white-space: normal;
     }
 
     th {
         color: var(--warn);
         font-weight: 500;
-        font-size: 11px;
+        font-size: 12px;
     }
 
     tr:last-of-type td {

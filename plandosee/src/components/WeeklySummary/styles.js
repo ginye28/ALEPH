@@ -10,17 +10,17 @@ export const range = css`
 
 export const rangeText = css`
     font-family: var(--font-mono);
-    font-size: 14px;
+    font-size: 15px;
     color: var(--ink);
 `;
 
 export const move = css`
-    padding: 4px 10px;
+    padding: 6px 12px;
     border: 1px solid var(--line);
-    border-radius: 7px;
+    border-radius: 8px;
     background: var(--surface-2);
     color: var(--ink-soft);
-    font-size: 12px;
+    font-size: 13px;
 
     &:hover {
         border-color: var(--accent);
@@ -30,29 +30,29 @@ export const move = css`
 
 export const stats = css`
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 12px;
-    padding: 14px 16px;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 14px;
+    padding: 16px 18px;
     border: 1px solid var(--line);
-    border-radius: 10px;
+    border-radius: 12px;
     background: var(--surface-2);
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 `;
 
 export const stat = css`
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 5px;
 `;
 
 export const statLabel = css`
     color: var(--ink-faint);
-    font-size: 11.5px;
+    font-size: 12.5px;
 `;
 
 export const statValue = (tone) => css`
     font-family: var(--font-mono);
-    font-size: 19px;
+    font-size: 21px;
     font-weight: 700;
     color: ${tone === "warn" ? "var(--warn)" : tone === "accent" ? "var(--accent)" : "var(--ink)"};
 `;
@@ -60,15 +60,15 @@ export const statValue = (tone) => css`
 export const bars = css`
     display: flex;
     flex-direction: column;
-    gap: 7px;
+    gap: 9px;
 `;
 
 export const barRow = css`
     display: grid;
-    grid-template-columns: 96px 1fr 78px;
-    gap: 10px;
+    grid-template-columns: 104px 1fr 82px;
+    gap: 12px;
     align-items: center;
-    font-size: 12.5px;
+    font-size: 13.5px;
 `;
 
 export const barName = css`
