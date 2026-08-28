@@ -14,6 +14,119 @@ export const caps = css`
     }
 `;
 
+/** 인계 흐름 — 점선으로 잇는 세로 목록. 표보다 먼저 둬서 숫자를 보기 전에 순서부터 잡습니다. */
+export const flow = css`
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 2px 0 4px;
+    padding-left: 14px;
+    border-left: 2px dashed var(--line);
+`;
+
+export const flowStep = css`
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    padding: 7px 0 7px 12px;
+    position: relative;
+
+    &::before {
+        content: "";
+        position: absolute;
+        left: -19px;
+        top: 14px;
+        width: 7px;
+        height: 7px;
+        border-radius: 999px;
+        background: var(--accent);
+    }
+`;
+
+export const flowLabel = css`
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ink);
+`;
+
+export const flowDetail = css`
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    color: var(--ink-faint);
+`;
+
+/** 정량 비교 막대. 표와 같은 숫자를 다시 그려서 차이를 눈으로 재게 합니다. */
+export const metrics = css`
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 8px;
+`;
+
+export const metricRow = css`
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+`;
+
+export const metricLabel = css`
+    font-size: 12px;
+    color: var(--ink-soft);
+`;
+
+export const metricBars = css`
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+`;
+
+export const metricBarLine = css`
+    display: grid;
+    grid-template-columns: 20px minmax(0, 1fr) 44px;
+    gap: 8px;
+    align-items: center;
+`;
+
+export const metricAi = css`
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+`;
+
+export const metricTrack = css`
+    display: block;
+    height: 8px;
+    border-radius: 999px;
+    background: var(--surface-2);
+    overflow: hidden;
+`;
+
+const METRIC_TONES = { a: "var(--good)", b: "var(--accent)" };
+
+export const metricFill = (who, pct) => css`
+    display: block;
+    width: ${Math.max(pct, 0)}%;
+    height: 100%;
+    border-radius: 999px;
+    background: ${METRIC_TONES[who]};
+`;
+
+export const metricValue = css`
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    font-size: 12px;
+    text-align: right;
+    color: var(--ink);
+`;
+
+/** 기준을 왜 그렇게 정했는지 한두 문장 — 목록만 던지지 않고 이유를 남깁니다. */
+export const reasoning = css`
+    margin: 6px 0 4px;
+    font-size: 12.5px;
+    line-height: 1.7;
+    color: var(--ink-soft);
+`;
+
 export const tableWrap = css`
     overflow-x: auto;
     border: 1px solid var(--line-soft);

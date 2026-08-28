@@ -1,76 +1,79 @@
 {
-  "capturedAt": "2026-08-25T03:52:29.653Z",
-  "url": "https://aleph-daup.vercel.app",
+  "capturedAt": "2026-08-28T03:15:55.966Z",
+  "url": "http://localhost:5175",
   "records": [
     {
       "providerKey": "weather-openmeteo-seoul",
       "itemLabel": "서울 현재 기온",
-      "dateKey": "2026-08-25",
-      "value": 26,
+      "dateKey": "2026-08-28",
+      "value": 25.3,
       "unit": "°C",
-      "observedAt": "2026-08-25T09:00",
-      "fetchedAt": "2026-08-25T03:52:02.074Z",
+      "observedAt": "2026-08-28T09:00",
+      "fetchedAt": "2026-08-28T03:15:28.073Z",
       "origin": "live",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
     {
       "providerKey": "weather-openmeteo-seoul",
       "itemLabel": "서울 현재 기온",
-      "dateKey": "2026-08-24",
-      "value": 26.3,
+      "dateKey": "2026-08-27",
+      "value": 24.7,
       "unit": "°C",
-      "observedAt": "2026-08-24T09:00",
-      "fetchedAt": "2026-08-25T03:52:02.074Z",
+      "observedAt": "2026-08-27T09:00",
+      "fetchedAt": "2026-08-28T03:15:28.073Z",
       "origin": "backfill",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
     {
       "providerKey": "weather-openmeteo-seoul",
       "itemLabel": "서울 현재 기온",
-      "dateKey": "2026-08-23",
-      "value": 25.2,
+      "dateKey": "2026-08-26",
+      "value": 24,
       "unit": "°C",
-      "observedAt": "2026-08-23T09:00",
-      "fetchedAt": "2026-08-25T03:52:02.074Z",
+      "observedAt": "2026-08-26T09:00",
+      "fetchedAt": "2026-08-28T03:15:28.073Z",
       "origin": "backfill",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     },
     {
       "providerKey": "weather-openmeteo-seoul",
       "itemLabel": "서울 현재 기온",
-      "dateKey": "2026-08-22",
-      "value": 23.9,
+      "dateKey": "2026-08-25",
+      "value": 25.1,
       "unit": "°C",
-      "observedAt": "2026-08-22T09:00",
-      "fetchedAt": "2026-08-25T03:52:02.074Z",
+      "observedAt": "2026-08-25T09:00",
+      "fetchedAt": "2026-08-28T03:15:28.073Z",
       "origin": "backfill",
       "sourceUrl": "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul"
     }
   ],
   "selected": {
-    "dateKey": "2026-08-23",
+    "dateKey": "2026-08-26",
     "equation": {
-      "target": 26,
-      "base": 25.2,
-      "delta": 0.8
+      "target": 25.3,
+      "base": 24,
+      "delta": 1.3
     },
-    "handCalc": 0.8
+    "handCalc": 1.3
   },
   "externalRequests": [
     "https://fonts.googleapis.com/css2?family=Gothic+A1:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap",
-    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC6OAKTZFstupOfBjNSl5zPnvB_dOjwqCu.118.woff2",
-    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.119.woff2",
+    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC6OA6T_N7.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.118.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5CgmG0X7t.woff2",
     "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC0OIKTZFstupOfBjNSl5zPnvB_dOjwqCu.118.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.116.woff2",
-    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.118.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.117.woff2",
     "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC0OIKTZFstupOfBjNSl5zPnvB_dOjwqCu.119.woff2",
-    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC6OA6T_N7.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.119.woff2",
+    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC6OAKTZFstupOfBjNSl5zPnvB_dOjwqCu.119.woff2",
+    "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC6OAKTZFstupOfBjNSl5zPnvB_dOjwqCu.118.woff2",
     "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC6OAKTZFstupOfBjNSl5zPnvB_dOjwqCu.117.woff2",
     "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC6OAKTZFstupOfBjNSl5zPnvB_dOjwqCu.116.woff2",
     "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC6OAKTZFstupOfBjNSl5zPnvB_dOjwqCu.115.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.115.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.110.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.109.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.112.woff2",
     "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC0OI6T_N7.woff2",
     "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC0OIKTZFstupOfBjNSl5zPnvB_dOjwqCu.117.woff2",
@@ -81,11 +84,8 @@
     "https://fonts.gstatic.com/s/gothica1/v18/CSR44z5ZnPydRjlCCwlC0OIKTZFstupOfBjNSl5zPnvB_dOjwqCu.115.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.114.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.106.woff2",
-    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.110.woff2",
-    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.109.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.111.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.107.woff2",
-    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.105.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.108.woff2",
     "https://api.open-meteo.com/v1/forecast?latitude=37.5665&longitude=126.978&current=temperature_2m&hourly=temperature_2m&past_days=3&forecast_days=1&timezone=Asia%2FSeoul",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.98.woff2"
@@ -93,15 +93,15 @@
   "log": [
     {
       "name": "02_기능이름과_사용방법",
-      "note": "기능 이름과 사용 방법이 카드 안에 · 조작 전 비교 2026-08-24 → 2026-08-25"
+      "note": "기능 이름과 사용 방법이 카드 안에 · 조작 전 비교 2026-08-27 → 2026-08-28"
     },
     {
       "name": "03_조작후_비교기준바뀜",
-      "note": "2026-08-23 선택 → 26 − 25.2 = 0.8 (손계산 0.8)"
+      "note": "2026-08-26 선택 → 25.3 − 24 = 1.3 (손계산 1.3)"
     },
     {
       "name": "04_선택표시_날짜별기록",
-      "note": "선택 표시 1개 · 2026-08-23"
+      "note": "선택 표시 1개 · 2026-08-26"
     },
     {
       "name": "05_검사6_기록1건_비활성",
@@ -121,7 +121,7 @@
     },
     {
       "name": "09_전체화면_비교표와기준",
-      "note": "선택 기준 3개가 비교 표와 같은 화면에"
+      "note": "선택 기준 5개가 비교 표와 같은 화면에"
     },
     {
       "name": "10_모바일_375",

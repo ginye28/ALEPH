@@ -176,9 +176,10 @@ function Dashboard() {
     return (
         <main css={s.page}>
             <header css={s.header}>
-                <h1 css={s.title}>오늘의 진짜 정보판</h1>
+                <h1 css={s.title}>AI 인계 실험 — 비교 기준 고르기</h1>
                 <p css={s.subtitle}>
-                    기준 시간대 {TIMEZONE_LABEL} · 날짜별 기록은 매일 {REFERENCE_HOUR}시 값
+                    한 AI가 멈춰도 저장소와 인계 문서만으로 이어갈 수 있는지 확인합니다 · 기준
+                    시간대 {TIMEZONE_LABEL} · 날짜별 기록은 매일 {REFERENCE_HOUR}시 값
                 </p>
             </header>
 
