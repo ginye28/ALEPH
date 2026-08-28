@@ -20,6 +20,11 @@
 - 마지막 검사 기록: 저장소 루트 `검사 기록/` 안의 가장 최근 JSON
 
 **인계 시점 원본** — 이 문서를 AI B에게 넘겼을 때의 원본은 커밋 `e8b7978`에 있다.
+당시 이 저장소는 `today-dashboard/` 경로 아래에 있었고, 그 뒤 `handoff-lab/`로 옮겼다
+(과제 4와 과제 5를 같은 저장소 안에서 폴더로 분리하기 위해서). 그 커밋을 열면 파일이
+`today-dashboard/HANDOFF.md`에 있다 — 경로만 다를 뿐 내용은 같다.
+
+**현재 버전** — 이 문서가 설명하는 저장소 상태는 커밋 `<이 커밋의 해시로 교체>`다.
 위 내용은 완성한 뒤 갱신한 것이다.
 
 ## 실행 명령
@@ -37,7 +42,8 @@ node handoff-lab/tools/check.mjs
 ```
 
 번호별 `PASS`/`FAIL`과 이유가 출력된다. `--json`을 붙이면 `검사 기록/`에 결과가 남는다.
-공개 주소를 검사하려면 `BOARD_URL=https://aleph-dash.vercel.app`을 앞에 붙인다.
+공개 주소를 검사하려면 `BOARD_URL=https://aleph-daup.vercel.app`을 앞에 붙인다
+(`aleph-dash`는 과제 4 주소이니 혼동하지 말 것 — 이름이 비슷하다).
 
 `npm run lint`는 경고 0건이어야 한다.
 

@@ -77,15 +77,21 @@ export const checks = css`
 `;
 
 export const check = css`
-    display: grid;
-    grid-template-columns: 22px 34px minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
     padding: 6px 10px;
     border: 1px solid var(--line-soft);
     border-radius: 8px;
     background: var(--surface-2);
     font-size: 12.5px;
+`;
+
+export const checkHead = css`
+    display: grid;
+    grid-template-columns: 22px 34px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
 
     @media (max-width: 560px) {
         grid-template-columns: 22px 34px minmax(0, 1fr);
@@ -94,6 +100,23 @@ export const check = css`
             grid-column: 1 / -1;
             justify-self: start;
         }
+    }
+`;
+
+/** id·입력·기대값. 검사마다 관찰 가능한 기대값이 있음을 화면에서 확인할 수 있게 합니다. */
+export const checkDetail = css`
+    padding-left: 64px;
+    color: var(--ink-faint);
+    font-size: 11px;
+    line-height: 1.5;
+
+    & code {
+        font-family: var(--font-mono);
+        color: var(--ink-soft);
+    }
+
+    @media (max-width: 560px) {
+        padding-left: 0;
     }
 `;
 

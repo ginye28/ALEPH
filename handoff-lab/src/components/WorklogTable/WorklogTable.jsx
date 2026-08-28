@@ -17,10 +17,20 @@ const statusOf = (n) => {
     return { label: "남음", tone: "todo" };
 };
 
+const capMark = (ok) => (ok === true ? "이내 ✓" : ok === false ? "초과 ✗" : "–");
+
 const ROWS = [
     { label: "모델", read: (run) => (run.model === null ? "가림" : run.model) },
-    { label: "시간 (분)", read: (run) => cell(run.minutes) },
-    { label: "요청 (사람 메시지 수)", read: (run) => cell(run.requests) },
+    { label: "시간 (분)", read: (run) => `${cell(run.minutes)} · 상한 ${capMark(run.withinTimeCap)}` },
+    { label: "요청 (사람 메시지 수)", read: (run) => `${cell(run.requests)} · 상한 ${capMark(run.withinRequestCap)}` },
+    // T05-C25 — 실패한 검사 번호가 아니라 실패가 있었던 실행 회차 수를 셉니다.
+    {
+        label: "오류 (실패가 있었던 실행 회차)",
+        read: (run) =>
+            run.totalRuns === undefined || run.totalRuns === null
+                ? "–"
+                : `${cell(run.runsWithFailure)} / ${run.totalRuns}회`,
+    },
     { label: "재작업 (다시 실행한 검사 수)", read: (run) => cell(run.rework) },
     { label: "인계 이해 오류 (횟수)", read: (run) => cell(run.handoffMisreads) },
 ];
@@ -101,10 +111,19 @@ function WorklogTable() {
                         const status = statusOf(check.n);
                         return (
                             <li key={check.n} css={s.check}>
-                                <span css={s.checkNo}>{check.n}</span>
-                                <span css={s.checkKind}>{check.kind}</span>
-                                <span css={s.checkTitle}>{check.title}</span>
-                                <span css={s.checkState(status.tone)}>{status.label}</span>
+                                <div css={s.checkHead}>
+                                    <span css={s.checkNo}>{check.n}</span>
+                                    <span css={s.checkKind}>{check.kind}</span>
+                                    <span css={s.checkTitle}>{check.title}</span>
+                                    <span css={s.checkState(status.tone)}>{status.label}</span>
+                                </div>
+                                {/* id·입력·기대값 — 검사마다 관찰 가능한 기대값이 있음을 그대로 보여줍니다. */}
+                                {check.id && (
+                                    <p css={s.checkDetail}>
+                                        <code>{check.id}</code> · 입력: {check.input} · 기대값:{" "}
+                                        {check.expected}
+                                    </p>
+                                )}
                             </li>
                         );
                     })}
