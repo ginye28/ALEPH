@@ -97,7 +97,7 @@
       "withinTimeCap": true,
       "withinRequestCap": true,
       "differentServiceOrModel": true,
-      "differentServiceOrModelConfidence": "낮음 — 오너가 '달랐을걸'로 기억. 어느 서비스/모델이었는지 로그로 확인된 것은 아님",
+      "differentServiceOrModelConfidence": "확인함 — 오너가 실제로 다른 서비스/모델을 썼는지 다시 확인하고 옴",
       "note": "첫 대화 전문 없이 인계 묶음(HANDOFF.md + 관련 소스 4개)만 받아 검사 6·7을 구현해 10개 전부 통과시킴 (자체 검증: 검사 기록/2026-08-24-17-10.json, runsWithFailure 0/1). AI B가 '직전 요청에서 저장소를 이미 검사했다'고 스스로 단서를 달았으나, 실제로는 같은 인계 묶음을 읽은 것을 그렇게 표현한 것이고 저장소에 접근한 적은 없음 — vanished 단서도 묶음에 포함된 selectPair.js 전문에서 나온 것이라 인계 자료 안에서 나온 이해임. 이후 재검사에서 검사기(check.mjs) 자체의 타이밍 결함으로 6·8이 일시적으로 FAIL 표시된 적이 있었으나 AI B의 코드와는 무관함이 확인됨 (검사 기록/2026-08-24-17-18.json) — 이 재검사는 AI B 본인의 실행이 아니라 이후 검증 과정이라 runsWithFailure에 넣지 않음."
     }
   ],
