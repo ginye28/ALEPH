@@ -1,23 +1,31 @@
 import { css } from "@emotion/react";
 
+/**
+ * 과제 4·5는 어두운 화면에 청록색 강조를 썼습니다.
+ * 이 과제는 "다이어리"라서 반대로 갑니다 — 밝은 종이 바탕에 잉크색 글자.
+ * 채도를 낮춰서 오래 봐도 눈이 아프지 않게 합니다.
+ */
 export const reset = css`
     :root {
-        --ground: #1b140f;
-        --surface: #241b14;
-        --surface-2: #2e2218;
-        --line: #4a3728;
-        --line-soft: #3a2c20;
-        --ink: #f3e9dc;
-        --ink-soft: #c7b39d;
-        --ink-faint: #93816d;
-        --accent: #f0a05c;
-        --accent-bg: #3a2712;
-        --good: #8fd18f;
-        --good-bg: #1e2f1c;
-        --warn: #f4cf6b;
-        --warn-bg: #3a3113;
-        --bad: #f4897c;
-        --bad-bg: #3a1e19;
+        --ground: #ece7dc;
+        --surface: #f8f5ef;
+        --surface-2: #efeadf;
+        --field: #fffdf8;
+        --line: #cec4b1;
+        --line-soft: #e2dccd;
+        --ink: #2e2921;
+        --ink-soft: #66604f;
+        --ink-faint: #786f5d;
+        --accent: #46656b;
+        --accent-strong: #35505a;
+        --accent-bg: #e2eae9;
+        --on-accent: #f8f5ef;
+        --good: #4a6b45;
+        --good-bg: #e2ebdd;
+        --warn: #8a6a2f;
+        --warn-bg: #f4e9d2;
+        --bad: #9b4a3d;
+        --bad-bg: #f3ded8;
 
         --font-body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
         --font-display: "Noto Serif KR", "Apple SD Gothic Neo", "Malgun Gothic", serif;
@@ -43,6 +51,9 @@ export const reset = css`
         font-size: 16px;
         line-height: 1.8;
         -webkit-font-smoothing: antialiased;
+        /* 한국어는 낱말 단위로 끊고, 끊을 수 없는 긴 문자열만 강제로 넘깁니다. */
+        word-break: keep-all;
+        overflow-wrap: break-word;
     }
 
     h1,
@@ -82,6 +93,10 @@ export const reset = css`
         opacity: 0.45;
     }
 
+    ::selection {
+        background: var(--accent-bg);
+    }
+
     :focus-visible {
         outline: 2px solid var(--accent);
         outline-offset: 2px;
@@ -91,6 +106,7 @@ export const reset = css`
         * {
             transition: none !important;
             animation: none !important;
+            scroll-behavior: auto !important;
         }
     }
 `;

@@ -47,11 +47,27 @@ function Diary() {
     const [message, setMessage] = useState(null);
     const formRef = useRef(null);
 
-    // 목록은 폼보다 한참 아래에 있어서, 행에서 "수정"을 누르면 폼이 화면 밖입니다.
-    // 값이 바뀌는 곳으로 시선을 직접 옮겨 줍니다.
+    /**
+     * 행에서 "수정"을 누르면 값이 바뀌는 곳은 폼입니다.
+     * 넓은 화면에서는 폼이 왼쪽에 붙어 있어 대개 이미 보이므로 그대로 두고,
+     * 좁은 화면이거나 페이지 끝이라 폼이 밀려났을 때만 끌어올립니다.
+     *
+     * scrollIntoView는 sticky 요소에 쓰면 "붙어 있는 위치"를 기준으로 계산해
+     * 화면이 움직이지 않습니다. 그래서 필요한 만큼만 직접 스크롤합니다.
+     */
     const handleEdit = (id) => {
         setEditingId(id);
-        formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+        const box = formRef.current?.getBoundingClientRect();
+        if (!box) return;
+
+        const margin = 22;
+        const comfortable = box.top >= 0 && box.top <= window.innerHeight * 0.4;
+        if (comfortable) return;
+
+        // 움직임을 줄이도록 설정한 사용자에게는 애니메이션 없이 바로 옮깁니다.
+        const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+        window.scrollBy({ top: box.top - margin, behavior: reduceMotion ? "auto" : "smooth" });
     };
 
     // 어느 주를 보고 있는지. 기록이 있으면 그 기록의 주부터 보여줍니다 —
@@ -155,11 +171,14 @@ function Diary() {
 
     return (
         <main css={s.page}>
-            <header css={s.header}>
-                <h1 css={s.title}>플랜두씨 다이어리</h1>
-                <p css={s.subtitle}>
-                    공부한 시간을 {UNIT} 단위로 · 기준 시간대 {TIMEZONE_LABEL}
-                </p>
+            <header css={s.masthead}>
+                <div>
+                    <h1 css={s.title}>플랜두씨 다이어리</h1>
+                    <p css={s.subtitle}>
+                        공부한 시간을 {UNIT} 단위로 · 기준 시간대 {TIMEZONE_LABEL}
+                    </p>
+                </div>
+                <span css={s.stamp}>오늘 {todayKey()}</span>
             </header>
 
             <p css={s.syntheticNote}>
@@ -167,37 +186,44 @@ function Diary() {
                 브라우저에만 저장되고 서버로 보내지 않습니다.
             </p>
 
-            {/* key가 바뀌면 폼이 다시 마운트되며 그 기록의 값으로 채워집니다. */}
-            <div ref={formRef}>
-                <RecordForm
-                    key={editingId ?? "new"}
-                    editing={editing}
-                    onAdd={handleAdd}
-                    onUpdate={handleUpdate}
-                    onCancel={() => setEditingId(null)}
-                />
+            <div css={s.layout}>
+                {/* key가 바뀌면 폼이 다시 마운트되며 그 기록의 값으로 채워집니다. */}
+                <div css={s.side} ref={formRef}>
+                    <RecordForm
+                        key={editingId ?? "new"}
+                        editing={editing}
+                        onAdd={handleAdd}
+                        onUpdate={handleUpdate}
+                        onCancel={() => setEditingId(null)}
+                    />
+                </div>
+
+                <div css={s.column}>
+                    <WeeklySummary
+                        summary={summary}
+                        onMove={(days) => setAnchor((prev) => shiftDate(prev, days))}
+                    />
+
+                    <RecordList
+                        records={summary.valid}
+                        editingId={editingId}
+                        onEdit={handleEdit}
+                        onRemove={handleRemove}
+                    />
+
+                    <HeldList held={summary.held} onRemove={handleRemove} />
+
+                    <DataTools
+                        records={records}
+                        converted={converted}
+                        message={message}
+                        onExport={handleExport}
+                        onImport={handleImport}
+                        onClearAll={handleClearAll}
+                        onSeed={handleSeed}
+                    />
+                </div>
             </div>
-
-            <WeeklySummary summary={summary} onMove={(days) => setAnchor((prev) => shiftDate(prev, days))} />
-
-            <RecordList
-                records={summary.valid}
-                editingId={editingId}
-                onEdit={handleEdit}
-                onRemove={handleRemove}
-            />
-
-            <HeldList held={summary.held} onRemove={handleRemove} />
-
-            <DataTools
-                records={records}
-                converted={converted}
-                message={message}
-                onExport={handleExport}
-                onImport={handleImport}
-                onClearAll={handleClearAll}
-                onSeed={handleSeed}
-            />
 
             <footer css={s.footer}>
                 <p css={c.note}>

@@ -68,21 +68,7 @@ function RecordForm({ editing, onAdd, onUpdate, onCancel }) {
             )}
 
             <form css={s.form} onSubmit={submit} noValidate>
-                <div css={s.field}>
-                    <label css={s.labelText} htmlFor="f-date">
-                        날짜
-                    </label>
-                    <input
-                        id="f-date"
-                        css={s.input(!!errors.date)}
-                        type="date"
-                        value={form.date}
-                        onChange={set("date")}
-                    />
-                    {errors.date && <span css={s.error}>{errors.date}</span>}
-                </div>
-
-                <div css={s.field}>
+                <div css={[s.field, s.wide]}>
                     <label css={s.labelText} htmlFor="f-subject">
                         과목
                     </label>
@@ -95,6 +81,20 @@ function RecordForm({ editing, onAdd, onUpdate, onCancel }) {
                         onChange={set("subject")}
                     />
                     {errors.subject && <span css={s.error}>{errors.subject}</span>}
+                </div>
+
+                <div css={s.field}>
+                    <label css={s.labelText} htmlFor="f-date">
+                        날짜
+                    </label>
+                    <input
+                        id="f-date"
+                        css={s.input(!!errors.date)}
+                        type="date"
+                        value={form.date}
+                        onChange={set("date")}
+                    />
+                    {errors.date && <span css={s.error}>{errors.date}</span>}
                 </div>
 
                 <div css={s.field}>
@@ -124,7 +124,7 @@ function RecordForm({ editing, onAdd, onUpdate, onCancel }) {
                     {errors.minutes && <span css={s.error}>{errors.minutes}</span>}
                 </div>
 
-                <div css={s.field}>
+                <div css={[s.field, s.wide]}>
                     <label css={s.labelText} htmlFor="f-tag">
                         태그 <span style={{ opacity: 0.6 }}>(v2)</span>
                     </label>

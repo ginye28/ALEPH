@@ -44,9 +44,9 @@ function RecordList({ records, editingId, onEdit, onRemove }) {
                         <tbody>
                             {sorted.map((record) => (
                                 <tr key={record.id} css={s.row(record.id === editingId)}>
-                                    <td css={s.num}>{record.date}</td>
+                                    <td css={s.dateCell}>{record.date}</td>
                                     <td>{record.subject}</td>
-                                    <td css={s.num}>
+                                    <td css={s.minutesCell}>
                                         {record.minutes} {record.unit ?? UNIT}
                                     </td>
                                     <td>{record.tag ? <span css={s.tag}>{record.tag}</span> : ""}</td>

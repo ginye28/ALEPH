@@ -1,14 +1,14 @@
 import { css } from "@emotion/react";
 
+/**
+ * 폼은 왼쪽 좁은 칸에 들어갑니다.
+ * 과목·태그·메모는 한 줄을 다 쓰고, 날짜와 시간만 나란히 둡니다.
+ */
 export const form = css`
     display: grid;
-    grid-template-columns: 160px 1fr 120px 140px;
-    gap: 16px;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
     align-items: start;
-
-    @media (max-width: 760px) {
-        grid-template-columns: 1fr 1fr;
-    }
 `;
 
 export const field = css`
@@ -23,17 +23,18 @@ export const wide = css`
 `;
 
 export const labelText = css`
-    color: var(--ink-soft);
-    font-size: 13px;
-    font-weight: 500;
+    color: var(--ink-faint);
+    font-size: 11.5px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
 `;
 
 export const input = (invalid) => css`
     width: 100%;
-    padding: 11px 13px;
+    padding: 10px 12px;
     border: 1px solid ${invalid ? "var(--bad)" : "var(--line)"};
-    border-radius: 9px;
-    background: var(--surface-2);
+    border-radius: 6px;
+    background: var(--field);
     color: var(--ink);
     font-family: inherit;
     font-size: 15px;
@@ -41,6 +42,7 @@ export const input = (invalid) => css`
     &:focus {
         outline: none;
         border-color: ${invalid ? "var(--bad)" : "var(--accent)"};
+        box-shadow: 0 0 0 3px ${invalid ? "var(--bad-bg)" : "var(--accent-bg)"};
     }
 
     &::placeholder {
@@ -61,35 +63,41 @@ export const actions = css`
     flex-wrap: wrap;
     gap: 10px;
     align-items: center;
+    padding-top: 4px;
+    border-top: 1px solid var(--line-soft);
+    margin-top: 2px;
 `;
 
 export const quick = css`
     display: flex;
-    gap: 6px;
+    gap: 5px;
     margin-top: 3px;
 `;
 
 export const quickButton = css`
-    padding: 4px 10px;
+    flex: 1;
+    padding: 4px 6px;
     border: 1px solid var(--line);
-    border-radius: 7px;
+    border-radius: 6px;
     background: var(--surface-2);
     color: var(--ink-soft);
     font-size: 12px;
 
     &:hover {
         border-color: var(--accent);
+        background: var(--accent-bg);
         color: var(--ink);
     }
 `;
 
+/** 어느 기록을 고치는 중인지 폼 안에서 다시 확인시켜 줍니다. */
 export const editing = css`
     padding: 10px 14px;
-    margin-bottom: 14px;
-    border-left: 3px solid var(--accent);
+    border: 1px solid var(--accent);
+    border-left: 4px solid var(--accent);
+    border-radius: 3px;
     background: var(--accent-bg);
-    border-radius: 0 9px 9px 0;
     color: var(--ink);
-    font-size: 14px;
+    font-size: 13.5px;
     line-height: 1.7;
 `;
