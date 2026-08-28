@@ -1,13 +1,12 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import DataTools from "../../components/DataTools/DataTools";
 import HeldList from "../../components/HeldList/HeldList";
 import RecordForm from "../../components/RecordForm/RecordForm";
 import RecordList from "../../components/RecordList/RecordList";
 import WeeklySummary from "../../components/WeeklySummary/WeeklySummary";
 import { TIMEZONE_LABEL, UNIT, todayKey } from "../../core/validate";
-import { partition, summarize } from "../../core/weekly";
+import { partition, streakOf, summarize } from "../../core/weekly";
 import { bumpVisitCount } from "../../core/visits";
-import { fetchBusanWeather } from "../../core/weather";
 import edgeCases from "../../fixtures/edge-cases.json";
 import syntheticV1 from "../../fixtures/synthetic-v1.json";
 import {
@@ -51,17 +50,6 @@ function Diary() {
 
     // 이 브라우저에서 연 횟수는 렌더 한 번당 딱 한 번만 셉니다 — 리렌더마다 세면 숫자가 부풀려집니다.
     const [visitCount] = useState(() => bumpVisitCount());
-    const [weather, setWeather] = useState(null);
-
-    useEffect(() => {
-        let alive = true;
-        fetchBusanWeather().then((result) => {
-            if (alive) setWeather(result);
-        });
-        return () => {
-            alive = false;
-        };
-    }, []);
 
     /**
      * 행에서 "수정"을 누르면 값이 바뀌는 곳은 폼입니다.
@@ -91,6 +79,7 @@ function Diary() {
     const [anchor, setAnchor] = useState(() => anchorFor(first.records));
 
     const summary = useMemo(() => summarize(records, anchor), [records, anchor]);
+    const streak = useMemo(() => streakOf(records), [records]);
     const editing = useMemo(
         () => records.find((record) => record.id === editingId) ?? null,
         [records, editingId],
@@ -196,11 +185,7 @@ function Diary() {
                 </div>
                 <div css={s.stampRow}>
                     <span css={s.stamp}>오늘 {todayKey()}</span>
-                    {weather && (
-                        <span css={s.stamp}>
-                            {weather.icon} 부산 {weather.temp}° · {weather.label}
-                        </span>
-                    )}
+                    {streak > 0 && <span css={s.stamp}>🔥 연속 기록 {streak}일째</span>}
                     {visitCount != null && <span css={s.stamp}>이 브라우저 방문 {visitCount}번째</span>}
                 </div>
             </header>

@@ -5,7 +5,7 @@
  * `new Date("2026-08-24")`는 UTC 자정으로 해석돼 KST에서 하루 밀립니다 —
  * 과제 4에서 같은 함정을 겪었습니다.
  */
-import { checkRecord } from "./validate";
+import { checkRecord, todayKey } from "./validate";
 
 /** 날짜 문자열에 일수를 더합니다. UTC로만 계산해 기기 시간대의 영향을 받지 않습니다. */
 const addDays = (dateKey, days) => {
@@ -98,6 +98,31 @@ export const summarize = (records, anchorDate) => {
             .map(([subject, minutes]) => ({ subject, minutes }))
             .sort((a, b) => b.minutes - a.minutes),
     };
+};
+
+/**
+ * 오늘까지 연속으로 기록한 날수.
+ *
+ * 오늘 기록이 아직 없어도 어제까지 이어져 있으면 스트릭은 살아 있다고 봅니다 —
+ * 하루가 끝나기 전엔 오늘 기록을 안 넣었다고 끊긴 걸로 치지 않습니다.
+ * 반대로 가장 최근 기록이 그제 이전이면(하루 넘게 빔) 0입니다.
+ */
+export const streakOf = (records) => {
+    const { valid } = partition(records);
+    const days = new Set(valid.map((record) => record.date));
+    if (days.size === 0) return 0;
+
+    const today = todayKey();
+    const yesterday = addDays(today, -1);
+    let cursor = days.has(today) ? today : days.has(yesterday) ? yesterday : null;
+    if (cursor === null) return 0;
+
+    let count = 0;
+    while (days.has(cursor)) {
+        count += 1;
+        cursor = addDays(cursor, -1);
+    }
+    return count;
 };
 
 /** 분을 사람이 읽는 형태로. 집계값과 화면값이 어긋나지 않게 한 곳에서만 바꿉니다. */

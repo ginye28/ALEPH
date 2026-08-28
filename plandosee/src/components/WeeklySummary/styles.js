@@ -67,7 +67,37 @@ export const statValue = (tone) => css`
     color: ${tone === "warn" ? "var(--warn)" : tone === "accent" ? "var(--accent)" : "var(--ink)"};
 `;
 
+/** 도넛(왼쪽)과 막대 목록(오른쪽). 좁은 화면에서는 세로로 쌓입니다. */
+export const breakdown = css`
+    display: flex;
+    gap: 20px;
+    align-items: center;
+
+    @media (max-width: 520px) {
+        flex-direction: column;
+        align-items: stretch;
+    }
+`;
+
+export const donut = css`
+    flex: 0 0 auto;
+    width: 92px;
+    height: 92px;
+
+    circle {
+        transition: stroke-dasharray 0.2s ease;
+    }
+`;
+
+export const donutTrack = css`
+    fill: none;
+    stroke: var(--surface-2);
+    stroke-width: 14;
+`;
+
 export const bars = css`
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
 `;
@@ -75,8 +105,8 @@ export const bars = css`
 /** 과목별 줄은 점선으로 끊습니다 — 표가 아니라 공책에 적은 줄에 가깝게. */
 export const barRow = css`
     display: grid;
-    grid-template-columns: 108px minmax(0, 1fr) 76px;
-    gap: 12px;
+    grid-template-columns: 10px 96px minmax(0, 1fr) 76px;
+    gap: 10px;
     align-items: center;
     padding: 8px 0;
     border-bottom: 1px dashed var(--line);
@@ -85,6 +115,12 @@ export const barRow = css`
     &:last-of-type {
         border-bottom: 0;
     }
+`;
+
+export const barDot = css`
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
 `;
 
 export const barName = css`
@@ -104,11 +140,11 @@ export const barTrack = css`
     overflow: hidden;
 `;
 
-export const barFill = (ratio) => css`
+export const barFill = (ratio, color) => css`
     display: block;
     width: ${Math.max(ratio * 100, 2)}%;
     height: 100%;
-    background: var(--accent);
+    background: ${color};
 `;
 
 export const barValue = css`
