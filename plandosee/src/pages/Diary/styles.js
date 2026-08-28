@@ -42,6 +42,18 @@ export const subtitle = css`
     line-height: 1.7;
 `;
 
+/** 우표 여러 장을 붙인 것처럼 — 늘어도 난잡해 보이지 않게 한 줄로 감쌉니다. */
+export const stampRow = css`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-end;
+
+    @media (max-width: 640px) {
+        justify-content: flex-start;
+    }
+`;
+
 export const stamp = css`
     padding: 5px 12px;
     border: 1px solid var(--line);
