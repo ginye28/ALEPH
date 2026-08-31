@@ -42,7 +42,6 @@ export const subtitle = css`
     line-height: 1.7;
 `;
 
-/** 우표 여러 장을 붙인 것처럼 — 늘어도 난잡해 보이지 않게 한 줄로 감쌉니다. */
 export const stampRow = css`
     display: flex;
     flex-wrap: wrap;
@@ -65,8 +64,8 @@ export const stamp = css`
     white-space: nowrap;
 `;
 
-/** 공개 화면의 자료가 전부 합성이라는 사실을 맨 위에 못박습니다 (설계 원칙 1). */
-export const syntheticNote = css`
+/** 아직 로그인이 없다는 사실을 맨 위에 못박습니다 (T06-C82, 문구는 6N.md 원문 그대로). */
+export const noLoginBanner = css`
     padding: 12px 16px;
     margin-bottom: 22px;
     border: 1px solid var(--line);
@@ -78,35 +77,11 @@ export const syntheticNote = css`
     line-height: 1.75;
 `;
 
-/**
- * 넓은 화면에서는 입력 폼을 왼쪽에 고정하고 오른쪽에 결과를 쌓습니다.
- * 목록에서 "수정"을 눌러도 폼이 이미 눈앞에 있어서 어디가 바뀌는지 바로 보입니다.
- */
-export const layout = css`
-    display: grid;
-    grid-template-columns: minmax(0, 380px) minmax(0, 1fr);
-    gap: 22px;
-    align-items: start;
-
-    @media (max-width: 900px) {
-        grid-template-columns: 1fr;
-    }
-`;
-
-export const side = css`
-    position: sticky;
-    top: 22px;
-
-    @media (max-width: 900px) {
-        position: static;
-    }
-`;
-
-export const column = css`
+/** 계획 → 할일 → 실행기록 → 돌아보기 → 내보내기 순으로 세로로 쌓습니다. 라우터 없이 한 화면. */
+export const sections = css`
     display: flex;
     flex-direction: column;
     gap: 22px;
-    min-width: 0;
 `;
 
 export const footer = css`

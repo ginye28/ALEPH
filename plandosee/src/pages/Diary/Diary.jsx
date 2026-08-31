@@ -1,243 +1,263 @@
-import { useMemo, useRef, useState } from "react";
-import DataTools from "../../components/DataTools/DataTools";
-import HeldList from "../../components/HeldList/HeldList";
-import RecordForm from "../../components/RecordForm/RecordForm";
-import RecordList from "../../components/RecordList/RecordList";
-import WeeklySummary from "../../components/WeeklySummary/WeeklySummary";
-import { TIMEZONE_LABEL, UNIT, todayKey } from "../../core/validate";
-import { partition, streakOf, summarize } from "../../core/weekly";
-import { bumpVisitCount } from "../../core/visits";
-import edgeCases from "../../fixtures/edge-cases.json";
-import syntheticV1 from "../../fixtures/synthetic-v1.json";
-import {
-    addRecord,
-    clearAll,
-    exportBox,
-    importText,
-    loadRecords,
-    removeRecord,
-    replaceAll,
-    updateRecord,
-} from "../../storage/records";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { exportAllData } from "../../api/exportAll";
+import { createExecution, listExecutionsByTask } from "../../api/executionRecords";
+import { addReviewNote, getReview } from "../../api/reviews";
+import { createPlan, listPlans, planHistory, revisePlan } from "../../api/plans";
+import { completeTask, createTask, deleteTask, listTasks, reopenTask, updateTask } from "../../api/tasks";
+import { backendMode } from "../../api/client";
+import { filterTasks } from "../../api/reviewFilters";
+import ExecutionSection from "../../components/ExecutionSection/ExecutionSection";
+import ExportSection from "../../components/ExportSection/ExportSection";
+import PlanSection from "../../components/PlanSection/PlanSection";
+import ReviewSection from "../../components/ReviewSection/ReviewSection";
+import TaskSection from "../../components/TaskSection/TaskSection";
+import { TIMEZONE_LABEL, todayKey } from "../../core/validate";
 import * as c from "../../styles/controls";
 import * as s from "./styles";
 
-/** 날짜 문자열에 일수를 더합니다. 주 이동 버튼이 씁니다. */
-const shiftDate = (dateKey, days) => {
-    const [year, month, day] = dateKey.split("-").map(Number);
-    return new Date(Date.UTC(year, month - 1, day + days)).toISOString().slice(0, 10);
-};
+const DEFAULT_FILTERS = { search: "", status: "all", priority: "all", sortBy: "createdAt", sortDir: "desc" };
 
-/**
- * 처음 보여줄 주를 정합니다.
- *
- * 형식만 맞는 날짜(2026-02-30 같은)를 기준으로 삼으면 엉뚱한 주가 열립니다.
- * 그래서 검사를 통과한 기록에서만 고릅니다.
- */
-const anchorFor = (records) => {
-    const { valid } = partition(records);
-    if (valid.length === 0) return todayKey();
-    return valid.map((record) => record.date).sort()[0];
+const scrollTo = (ref) => {
+    const box = ref.current?.getBoundingClientRect();
+    if (!box) return;
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    window.scrollBy({ top: box.top - 20, behavior: reduceMotion ? "auto" : "smooth" });
 };
 
 function Diary() {
-    const first = loadRecords();
-    const [records, setRecords] = useState(first.records);
-    const [converted, setConverted] = useState(first.converted);
-    const [editingId, setEditingId] = useState(null);
-    const [message, setMessage] = useState(null);
-    const formRef = useRef(null);
+    const [plans, setPlans] = useState([]);
+    const [history, setHistory] = useState({});
+    const [selectedPlanId, setSelectedPlanId] = useState(null);
 
-    // 이 브라우저에서 연 횟수는 렌더 한 번당 딱 한 번만 셉니다 — 리렌더마다 세면 숫자가 부풀려집니다.
-    const [visitCount] = useState(() => bumpVisitCount());
+    const [taskFilters, setTaskFilters] = useState(DEFAULT_FILTERS);
+    const [tasks, setTasks] = useState([]);
+    const [reviewFilter, setReviewFilter] = useState(null);
 
-    /**
-     * 행에서 "수정"을 누르면 값이 바뀌는 곳은 폼입니다.
-     * 넓은 화면에서는 폼이 왼쪽에 붙어 있어 대개 이미 보이므로 그대로 두고,
-     * 좁은 화면이거나 페이지 끝이라 폼이 밀려났을 때만 끌어올립니다.
-     *
-     * scrollIntoView는 sticky 요소에 쓰면 "붙어 있는 위치"를 기준으로 계산해
-     * 화면이 움직이지 않습니다. 그래서 필요한 만큼만 직접 스크롤합니다.
-     */
-    const handleEdit = (id) => {
-        setEditingId(id);
+    const [selectedTaskId, setSelectedTaskId] = useState(null);
+    const [executionRecords, setExecutionRecords] = useState([]);
 
-        const box = formRef.current?.getBoundingClientRect();
-        if (!box) return;
+    const [reviewStats, setReviewStats] = useState(null);
+    const [carryNote, setCarryNote] = useState(null);
 
-        const margin = 22;
-        const comfortable = box.top >= 0 && box.top <= window.innerHeight * 0.4;
-        if (comfortable) return;
+    const planSectionRef = useRef(null);
+    const taskSectionRef = useRef(null);
+    const executionSectionRef = useRef(null);
+    const reviewSectionRef = useRef(null);
 
-        // 움직임을 줄이도록 설정한 사용자에게는 애니메이션 없이 바로 옮깁니다.
-        const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-        window.scrollBy({ top: box.top - margin, behavior: reduceMotion ? "auto" : "smooth" });
-    };
+    const refreshPlans = useCallback(async () => {
+        const { data } = await listPlans();
+        const rows = data ?? [];
+        setPlans(rows);
+        const entries = await Promise.all(rows.map(async (p) => [p.id, (await planHistory(p.id)).data ?? []]));
+        setHistory(Object.fromEntries(entries));
+        return rows;
+    }, []);
 
-    // 어느 주를 보고 있는지. 기록이 있으면 그 기록의 주부터 보여줍니다 —
-    // 합성 자료를 넣었는데 빈 주가 나오면 채점자가 집계를 확인할 수 없습니다.
-    const [anchor, setAnchor] = useState(() => anchorFor(first.records));
-
-    const summary = useMemo(() => summarize(records, anchor), [records, anchor]);
-    const streak = useMemo(() => streakOf(records), [records]);
-    const editing = useMemo(
-        () => records.find((record) => record.id === editingId) ?? null,
-        [records, editingId],
-    );
-
-    /** 저장 결과를 화면에 반영합니다. 저장소가 돌려준 목록만 씁니다. */
-    const apply = (next, note) => {
-        setRecords(next);
-        if (note) setMessage(note);
-    };
-
-    const handleAdd = (value) => {
-        const saved = addRecord(records, value);
-        apply(saved.records, { tone: "good", text: `${value.date} ${value.subject} ${value.minutes}${UNIT} 추가했습니다.` });
-        setAnchor(value.date);
-    };
-
-    const handleUpdate = (id, value) => {
-        const saved = updateRecord(records, id, value);
-        apply(saved.records, { tone: "good", text: `기록 1건을 고쳤습니다. 주간 요약도 함께 바뀝니다.` });
-        setEditingId(null);
-        setAnchor(value.date);
-    };
-
-    const handleRemove = (id) => {
-        if (!id) return;
-        const saved = removeRecord(records, id);
-        apply(saved.records, { tone: null, text: "기록 1건을 지웠습니다." });
-        if (editingId === id) setEditingId(null);
-    };
-
-    const handleExport = () => {
-        const text = exportBox(records);
-        const blob = new Blob([text], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-        link.href = url;
-        link.download = `plandosee-내보내기-${todayKey()}.json`;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-        URL.revokeObjectURL(url);
-        setMessage({ tone: "good", text: `${records.length}건을 파일로 내보냈습니다.` });
-    };
-
-    /** 가져오기 — 읽기 → 검사 → 통과한 경우에만 쓰기. 실패해도 기존 기록은 그대로입니다. */
-    const handleImport = (text, fileName) => {
-        const result = importText(records, text);
-
-        if (!result.ok) {
-            setRecords(result.records);
-            setMessage({
-                tone: "bad",
-                text: `${fileName} — ${result.reason}. 기존 기록 ${result.records.length}건은 그대로입니다.`,
-            });
+    const refreshTasks = useCallback(async (planId, filters) => {
+        if (!planId) {
+            setTasks([]);
             return;
         }
+        const { data } = await listTasks({ planId, ...filters });
+        setTasks(data ?? []);
+    }, []);
 
-        const parts = [`${result.added}건을 불러왔습니다`];
-        if (result.skipped > 0) parts.push(`${result.skipped}건은 이미 있어 건너뜀`);
-        if (result.converted > 0) parts.push(`${result.converted}건을 v2로 변환`);
+    const refreshReview = useCallback(async (planId) => {
+        if (!planId) {
+            setReviewStats(null);
+            return;
+        }
+        const { data } = await getReview(planId, todayKey());
+        setReviewStats(data);
+    }, []);
 
-        setRecords(result.records);
-        setConverted(result.converted);
-        setMessage({ tone: "good", text: `${fileName} — ${parts.join(" · ")}.` });
-    };
-
-    const handleClearAll = () => {
-        const next = clearAll();
-        setRecords(next);
-        setEditingId(null);
-        setMessage({ tone: null, text: "전체 삭제했습니다. 새로고침해도 0건입니다." });
-    };
-
-    const handleSeed = (kind) => {
-        const source = kind === "v1" ? syntheticV1 : edgeCases;
-        const next = replaceAll(source);
-        // v1 자료는 전부 변환 대상, 경계 자료는 이미 v2라 변환이 일어나지 않습니다.
-        const count = kind === "v1" ? source.length : 0;
-
-        setRecords(next);
-        setConverted(count);
-        setEditingId(null);
-        setAnchor(anchorFor(next));
-
-        setMessage({
-            tone: "good",
-            text:
-                kind === "v1"
-                    ? `v1 합성 기록 ${source.length}건을 넣고 v2로 변환했습니다.`
-                    : `경계·오류 자료 ${source.length}건을 넣었습니다. 잘못된 값은 보류로 갑니다.`,
+    // 첫 로드
+    useEffect(() => {
+        refreshPlans().then((rows) => {
+            if (rows.length > 0) setSelectedPlanId(rows[0].id);
         });
+    }, [refreshPlans]);
+
+    // check.mjs가 window.__db로 직접 만든 계획을 화면(React 상태)에도 반영시키는 용도입니다.
+    // 새로고침 없이 다시 읽어야 메모리 백엔드의 상태가 그대로 유지됩니다.
+    useEffect(() => {
+        window.__reloadPlans = async () => {
+            const rows = await refreshPlans();
+            if (rows.length > 0 && !selectedPlanId) setSelectedPlanId(rows[0].id);
+        };
+    }, [refreshPlans, selectedPlanId]);
+
+    // 선택한 계획·필터가 바뀌면 할일·돌아보기를 다시 읽습니다.
+    useEffect(() => {
+        refreshTasks(selectedPlanId, taskFilters);
+        refreshReview(selectedPlanId);
+        setSelectedTaskId(null);
+        setReviewFilter(null);
+    }, [selectedPlanId, taskFilters, refreshTasks, refreshReview]);
+
+    useEffect(() => {
+        if (!selectedTaskId) {
+            setExecutionRecords([]);
+            return;
+        }
+        listExecutionsByTask(selectedTaskId).then(({ data }) => setExecutionRecords(data ?? []));
+    }, [selectedTaskId]);
+
+    const afterTaskMutation = async () => {
+        await Promise.all([refreshTasks(selectedPlanId, taskFilters), refreshReview(selectedPlanId)]);
     };
+
+    const handleCreatePlan = async (form) => {
+        const result = await createPlan(form, { carriedFromReviewId: carryNote?.id ?? null });
+        if (result.ok) {
+            setCarryNote(null);
+            const rows = await refreshPlans();
+            const created = rows.find((p) => p.id === result.data.plan.id);
+            if (created) setSelectedPlanId(created.id);
+        }
+        return result;
+    };
+
+    const handleRevisePlan = async (planId, form) => {
+        const result = await revisePlan(planId, form);
+        if (result.ok) await refreshPlans();
+        return result;
+    };
+
+    const handleCreateTask = async (planId, form) => {
+        const result = await createTask(planId, form);
+        if (result.ok) await afterTaskMutation();
+        return result;
+    };
+
+    const handleUpdateTask = async (id, form) => {
+        const result = await updateTask(id, form);
+        if (result.ok) await afterTaskMutation();
+        return result;
+    };
+
+    const handleComplete = async (id) => {
+        await completeTask(id);
+        await afterTaskMutation();
+    };
+
+    const handleReopen = async (id) => {
+        await reopenTask(id);
+        await afterTaskMutation();
+    };
+
+    const handleDelete = async (id) => {
+        await deleteTask(id);
+        if (selectedTaskId === id) setSelectedTaskId(null);
+        await afterTaskMutation();
+    };
+
+    const handleSelectTask = (id) => {
+        setSelectedTaskId((prev) => (prev === id ? null : id));
+        scrollTo(executionSectionRef);
+    };
+
+    const handleCreateExecution = async (taskId, form) => {
+        const result = await createExecution(taskId, form);
+        if (result.ok) {
+            const { data } = await listExecutionsByTask(taskId);
+            setExecutionRecords(data ?? []);
+            await refreshReview(selectedPlanId);
+        }
+        return result;
+    };
+
+    const handleReviewFilterClick = (filter) => {
+        setReviewFilter(filter === "all" ? null : filter);
+        scrollTo(taskSectionRef);
+    };
+
+    const handleAddNote = (planId, text) => addReviewNote(planId, text);
+
+    const handleCarryToNewPlan = (note) => {
+        setCarryNote(note);
+        scrollTo(planSectionRef);
+    };
+
+    const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? null;
+    const selectedTask = tasks.find((t) => t.id === selectedTaskId) ?? null;
+    const visibleTasks = reviewFilter
+        ? filterTasks(tasks, reviewFilter, { todayKey: todayKey(), blockedIds: reviewStats?.blockedIds ?? new Set() })
+        : tasks;
 
     return (
         <main css={s.page}>
             <header css={s.masthead}>
                 <div>
-                    <h1 css={s.title}>플랜두씨 다이어리</h1>
+                    <h1 css={s.title}>플랜두씨 다이어리 2</h1>
                     <p css={s.subtitle}>
-                        공부한 시간을 {UNIT} 단위로 · 기준 시간대 {TIMEZONE_LABEL}
+                        계획(Plan) → 실제로 한 일(Do) → 돌아보기(See) · 기준 시간대 {TIMEZONE_LABEL}
                     </p>
                 </div>
                 <div css={s.stampRow}>
                     <span css={s.stamp}>오늘 {todayKey()}</span>
-                    {streak > 0 && <span css={s.stamp}>🔥 연속 기록 {streak}일째</span>}
-                    {visitCount != null && <span css={s.stamp}>이 브라우저 방문 {visitCount}번째</span>}
+                    {backendMode === "memory" && <span css={s.stamp}>⚠ Supabase 미설정 — 임시 메모리 저장소</span>}
                 </div>
             </header>
 
-            <p css={s.syntheticNote}>
-                <b>이 화면의 자료는 모두 합성입니다.</b> 실제 개인 기록은 올리지 않습니다. 기록은 이
-                브라우저에만 저장되고 서버로 보내지 않습니다.
+            <p css={s.noLoginBanner} data-testid="no-login-banner">
+                지금은 로그인이 없어 링크를 아는 사람은 누구나 볼 수 있습니다. 남이 봐도 괜찮은 내용만
+                넣으세요.
             </p>
 
-            <div css={s.layout}>
-                {/* key가 바뀌면 폼이 다시 마운트되며 그 기록의 값으로 채워집니다. */}
-                <div css={s.side} ref={formRef}>
-                    <RecordForm
-                        key={editingId ?? "new"}
-                        editing={editing}
-                        onAdd={handleAdd}
-                        onUpdate={handleUpdate}
-                        onCancel={() => setEditingId(null)}
-                    />
-                </div>
+            <div css={s.sections}>
+                <PlanSection
+                    sectionRef={planSectionRef}
+                    plans={plans}
+                    selectedPlanId={selectedPlanId}
+                    onSelectPlan={setSelectedPlanId}
+                    history={history}
+                    onCreate={handleCreatePlan}
+                    onRevise={handleRevisePlan}
+                    carryNote={carryNote}
+                />
 
-                <div css={s.column}>
-                    <WeeklySummary
-                        summary={summary}
-                        onMove={(days) => setAnchor((prev) => shiftDate(prev, days))}
-                    />
+                <TaskSection
+                    sectionRef={taskSectionRef}
+                    planId={selectedPlanId}
+                    tasks={visibleTasks}
+                    filters={taskFilters}
+                    onFiltersChange={setTaskFilters}
+                    reviewFilter={reviewFilter}
+                    onClearReviewFilter={() => setReviewFilter(null)}
+                    onCreate={handleCreateTask}
+                    onUpdate={handleUpdateTask}
+                    onComplete={handleComplete}
+                    onReopen={handleReopen}
+                    onDelete={handleDelete}
+                    selectedTaskId={selectedTaskId}
+                    onSelectTask={handleSelectTask}
+                />
 
-                    <RecordList
-                        records={summary.valid}
-                        editingId={editingId}
-                        onEdit={handleEdit}
-                        onRemove={handleRemove}
-                    />
+                <ExecutionSection
+                    sectionRef={executionSectionRef}
+                    task={selectedTask}
+                    records={executionRecords}
+                    onCreate={handleCreateExecution}
+                />
 
-                    <HeldList held={summary.held} onRemove={handleRemove} />
+                <ReviewSection
+                    sectionRef={reviewSectionRef}
+                    plan={selectedPlan}
+                    stats={reviewStats ?? { planCount: 0, doneCount: 0, overdueCount: 0, blockedCount: 0, estimatedTotal: 0, actualTotal: 0, diff: 0 }}
+                    onFilterClick={handleReviewFilterClick}
+                    activeFilter={reviewFilter}
+                    onAddNote={handleAddNote}
+                    onCarryToNewPlan={handleCarryToNewPlan}
+                />
 
-                    <DataTools
-                        records={records}
-                        converted={converted}
-                        message={message}
-                        onExport={handleExport}
-                        onImport={handleImport}
-                        onClearAll={handleClearAll}
-                        onSeed={handleSeed}
-                    />
-                </div>
+                <ExportSection onExportAll={exportAllData} />
             </div>
 
             <footer css={s.footer}>
                 <p css={c.note}>
-                    서버 없이 브라우저에서만 동작합니다. 개인정보와 비밀값을 저장하지 않고, 공개
-                    화면에는 합성 자료만 올립니다.
+                    계획·할일·실행기록은 서버의 실제 데이터베이스에 저장됩니다. 잠그는 일(로그인)은
+                    과제 7에서 합니다.
                 </p>
             </footer>
         </main>

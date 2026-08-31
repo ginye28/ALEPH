@@ -1,6 +1,7 @@
 {
-  "capturedAt": "2026-08-28T05:08:50.453Z",
+  "capturedAt": "2026-08-31T08:36:56.068Z",
   "url": "http://localhost:5177",
+  "backendMode": "supabase",
   "externalRequests": [
     "https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5CgmG0X7t.woff2",
@@ -8,78 +9,75 @@
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.117.woff2",
     "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXduUBwuF9Wxop-KlAZIoTrf6uFZh_9Q.117.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.119.woff2",
-    "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXduUBwuF9Wxop-KlAZIoTrf6uFZh_9Q.119.woff2",
-    "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXRudj1Q.woff2",
     "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXduUBwuF9Wxop-KlAZIoTrf6uFZh_9Q.118.woff2",
+    "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXRudj1Q.woff2",
+    "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXduUBwuF9Wxop-KlAZIoTrf6uFZh_9Q.119.woff2",
     "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXduUBwuF9Wxop-KlAZIoTrf6uFZh_9Q.116.woff2",
     "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXduUBwuF9Wxop-KlAZIoTrf6uFZh_9Q.115.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.114.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.110.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.115.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.116.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.113.woff2",
-    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.115.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.112.woff2",
-    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.110.woff2",
-    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.49.woff2",
-    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.103.woff2",
-    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.114.woff2",
-    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.102.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.111.woff2",
-    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.59.woff2",
-    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.109.woff2"
+    "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXduUBwuF9Wxop-KlAZIoTrf6uFZh_9Q.114.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.109.woff2",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/plans?select=*&order=created_at.desc",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/plan_current?select=*",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/plan_revisions?select=*&plan_id=eq.dc3c4c56-1492-48aa-84d3-8b470e9fdb77&order=revision_no.asc",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/plan_revisions?select=*&plan_id=eq.3ab9c89a-a6d7-4ee1-8c8b-5aaf84e73dad&order=revision_no.asc",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.106.woff2",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/tasks?select=*&deleted_at=is.null&plan_id=eq.dc3c4c56-1492-48aa-84d3-8b470e9fdb77&order=created_at.desc.nullslast%2Cid.asc",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/tasks?select=*&plan_id=eq.dc3c4c56-1492-48aa-84d3-8b470e9fdb77&deleted_at=is.null",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/tasks?select=*&plan_id=eq.3ab9c89a-a6d7-4ee1-8c8b-5aaf84e73dad&deleted_at=is.null",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/tasks?select=*&deleted_at=is.null&plan_id=eq.3ab9c89a-a6d7-4ee1-8c8b-5aaf84e73dad&order=created_at.desc.nullslast%2Cid.asc",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/execution_records?select=*&task_id=in.%28546b3457-3315-43fa-b38f-94fe4e7bc444%2C1626ca31-3344-4978-a546-13819a493dd4%2C08d9112d-de56-4d37-9e01-9cbe54ada07a%2C60d5f923-4dbc-4a95-b100-811ba09cd925%2C0da84bb6-c894-4dd1-86a6-967667cf2657%2C7a40831e-e868-4829-852c-96554ce3d98f%29",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/tasks?select=*&deleted_at=is.null&plan_id=eq.3ab9c89a-a6d7-4ee1-8c8b-5aaf84e73dad&priority=eq.high&order=created_at.desc.nullslast%2Cid.asc",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/execution_records?select=*&task_id=eq.546b3457-3315-43fa-b38f-94fe4e7bc444&order=started_at.desc",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/tasks?select=*&id=eq.546b3457-3315-43fa-b38f-94fe4e7bc444",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/tasks?id=eq.546b3457-3315-43fa-b38f-94fe4e7bc444&status=neq.done&select=*",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/review_notes?on_conflict=id&select=*"
   ],
   "log": [
     {
-      "name": "02_기록추가_필드와단위",
-      "status": "단위 분 · 기준 시간대 Asia/Seoul (UTC+9)",
-      "note": "필드·단위·기준 시간대가 폼 머리에 보임"
+      "name": "02_계획_이력",
+      "status": "1판(처음) 540분 그대로 · 2판(현재) 480분",
+      "note": "계획을 고쳐도 처음 개정본이 이력에 그대로 남습니다"
     },
     {
-      "name": "03_추가후_목록과합계",
-      "status": "목록 5→6건 · 합계 250→285분",
-      "note": "추가 한 건이 목록과 요약에 함께 반영"
+      "name": "04_검색필터정렬",
+      "status": "우선순위=높음 필터 → 3건",
+      "note": "정렬 기준과 방향이 화면 머리에 그대로 적혀 있습니다"
     },
     {
-      "name": "04_수정후_그행과요약",
-      "status": "그 행 35→80분 · 합계 285→330분 · 다른 5행 그대로",
-      "note": "수정이 id 한 건에만 반영되고 요약이 함께 바뀜"
+      "name": "05_실행기록",
+      "status": "시작·끝·90분·막힌 이유가 어느 할일에 붙었는지와 함께 보임",
+      "note": "계획·할일 값은 실행기록 저장 전후로 바뀌지 않습니다(검사 8)"
     },
     {
-      "name": "05_필수값_오류이유",
-      "status": "6건 유지 · 이유 2개 — 과목이 비었습니다 / 값이 비었습니다",
-      "note": "빈 필수값은 저장되지 않고 칸마다 이유가 붙음"
+      "name": "06_완료중복방지",
+      "status": "이미 완료된 할일에 완료를 동시에 두 번 더 호출 — 완료시각 완전히 그대로 (2026-08-31T08:28:08.144+00:00)",
+      "note": "완료는 상태 전이라 몇 번을 호출해도 새로 쌓이는 기록이 없습니다(검사 9)"
     },
     {
-      "name": "06_손상파일_기존유지",
-      "status": "기존 6건 → 6건 · \"broken.json — 파일을 JSON으로 읽지 못했습니다 (위치 2). 기존 기록 6건은 그대로입니다.\"",
-      "note": "읽기→검사→쓰기 순서라 손상 파일이 기존 기록을 지우지 않음"
+      "name": "08_드릴다운",
+      "status": "돌아보기의 \"3막힘\" 숫자를 눌러 그 조건에 맞는 할일 목록으로 이동",
+      "note": "숫자와 목록이 같은 조건식(reviewFilters.js)에서 나와 서로 어긋나지 않습니다"
     },
     {
-      "name": "07_자료형식_변환상태",
-      "status": "자료 형식 v2이전 형식 5건을 v2로 변환했습니다현재 5건",
-      "note": "저장된 기록 5건이 전부 v2 · tag 기본값 채워짐 (true)"
+      "name": "09_고칠점_다음계획",
+      "status": "돌아보기에서 저장한 고칠 점이 새 계획 폼 위에 안내로 보임",
+      "note": "돌아보기의 노트가 다음 계획으로 이어집니다(검사 12)"
     },
     {
-      "name": "07_자료형식_변환상태_재실행",
-      "status": "5건·250분 → 다시 읽어도 5건·250분",
-      "note": "변환을 두 번 돌려도 기록이 늘거나 값이 바뀌지 않음"
+      "name": "10_로그인없음_배너",
+      "status": "첫 화면에 6N.md 원문 그대로의 안내 문구",
+      "note": "아직 로그인이 없다는 사실을 첫 화면에 못박음(검사 15)"
     },
     {
-      "name": "08_주간요약_기간과집계",
-      "status": "2026-08-24(월) ~ 2026-08-30(일) · 합계 85분 · 이번 주 3건 · 보류 7건",
-      "note": "월요일 10분 + 일요일 20분 + 55분 = 85분. 다음 주 40분은 제외"
-    },
-    {
-      "name": "09_보류목록_이유",
-      "status": "보류 7건 — 값이 비었습니다 / 숫자가 아닙니다 / 1 이상이어야 합니다 / 1440 이하여야 합니다 (하루는 1440분) / 없는 달입니다 / 없는 날짜입니다 / id 중복 — 앞엣것만 셉니다",
-      "note": "잘못된 값은 버리지 않고 이유와 함께 남기되 집계에서 뺌"
-    },
-    {
-      "name": "10_전체삭제_0건",
-      "status": "삭제 후 0건 → 새로고침 후 0건 · 저장소 비었음",
-      "note": "메모리만 비우지 않고 저장소에서 다시 읽어 그림"
-    },
-    {
-      "name": "11_모바일_375",
-      "status": "가로 스크롤 없음 (본문 폭 375px)",
+      "name": "12_모바일_375",
+      "status": "가로 스크롤 발생 (본문 폭 396px)",
       "note": "375px 화면"
     }
   ]

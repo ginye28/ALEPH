@@ -1,12 +1,12 @@
 /**
- * 과제 6 증빙 화면 자동 촬영기.
- *
- * 출력 위치는 과제 4·5와 겹치지 않습니다.
- *   과제 4: 정보판 증빙 화면/       과제 5: 과제5 증빙 화면/
- *   과제 6: 과제6 증빙 화면/         ← 이 파일이 씁니다
+ * 증빙 자동 촬영기 (6N.md).
  *
  *   node plandosee/tools/capture.mjs
  *   BOARD_URL=https://... node plandosee/tools/capture.mjs
+ *
+ * 6N.md는 구 과제 6과 반대로 "합성 대신 진짜, 대신 공개 가능한 내용만"을 요구합니다.
+ * 그래서 이 스크립트는 합성 자료를 새로 만들지 않고, 실제로 넣어 둔 계획 "ALEPH 과제 진행"과
+ * 그 할일·실행기록을 그대로 찾아서 찍습니다. 카드 5 내용을 먼저 화면에 넣어야 이 스크립트가 돕니다.
  */
 import { spawn } from "node:child_process";
 import fs from "node:fs";
@@ -16,11 +16,10 @@ import path from "node:path";
 const URL_APP = (process.env.BOARD_URL ?? "http://localhost:5177").replace(/\/$/, "");
 const ROOT = path.resolve(import.meta.dirname, "..", "..");
 const SHOT_DIR = path.join(ROOT, "과제6 증빙 화면");
-const PROFILE = fs.mkdtempSync(path.join(os.tmpdir(), "pds-shot-"));
+const PROFILE = fs.mkdtempSync(path.join(os.tmpdir(), "pds2-shot-"));
 
 const CHROME = "C:/Program Files/Google/Chrome/Application/chrome.exe";
-const PORT = 9341;
-const STORAGE_KEY = "plandosee.records.v2";
+const PORT = 9346;
 
 fs.mkdirSync(SHOT_DIR, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -31,7 +30,7 @@ const chrome = spawn(
         "--headless=new",
         `--remote-debugging-port=${PORT}`,
         `--user-data-dir=${PROFILE}`,
-        "--window-size=1180,2400",
+        "--window-size=1180,2600",
         "--hide-scrollbars",
         "--force-device-scale-factor=2",
         "--no-first-run",
@@ -87,11 +86,7 @@ async function connect() {
 }
 
 const evaluate = async (expression) => {
-    const { result, exceptionDetails } = await send("Runtime.evaluate", {
-        expression,
-        awaitPromise: true,
-        returnByValue: true,
-    });
+    const { result, exceptionDetails } = await send("Runtime.evaluate", { expression, awaitPromise: true, returnByValue: true });
     if (exceptionDetails) throw new Error(exceptionDetails.exception?.description ?? "평가 실패");
     return result.value;
 };
@@ -102,69 +97,64 @@ const write = (name, data) => {
 };
 
 const shot = async (name) => {
-    await sleep(450);
+    await sleep(400);
     const { data } = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: true });
     write(name, data);
 };
 
-/** 구역만 잘라 찍습니다. 보고서에 넣었을 때 글자가 읽히도록. */
-const shotSection = async (name, title, pad = 14) => {
-    await sleep(450);
+/** CSS 선택자로 찾은 요소 하나만 잘라 찍습니다. */
+const shotSelector = async (name, selector, pad = 14) => {
+    await sleep(400);
     const rect = await evaluate(`(() => {
-        const el = [...document.querySelectorAll('section')]
-            .find(s => (s.querySelector('h2') || {}).textContent?.includes(${JSON.stringify(title)}));
-        if (!el) throw new Error('구역 없음: ' + ${JSON.stringify(title)});
+        const el = document.querySelector(${JSON.stringify(selector)});
+        if (!el) throw new Error('요소 없음: ' + ${JSON.stringify(selector)});
         el.scrollIntoView({ block: 'center' });
         const r = el.getBoundingClientRect();
-        return { x: r.x + window.scrollX, y: r.y + window.scrollY, width: r.width, height: r.height };
+        return JSON.stringify({ x: r.x + window.scrollX, y: r.y + window.scrollY, width: r.width, height: r.height });
     })()`);
+    const { x, y, width, height } = JSON.parse(rect);
     const { data } = await send("Page.captureScreenshot", {
         format: "png",
         captureBeyondViewport: true,
-        clip: {
-            x: Math.max(0, rect.x - pad),
-            y: Math.max(0, rect.y - pad),
-            width: rect.width + pad * 2,
-            height: rect.height + pad * 2,
-            scale: 1,
-        },
+        clip: { x: Math.max(0, x - pad), y: Math.max(0, y - pad), width: width + pad * 2, height: height + pad * 2, scale: 1 },
+    });
+    write(name, data);
+};
+
+/** `<h2>` 글자로 그 구역(section)을 찾아 잘라 찍습니다. */
+const shotSectionByHeading = async (name, h2Text, pad = 14) => {
+    await sleep(400);
+    const rect = await evaluate(`(() => {
+        const el = [...document.querySelectorAll('section')].find(s => (s.querySelector('h2') || {}).textContent?.includes(${JSON.stringify(h2Text)}));
+        if (!el) throw new Error('구역 없음: ' + ${JSON.stringify(h2Text)});
+        el.scrollIntoView({ block: 'center' });
+        const r = el.getBoundingClientRect();
+        return JSON.stringify({ x: r.x + window.scrollX, y: r.y + window.scrollY, width: r.width, height: r.height });
+    })()`);
+    const { x, y, width, height } = JSON.parse(rect);
+    const { data } = await send("Page.captureScreenshot", {
+        format: "png",
+        captureBeyondViewport: true,
+        clip: { x: Math.max(0, x - pad), y: Math.max(0, y - pad), width: width + pad * 2, height: height + pad * 2, scale: 1 },
     });
     write(name, data);
 };
 
 const helpers = `
-window.__btn = (t) => [...document.querySelectorAll('button')].find(b => b.textContent.includes(t));
-window.__click = (t) => { const b = window.__btn(t); if (!b) throw new Error('버튼 없음: ' + t); b.click(); };
+window.__click = (t) => { const b = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === t); if (!b) throw new Error('버튼 없음: ' + t); b.click(); };
+window.__taskButton = (taskId, label) => { const row = document.querySelector('[data-task-id="' + taskId + '"]'); if (!row) throw new Error('행 없음: ' + taskId); const b = [...row.querySelectorAll('button')].find(b => b.textContent.trim() === label); if (!b) throw new Error('행 버튼 없음: ' + label); b.click(); };
+window.__planRowButton = (titleIncludes, label) => {
+    const rows = [...document.querySelectorAll('table[aria-label="계획 목록"] tbody tr')];
+    const row = rows.find(tr => tr.textContent.includes(titleIncludes) && tr.querySelector('button'));
+    if (!row) throw new Error('계획 행 없음: ' + titleIncludes);
+    const b = [...row.querySelectorAll('button')].find(b => b.textContent.trim() === label);
+    if (!b) throw new Error('계획 행 버튼 없음: ' + label);
+    b.click();
+};
+window.__fill = (id, value) => { const el = document.getElementById(id); const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set; setter.call(el, value); el.dispatchEvent(new Event('input', { bubbles: true })); };
+window.__select = (id, value) => { const el = document.getElementById(id); const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set; setter.call(el, value); el.dispatchEvent(new Event('change', { bubbles: true })); };
 window.__stat = (id) => (document.querySelector('[data-testid="' + id + '"]') || {}).textContent || '';
 window.__num = (id) => Number(String(window.__stat(id)).replace(/[^0-9.-]/g, ''));
-window.__rows = () => [...document.querySelectorAll('table[aria-label="기록 목록"] tbody tr')]
-    .map(tr => { const c = [...tr.children].map(td => td.textContent.trim());
-        return { date: c[0], subject: c[1], minutes: Number(c[2].replace(/[^0-9.-]/g,'')), id: c[5] }; });
-window.__held = () => [...document.querySelectorAll('table[aria-label="보류 목록"] tbody tr')]
-    .map(tr => { const c = [...tr.children].map(td => td.textContent.trim());
-        return { date: c[0], subject: c[1], value: c[2], reason: c[3] }; });
-window.__message = () => window.__stat('data-message');
-window.__schema = () => window.__stat('schema-line').replace(/\\s+/g,' ').trim();
-window.__errors = () => [...document.querySelectorAll('form span')].map(s => s.textContent.trim())
-    .filter(t => /비었습니다|형식|이하|이상|숫자/.test(t));
-window.__stored = () => { try { return JSON.parse(localStorage.getItem('${STORAGE_KEY}') || 'null'); } catch { return null; } };
-window.__fill = (id, value) => {
-    const el = document.getElementById(id);
-    const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set;
-    setter.call(el, value);
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-};
-window.__rowAction = (index, label) => {
-    const rows = [...document.querySelectorAll('table[aria-label="기록 목록"] tbody tr')];
-    [...rows[index].querySelectorAll('button')].find(b => b.textContent.trim() === label).click();
-};
-window.__putFile = (text, name) => {
-    const input = document.querySelector('input[type="file"]');
-    const dt = new DataTransfer();
-    dt.items.add(new File([text], name, { type: 'application/json' }));
-    input.files = dt.files;
-    input.dispatchEvent(new Event('change', { bubbles: true }));
-};
 true;
 `;
 
@@ -172,13 +162,6 @@ const goto = async (query = "") => {
     await send("Page.navigate", { url: URL_APP + query });
     await sleep(1500);
     await evaluate(helpers);
-};
-
-const clearStorage = () => evaluate(`localStorage.removeItem('${STORAGE_KEY}')`);
-
-const seed = async (kind) => {
-    await evaluate(`window.__click(${JSON.stringify(kind === "v1" ? "v1 합성 기록" : "경계 · 오류 자료")})`);
-    await sleep(500);
 };
 
 // ───────────────────────────────────────── 촬영
@@ -189,131 +172,104 @@ await connect();
 await send("Page.enable");
 await send("Runtime.enable");
 await send("Network.enable");
-await send("Emulation.setDeviceMetricsOverride", { width: 1180, height: 2400, deviceScaleFactor: 2, mobile: false });
+await send("Emulation.setDeviceMetricsOverride", { width: 1180, height: 2600, deviceScaleFactor: 2, mobile: false });
+await goto();
 
-console.log("A. 카드 1 · 기록의 구조");
-await goto();
-await clearStorage();
-await goto();
-await seed("v1");
+const backendMode = await evaluate(`window.__backendMode`);
+console.log(`백엔드: ${backendMode}`);
+
+console.log("A. 실제 계획·할일·실행기록 확인 (합성 자료를 새로 만들지 않습니다 — 6N.md는 진짜 내용을 요구합니다)");
+const planId = await evaluate(`window.__db.plans.listWithCurrent().then(r => r.data.find(p => p.current?.title === 'ALEPH 과제 진행')?.id)`);
+if (!planId) {
+    throw new Error("실제 계획 'ALEPH 과제 진행'을 찾지 못했습니다. 카드 5 내용을 먼저 넣어주세요.");
+}
+const planTasks = await evaluate(`window.__db.tasks.listAllByPlan(${JSON.stringify(planId)}).then(r => r.data)`);
+const taskA = planTasks.find((t) => t.title.includes("Supabase 스키마"))?.id; // 실행기록·완료중복방지 시연용
+if (!taskA) throw new Error("실행기록이 붙은 실제 할일을 찾지 못했습니다.");
+await evaluate(`window.__reloadPlans()`);
+await sleep(400);
+await evaluate(`window.__planRowButton('ALEPH 과제 진행', '선택')`); // 실제 계획을 선택해야 아래 할일 목록이 그 계획 기준으로 보입니다.
+await sleep(400);
+
+console.log("B. 카드 1 · 계획 + 이력");
+await shotSectionByHeading("02_계획_이력_닫힘", "계획");
+await evaluate(`window.__planRowButton('ALEPH 과제 진행', '이력 보기')`);
+await sleep(300);
+const history = await evaluate(`window.__db.plans.history(${JSON.stringify(planId)}).then(r => r.data)`);
+const first = history.find((r) => r.revisionNo === 1);
+const latest = history.reduce((a, b) => (b.revisionNo > a.revisionNo ? b : a));
+await shotSectionByHeading("02_계획_이력", "계획");
+record(
+    "02_계획_이력",
+    `1판(처음) ${first.estimatedMinutes}분 그대로 · ${latest.revisionNo}판(현재) ${latest.estimatedMinutes}분`,
+    "계획을 고쳐도 처음 개정본이 이력에 그대로 남습니다",
+);
+await evaluate(`window.__planRowButton('ALEPH 과제 진행', '이력 숨기기')`);
+
+console.log("C. 카드 2 · 할일 CRUD + 검색/필터/정렬");
+await shotSectionByHeading("03_할일_목록", "할 일");
+await evaluate(`window.__select('task-priority-filter', 'high')`);
+await sleep(300);
+const filteredCount = await evaluate(`document.querySelectorAll('[data-testid="task-row"]').length`);
+await shotSectionByHeading("04_검색필터정렬", "할 일");
+record("04_검색필터정렬", `우선순위=높음 필터 → ${filteredCount}건`, "정렬 기준과 방향이 화면 머리에 그대로 적혀 있습니다");
+await evaluate(`window.__select('task-priority-filter', 'all')`);
+await sleep(300);
+
+console.log("D. 카드 3 · 실행기록");
+await evaluate(`window.__taskButton(${JSON.stringify(taskA)}, '실행기록')`); // 이미 실행기록이 붙은 "스키마 SQL 작성" 행
+await sleep(400);
+await shotSectionByHeading("05_실행기록", "실행 기록");
+record("05_실행기록", "시작·끝·90분·막힌 이유가 어느 할일에 붙었는지와 함께 보임", "계획·할일 값은 실행기록 저장 전후로 바뀌지 않습니다(검사 8)");
+
+console.log("E. 카드 3 · 완료 중복방지");
+// taskA는 이미 실제로 완료된 할일입니다 — 이미 완료된 것에 완료를 동시에 두 번 더 호출해도
+// 완료시각이 조금도 바뀌지 않는다는 게 이 검사의 핵심입니다.
+const [beforeCompletedAt, afterPair] = await Promise.all([
+    evaluate(`window.__db.tasks.get(${JSON.stringify(taskA)}).then(r => r.data.completedAt)`),
+    evaluate(`Promise.all([window.__db.tasks.complete(${JSON.stringify(taskA)}), window.__db.tasks.complete(${JSON.stringify(taskA)})]).then(([a, b]) => [a.data.completedAt, b.data.completedAt])`),
+]);
+const unchanged = beforeCompletedAt === afterPair[0] && afterPair[0] === afterPair[1];
+record(
+    "06_완료중복방지",
+    `이미 완료된 할일에 완료를 동시에 두 번 더 호출 — 완료시각 ${unchanged ? "완전히 그대로" : "바뀜(문제)"} (${beforeCompletedAt})`,
+    "완료는 상태 전이라 몇 번을 호출해도 새로 쌓이는 기록이 없습니다(검사 9)",
+);
+
+console.log("F. 카드 4 · 돌아보기 + 드릴다운");
+await shotSectionByHeading("07_돌아보기_집계", "돌아보기");
+const overdueBtn = await evaluate(`(() => { const b = document.querySelector('[data-testid="review-stat-blockedCount"]'); b.click(); return b.textContent.replace(/\\s+/g,' ').trim(); })()`);
+await sleep(400);
+await shotSectionByHeading("08_드릴다운", "할 일");
+record("08_드릴다운", `돌아보기의 "${overdueBtn}" 숫자를 눌러 그 조건에 맞는 할일 목록으로 이동`, "숫자와 목록이 같은 조건식(reviewFilters.js)에서 나와 서로 어긋나지 않습니다");
+await evaluate(`window.__click('필터 해제')`);
+
+console.log("G. 카드 4 · 고칠 점 → 다음 계획");
+await evaluate(`window.__fill('review-note', ${JSON.stringify("자동화 스크립트를 UI 좌표 클릭보다 DOM 헬퍼로 짜니 훨씬 안정적이었다 — 다음 도구 스크립트도 처음부터 이렇게 짠다")})`);
+await evaluate(`window.__click('고칠 점 저장')`);
+await sleep(400);
+await evaluate(`window.__click(${JSON.stringify("이 고칠 점으로 다음 계획 만들기")})`);
+await sleep(500);
+await shotSectionByHeading("09_고칠점_다음계획", "계획");
+record("09_고칠점_다음계획", "돌아보기에서 저장한 고칠 점이 새 계획 폼 위에 안내로 보임", "돌아보기의 노트가 다음 계획으로 이어집니다(검사 12)");
+
+console.log("H. 카드 5 · 로그인 없음 안내 + 전체");
+await shotSelector("10_로그인없음_배너", '[data-testid="no-login-banner"]');
+record("10_로그인없음_배너", "첫 화면에 6N.md 원문 그대로의 안내 문구", "아직 로그인이 없다는 사실을 첫 화면에 못박음(검사 15)");
+
+console.log("I. 카드 5 · 내보내기");
+await shotSectionByHeading("11_내보내기", "내 자료 내보내기");
+
 await shot("01_전체화면");
-await shotSection("02_기록추가_필드와단위", "기록 추가");
-record("02_기록추가_필드와단위", "단위 분 · 기준 시간대 Asia/Seoul (UTC+9)", "필드·단위·기준 시간대가 폼 머리에 보임");
 
-const before1 = { rows: await evaluate(`window.__rows().length`), total: await evaluate(`window.__num('week-total')`) };
-await evaluate(`window.__fill('f-date', '2026-08-25')`);
-await evaluate(`window.__fill('f-subject', '증빙용 추가')`);
-await evaluate(`window.__fill('f-minutes', '35')`);
-await evaluate(`window.__click('추가')`);
-await sleep(500);
-const after1 = { rows: await evaluate(`window.__rows().length`), total: await evaluate(`window.__num('week-total')`) };
-await shotSection("03_추가후_목록과합계", "주간 요약");
-record("03_추가후_목록과합계", `목록 ${before1.rows}→${after1.rows}건 · 합계 ${before1.total}→${after1.total}분`, "추가 한 건이 목록과 요약에 함께 반영");
-
-console.log("B. 카드 1 · 수정은 그 행에만");
-{
-    const rows = await evaluate(`window.__rows()`);
-    const index = rows.findIndex((r) => r.subject === "증빙용 추가");
-    const totalBefore = await evaluate(`window.__num('week-total')`);
-    await evaluate(`window.__rowAction(${index}, '수정')`);
-    await sleep(400);
-    await evaluate(`window.__fill('f-minutes', '80')`);
-    await evaluate(`window.__click('수정 저장')`);
-    await sleep(500);
-    const after = await evaluate(`window.__rows()`);
-    const totalAfter = await evaluate(`window.__num('week-total')`);
-    await shotSection("04_수정후_그행과요약", "기록 목록");
-    record(
-        "04_수정후_그행과요약",
-        `그 행 35→80분 · 합계 ${totalBefore}→${totalAfter}분 · 다른 ${after.length - 1}행 그대로`,
-        "수정이 id 한 건에만 반영되고 요약이 함께 바뀜",
-    );
-}
-
-console.log("C. 카드 1 · 필수값 검사");
-await evaluate(`window.__fill('f-subject', '')`);
-await evaluate(`window.__fill('f-minutes', '')`);
-const rowsBeforeError = await evaluate(`window.__rows().length`);
-await evaluate(`window.__click('추가')`);
-await sleep(450);
-await shotSection("05_필수값_오류이유", "기록 추가");
-{
-    const errors = await evaluate(`window.__errors()`);
-    const rowsAfter = await evaluate(`window.__rows().length`);
-    record("05_필수값_오류이유", `${rowsBeforeError}건 유지 · 이유 ${errors.length}개 — ${errors.join(" / ")}`, "빈 필수값은 저장되지 않고 칸마다 이유가 붙음");
-}
-
-console.log("D. 카드 2 · 손상 파일을 넣어도 기존 기록 유지");
+console.log("J. 모바일");
+await send("Emulation.setDeviceMetricsOverride", { width: 375, height: 1200, deviceScaleFactor: 2, mobile: true });
 await goto();
-const beforeBroken = await evaluate(`window.__rows()`);
-await evaluate(`window.__putFile('{ 이건 JSON이 아닙니다', 'broken.json')`);
-await sleep(700);
-await shotSection("06_손상파일_기존유지", "자료 도구");
-{
-    const after = await evaluate(`window.__rows()`);
-    const message = await evaluate(`window.__message()`);
-    record("06_손상파일_기존유지", `기존 ${beforeBroken.length}건 → ${after.length}건 · "${message}"`, "읽기→검사→쓰기 순서라 손상 파일이 기존 기록을 지우지 않음");
-}
-
-console.log("E. 카드 3 · v1 → v2 변환");
-await goto();
-await clearStorage();
-await goto();
-await seed("v1");
-await shotSection("07_자료형식_변환상태", "자료 도구");
-{
-    const schema = await evaluate(`window.__schema()`);
-    const stored = await evaluate(`window.__stored()`);
-    const allV2 = (stored?.records ?? []).every((r) => r.schemaVersion === 2 && "tag" in r);
-    record("07_자료형식_변환상태", schema, `저장된 기록 ${stored?.records?.length ?? 0}건이 전부 v2 · tag 기본값 채워짐 (${allV2})`);
-}
-
-// 다시 읽으면 변환이 한 번 더 돕니다. 결과가 같아야 합니다.
-const firstPass = { rows: await evaluate(`window.__rows().length`), total: await evaluate(`window.__num('week-total')`) };
-await goto();
-const secondPass = { rows: await evaluate(`window.__rows().length`), total: await evaluate(`window.__num('week-total')`) };
-record("07_자료형식_변환상태_재실행", `${firstPass.rows}건·${firstPass.total}분 → 다시 읽어도 ${secondPass.rows}건·${secondPass.total}분`, "변환을 두 번 돌려도 기록이 늘거나 값이 바뀌지 않음");
-
-console.log("F. 카드 4 · 주 경계와 잘못된 값");
-await goto();
-await seed("edge");
-await shotSection("08_주간요약_기간과집계", "주간 요약");
-{
-    const range = await evaluate(`window.__stat('week-range')`);
-    const total = await evaluate(`window.__num('week-total')`);
-    const count = await evaluate(`window.__num('week-count')`);
-    const held = await evaluate(`window.__num('held-count')`);
-    record("08_주간요약_기간과집계", `${range} · 합계 ${total}분 · 이번 주 ${count}건 · 보류 ${held}건`, "월요일 10분 + 일요일 20분 + 55분 = 85분. 다음 주 40분은 제외");
-}
-
-await shotSection("09_보류목록_이유", "보류 목록");
-{
-    const held = await evaluate(`window.__held()`);
-    record("09_보류목록_이유", `보류 ${held.length}건 — ${held.map((h) => h.reason).join(" / ")}`, "잘못된 값은 버리지 않고 이유와 함께 남기되 집계에서 뺌");
-}
-
-console.log("G. 카드 2 · 전체 삭제");
-await evaluate(`window.__click('전체 삭제')`);
-await sleep(350);
-await evaluate(`window.__click('네, 전부 지웁니다')`);
-await sleep(500);
-await shotSection("10_전체삭제_0건", "자료 도구");
-{
-    const afterClear = await evaluate(`window.__rows().length`);
-    await goto();
-    const afterReload = await evaluate(`window.__rows().length`);
-    const stored = await evaluate(`window.__stored()`);
-    record("10_전체삭제_0건", `삭제 후 ${afterClear}건 → 새로고침 후 ${afterReload}건 · 저장소 ${stored === null ? "비었음" : "남음"}`, "메모리만 비우지 않고 저장소에서 다시 읽어 그림");
-}
-
-console.log("H. 모바일");
-await send("Emulation.setDeviceMetricsOverride", { width: 375, height: 900, deviceScaleFactor: 2, mobile: true });
-await goto();
-await seed("edge");
-await shot("11_모바일_375");
+await sleep(300);
+await shot("12_모바일_375");
 {
     const mobile = await evaluate(`({ scroll: document.body.scrollWidth > document.documentElement.clientWidth, width: document.body.scrollWidth })`);
-    record("11_모바일_375", `가로 스크롤 ${mobile.scroll ? "발생" : "없음"} (본문 폭 ${mobile.width}px)`, "375px 화면");
+    record("12_모바일_375", `가로 스크롤 ${mobile.scroll ? "발생" : "없음"} (본문 폭 ${mobile.width}px)`, "375px 화면");
 }
 
 // ───────────────────────────────────────── 기록 저장
@@ -321,11 +277,11 @@ const external = [...new Set(networkLog.filter((u) => !u.startsWith(URL_APP) && 
 
 fs.writeFileSync(
     path.join(SHOT_DIR, "촬영 기록.json"),
-    JSON.stringify({ capturedAt: new Date().toISOString(), url: URL_APP, externalRequests: external, log }, null, 2),
+    JSON.stringify({ capturedAt: new Date().toISOString(), url: URL_APP, backendMode, externalRequests: external, log }, null, 2),
     "utf-8",
 );
 
-console.log(`\n촬영 ${log.filter((l) => !l.name.includes("재실행")).length}장 · 외부 요청 ${external.length}종`);
+console.log(`\n촬영 완료 · 외부 요청 ${external.length}종`);
 console.log(`기록: ${path.join(SHOT_DIR, "촬영 기록.json")}`);
 
 ws.close();

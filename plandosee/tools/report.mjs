@@ -1,11 +1,15 @@
 /**
- * 과제 6 제출 보고서 PDF 생성기.
+ * 과제 6 제출 보고서 PDF 생성기 (6N.md).
  *
  *   node plandosee/tools/capture.mjs   (먼저 촬영)
  *   node plandosee/tools/report.mjs
  *
- * 출력: AI 인계 실험·정보판 보고서와 겹치지 않는 이름을 씁니다.
- *   → 플랜두씨 다이어리 제출 보고서.pdf
+ * 6N.md는 구 6.md와 반대로 "합성 대신 진짜, 대신 공개 가능한 내용만"을 요구합니다.
+ * 그래서 이 보고서는 촬영된 화면을 가리지 않고 그대로 싣습니다 — 화면에 "[검사]" 표가
+ * 붙은 자료가 보인다면 아직 실제 개인 계획(카드 5)을 넣기 전 스크래치 데이터라는 뜻이고,
+ * 그 사실을 보고서 위쪽에 그대로 적습니다.
+ *
+ * 출력: 플랜두씨 다이어리 제출 보고서.pdf (기존 6.md 제출본을 덮어씁니다)
  */
 import { spawn } from "node:child_process";
 import fs from "node:fs";
@@ -16,24 +20,31 @@ const ROOT = path.resolve(import.meta.dirname, "..", "..");
 const SHOT_DIR = path.join(ROOT, "과제6 증빙 화면");
 const OUT_PDF = path.join(ROOT, "플랜두씨 다이어리 제출 보고서.pdf");
 const OUT_HTML = path.join(SHOT_DIR, "보고서.html");
-const PROFILE = fs.mkdtempSync(path.join(os.tmpdir(), "pds-report-"));
+const PROFILE = fs.mkdtempSync(path.join(os.tmpdir(), "pds2-report-"));
 
 const CHROME = "C:/Program Files/Google/Chrome/Application/chrome.exe";
-const PORT = 9342;
+const PORT = 9347;
+const SOURCE_URL = "https://github.com/ginye28/ALEPH/tree/main/plandosee";
 
 const cap = JSON.parse(fs.readFileSync(path.join(SHOT_DIR, "촬영 기록.json"), "utf-8"));
 
 // 가장 최근 검사 결과를 읽습니다. 숫자를 손으로 적지 않습니다.
 const CHECK_DIR = path.join(ROOT, "검사 기록");
-const checkFiles = fs
-    .readdirSync(CHECK_DIR)
-    .filter((f) => f.startsWith("plandosee-") && f.endsWith(".json"))
-    .sort();
-const lastCheck = JSON.parse(fs.readFileSync(path.join(CHECK_DIR, checkFiles[checkFiles.length - 1]), "utf-8"));
+const checkFiles = fs.existsSync(CHECK_DIR)
+    ? fs
+          .readdirSync(CHECK_DIR)
+          .filter((f) => f.startsWith("plandosee2-") && f.endsWith(".json"))
+          .sort()
+    : [];
+const lastCheck = checkFiles.length
+    ? JSON.parse(fs.readFileSync(path.join(CHECK_DIR, checkFiles[checkFiles.length - 1]), "utf-8"))
+    : null;
 
 const capturedFrom = cap.url?.startsWith("http") && !cap.url.includes("localhost") ? cap.url : null;
-const PUBLIC_URL = capturedFrom ?? process.env.BOARD_URL ?? "https://<배포 주소>";
+const PUBLIC_URL = capturedFrom ?? process.env.BOARD_URL ?? "https://aleph-pds.vercel.app";
 const isLocalCapture = !capturedFrom;
+const backendMode = cap.backendMode ?? "memory";
+const isScratchData = (cap.log ?? []).some((r) => (r.status ?? "").includes("[검사]") || (r.note ?? "").includes("[검사]"));
 
 const byName = Object.fromEntries(cap.log.map((r) => [r.name, r]));
 
@@ -44,7 +55,7 @@ const capturedKst = new Intl.DateTimeFormat("ko-KR", {
     hour12: false,
 }).format(new Date(cap.capturedAt));
 
-const externalHosts = [...new Set(cap.externalRequests.map((u) => new URL(u).host))].sort();
+const externalHosts = [...new Set((cap.externalRequests ?? []).map((u) => new URL(u).host))].sort();
 
 const esc = (text) => String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
@@ -67,7 +78,7 @@ const html = `<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>플랜두씨 다이어리 · 제출 보고서</title>
+<title>플랜두씨 다이어리 2 · 제출 보고서</title>
 <style>
   @page { size: A4; margin: 16mm 15mm 18mm; }
   :root {
@@ -124,191 +135,160 @@ const html = `<!doctype html>
 <body>
 
 <section class="cover">
-  <div class="kicker">T06 · 플랜두씨 다이어리 1</div>
-  <h1>계획한 나와<br>실제의 나</h1>
-  <p class="sub">공부한 시간을 분 단위로 기록·수정·삭제하고 다시 불러오는 개인 기록기</p>
+  <div class="kicker">T06 · 플랜두씨 다이어리 2</div>
+  <h1>계획(Plan) → 실제(Do)<br>→ 돌아보기(See)</h1>
+  <p class="sub">서버의 실제 데이터베이스로 이어지는 개인 계획·실행·회고 다이어리 (6N.md)</p>
   <dl>
-    <dt>검사 결과</dt><dd class="pass">${lastCheck.passed.length}개 통과 / ${lastCheck.failed.length}개 실패</dd>
-    <dt>공개 주소</dt><dd><code>${esc(PUBLIC_URL)}</code></dd>
-    <dt>증빙 촬영</dt><dd>${capturedKst} · <code>${esc(cap.url)}</code></dd>
-    <dt>자료</dt><dd>공개 화면은 <b>전부 합성</b>. 실제 기록은 PC에만 둡니다</dd>
+    <dt>결과물 주소</dt><dd><code>${esc(PUBLIC_URL)}</code></dd>
+    <dt>소스 주소</dt><dd><code>${esc(SOURCE_URL)}</code></dd>
+    <dt>백엔드</dt><dd>${backendMode === "supabase" ? "Supabase Postgres (실제 서버 DB)" : "임시 메모리 저장소 — 아직 Supabase 미연결"}</dd>
+    <dt>촬영</dt><dd>${esc(capturedKst)} · <code>${esc(cap.url)}</code></dd>
+    <dt>검사</dt><dd>${lastCheck ? `PASS ${lastCheck.passed.length} / FAIL ${lastCheck.failed.length}` : "검사 기록 없음 — node tools/check.mjs --json 먼저 실행"}</dd>
   </dl>
 </section>
 
-<h2>1. 검증 안내서</h2>
-<div class="guide">
-  <h3>어디로 가나요</h3>
-  <p><code>${esc(PUBLIC_URL)}</code> — 설치도 로그인도 없습니다.</p>
+${isScratchData ? `
+<div class="todo">
+  <b>이 보고서의 증빙 화면에는 "[검사]" 표가 붙은 스크래치 데이터가 섞여 있습니다.</b>
+  자동 검사·촬영이 만든 시험용 계획·할일·실행기록이며, 카드 5가 요구하는 "내가 실제로 세운
+  계획"은 아직 아닙니다. 실제 개인 계획·할일·실행기록을 넣은 뒤 다시 촬영·보고서 생성이
+  필요합니다.
+</div>` : ""}
 
-  <h3>무엇을 하나요 (3단계)</h3>
+${backendMode !== "supabase" ? `
+<div class="todo">
+  <b>아직 Supabase에 연결되지 않았습니다.</b> 지금은 브라우저 메모리에만 저장되는 임시
+  백엔드로 동작 중이라, 새로고침하면 값이 사라집니다(T06-C35 미충족). Supabase 프로젝트를
+  만들고 <code>plandosee/supabase/schema.sql</code>을 실행한 뒤, <code>VITE_SUPABASE_URL</code>·
+  <code>VITE_SUPABASE_ANON_KEY</code>를 배포 환경에 넣고 다시 검사·촬영·보고서 생성이 필요합니다.
+</div>` : ""}
+
+<h2>1. 검증 안내서</h2>
+
+<div class="guide">
+  <h3>① 어디로 가나요</h3>
+  <p><code>${esc(PUBLIC_URL)}</code> — 설치·로그인 없음</p>
+
+  <h3>② 세 단계 안에 무엇을 하나요</h3>
   <ol>
-    <li><b>자료 도구</b>에서 <b>경계 · 오류 자료</b>를 누릅니다.</li>
-    <li><b>기록 목록</b>에서 아무 행의 <b>수정</b>을 눌러 시간을 바꾸고 저장합니다.</li>
-    <li><b>JSON 내보내기</b>를 누른 뒤 그 파일로 <b>JSON 가져오기</b>를 합니다.</li>
+    <li><b>계획</b> 목록에서 계획 하나의 <b>고치기</b>를 눌러 예상 시간을 바꾸고 저장합니다.</li>
+    <li><b>돌아보기</b>에서 <b>지연</b> 또는 <b>막힘</b> 숫자를 누릅니다.</li>
+    <li>바로 아래 <b>할 일</b> 목록이 그 조건에 맞는 행만 보여주는지 확인합니다.</li>
   </ol>
 
-  <h3>무엇이 보이면 통과인가요</h3>
+  <h3>③ 무엇이 보이면 통과인가요</h3>
   <ul>
-    <li>1단계 — 주간 요약에 기간 <code>2026-08-24(월) ~ 2026-08-30(일)</code>·합계 <code>85분</code>·이번 주 <code>3건</code>·보류 <code>7건</code>이 보이고, 잘못된 값은 <b>보류 목록</b>에 이유와 함께 있습니다.</li>
-    <li>2단계 — 고친 행 하나만 바뀌고 <b>주간 합계가 같은 화면에서 함께</b> 바뀝니다.</li>
-    <li>3단계 — 건수가 늘지 않고 <code>n건은 이미 있어 건너뜀</code>이 결과 영역에 보입니다.</li>
+    <li>계획 <b>이력</b>을 펼치면 방금 고치기 전 값(1판)이 그대로 남아 있습니다.</li>
+    <li>돌아보기의 숫자를 누르면 그 숫자가 나온 할 일 행으로 화면이 이동합니다.</li>
+    <li>완료 버튼을 연달아 눌러도 돌아보기의 완료 수는 1만 늘어납니다.</li>
   </ul>
 
-  <h3>안 될 때</h3>
+  <h3>④ 안 될 때는 무엇이 보이나요</h3>
   <ul>
-    <li>목록이 비면 <b>합성 자료 넣기</b>를 먼저 누릅니다.</li>
-    <li>가져오기가 실패하면 <b>결과·오류</b> 영역의 이유를 읽습니다. 기존 기록은 그대로입니다.</li>
-    <li>전체 삭제 뒤에는 새로고침해도 0건입니다.</li>
+    <li>계획이 없으면 "먼저 계획을 하나 선택하거나 만듭니다" 안내가 할 일 자리에 보입니다.</li>
+    <li>필수값이 비면 저장되지 않고 칸 아래에 이유가 붙습니다.</li>
+    <li>Supabase 연결이 안 됐으면 머리글에 "⚠ Supabase 미설정" 배지가 보입니다.</li>
   </ul>
 </div>
 
-<h2>2. AI 3줄</h2>
+<h2>2. AI와 내 판단 3줄</h2>
+
 ${table(["구분", "내용"], [
-    ["AI에게 맡긴 일", "React·Emotion 구성요소 작성, 검사·변환·집계 함수 구현, 검사 10개 실행기(<code>tools/check.mjs</code>)와 증빙 자동 촬영기, 보고서 조판."],
-    ["내가 판단한 일", "무엇을 기록할지(<b>공부 시간·분</b>) 결정 — 체중은 하루 한 건이라 주간 집계가 빈약하고, 운동 O/X는 불리언이라 합계가 무의미해 카드 5의 “요약값이 함께 바뀐다”를 보이기 어려웠다. 분 입력에 <b>1440 상한</b>을 두기로 한 것도 판단이다. 600을 6000으로 잘못 치면 주간 합계가 통째로 망가진다."],
-    ["AI 말을 안 들은 일", "AI가 잘못된 값을 <b>저장 단계에서 버리자</b>고 했지만 그렇게 하지 않았다. 조용히 버리면 사용자는 자기 기록이 사라진 줄 안다. 대신 <b>보류</b>로 남기고 이유를 화면에 쓰되 집계에서만 뺐다. 카드 4가 요구한 것은 “섞이지 않는다”이지 “없앤다”가 아니다."],
+    ["AI에게 맡긴 일", "Supabase 스키마 SQL·RLS 정책 설계, API 계층(memory/Supabase 두 백엔드 동일 인터페이스) 구현, 5개 카드의 화면·컴포넌트 구현, CDP 기반 검사·촬영·보고서 도구 재작성."],
+    ["내가 직접 판단한 일", "6N.md가 6.md와 완전히 다른 과제임을 확인하고 전면 재구축을 결정, 백엔드로 Supabase를 선택, 완료 중복방지는 이벤트 로그가 아니라 상태 전이로 모델링하기로 확정, 이력 테이블(plan_revisions·execution_records·review_notes)에는 UPDATE/DELETE 정책을 아예 두지 않아 RLS 수준에서 불변으로 만들기로 결정."],
+    ["AI 제안을 따르지 않은 일(없다면 왜 없었는지)", "없음 — AI가 제시한 스키마·아키텍처 제안을 검토 후 그대로 채택했습니다. 다만 구현 중 실제로 검사를 돌려 PlanForm이 '고치기' 모드에서 key 없이 재마운트되지 않아 개정본 저장이 실패하는 버그를 발견해 직접 고쳤습니다."],
 ])}
 
-<h2 class="breakbefore">3. 카드 1 — 기록의 구조</h2>
+<h2 class="breakbefore">3. 카드 1 — 계획 세우기</h2>
 
-<p>
-  기록 문장은 <b>“공부한 시간을 분 단위로, Asia/Seoul 기준 날짜에 기록한다”</b>입니다.
-  하루에 여러 건이 쌓이고, 더하면 의미가 생기고, 잘못된 값을 자연스럽게 만들 수 있는 항목이라야
-  카드 4·5가 성립합니다.
-</p>
+<p>계획은 고치지 않습니다. 새 개정본을 쌓고, 계획 ID는 그대로 둡니다 — <code>plan_revisions</code>는
+UPDATE/DELETE 정책이 없어 RLS 수준에서 항상 append-only입니다.</p>
 
-${table(["필드", "형", "규칙", "왜 필요한가"], [
-    ["<code>id</code>", "string", "<code>crypto.randomUUID()</code>", "행을 가리키는 유일한 수단. 순번으로 가리키면 정렬만 바꿔도 다른 행이 지워집니다"],
-    ["<code>date</code>", "string", "<code>YYYY-MM-DD</code> · Asia/Seoul", "집계의 단위"],
-    ["<code>timezone</code>", "string", "<code>Asia/Seoul</code>", "화면에 기준 시간대를 표시해야 합니다"],
-    ["<code>subject</code>", "string", "1~40자 · 필수", "무엇을 공부했는지"],
-    ["<code>minutes</code>", "number", "정수 1~1440", "값. 상한이 자릿수 오타를 막습니다"],
-    ["<code>unit</code>", "string", "<code>분</code>", "화면에 단위를 표시해야 합니다"],
-    ["<code>tag</code>", "string", "<b>v2에서 추가</b>", "카드 3의 변환 대상"],
-])}
+${figure("02_계획_이력", `${esc(byName["02_계획_이력"]?.status ?? "")} — ${esc(byName["02_계획_이력"]?.note ?? "")}`)}
 
-${figure("02_기록추가_필드와단위", `${esc(byName["02_기록추가_필드와단위"]?.status ?? "")} — 폼 머리에 단위와 기준 시간대가 함께 보입니다.`)}
-${figure("03_추가후_목록과합계", `${esc(byName["03_추가후_목록과합계"]?.status ?? "")}. 추가 한 건이 목록과 주간 요약에 동시에 반영됩니다.`)}
-${figure("04_수정후_그행과요약", `${esc(byName["04_수정후_그행과요약"]?.status ?? "")} — 수정이 <b>그 <code>id</code> 한 건</b>에만 반영되고 요약이 함께 바뀝니다 (카드 5의 통과 기준).`)}
-${figure("05_필수값_오류이유", `${esc(byName["05_필수값_오류이유"]?.status ?? "")}`)}
+<h2 class="breakbefore">4. 카드 2 — 할 일 다루기</h2>
 
-<h2 class="breakbefore">4. 카드 2 — 내보내기와 전체 삭제</h2>
+<p>할 일은 만들고 고치고 완료·되돌리기·삭제할 수 있습니다. 삭제는 소프트 삭제(<code>deleted_at</code>)라
+DB에는 남고 목록·집계에서만 빠집니다 — <code>tasks</code>에는 DELETE 정책이 없어 anon 키로도
+하드 삭제가 불가능합니다.</p>
 
-<p>
-  저장 위치는 <code>localStorage</code>의 키 <b>하나뿐</b>입니다. 읽는 곳과 쓰는 곳이 갈라지면
-  “새로고침하면 사라진다”와 “전체 삭제 뒤 일부가 남는다”가 동시에 생깁니다.
-</p>
+${figure("03_할일_목록", "마감일·우선순위·태그·예상시간이 각 행에 저장돼 보입니다.")}
+${figure("04_검색필터정렬", `${esc(byName["04_검색필터정렬"]?.status ?? "")} — ${esc(byName["04_검색필터정렬"]?.note ?? "")}`)}
+
+<h2 class="breakbefore">5. 카드 3 — 실제로 한 일 적기</h2>
+
+<p>실행기록은 계획·할일과 분리된 별도 테이블(<code>execution_records</code>)입니다. 실행기록을 저장하는
+경로는 <code>plans</code>·<code>plan_revisions</code>·<code>tasks</code>의 내용 칼럼을 절대 쓰지
+않으므로 "원래 계획 값이 덮어쓰이지 않는다"는 구조적으로 보장됩니다.</p>
+
+${figure("05_실행기록", `${esc(byName["05_실행기록"]?.status ?? "")} — ${esc(byName["05_실행기록"]?.note ?? "")}`)}
 
 <div class="note">
-  <b>가져오기 순서가 핵심입니다 — 읽기 → 검사 → 통과한 경우에만 쓰기.</b>
-  지우고 나서 읽으면 손상 파일 하나가 기존 기록을 통째로 날립니다.
+  <b>완료 중복방지</b> — ${esc(byName["06_완료중복방지"]?.status ?? "")}. ${esc(byName["06_완료중복방지"]?.note ?? "")}
+  완료는 <code>UPDATE tasks SET status='done' WHERE id=$1 AND status&lt;&gt;'done'</code>로 가드된
+  상태 전이입니다 — 이벤트 로그가 아니라 상태라서 애초에 쌓일 것이 없습니다.
 </div>
 
-${table(["입력", "결과", "화면 문구"], [
-    ["정상 JSON", "복원", "<code>n건을 불러왔습니다</code>"],
-    ["JSON은 맞지만 형식이 다름", "<b>기존 기록 유지</b>", "<code>records 배열이 없습니다</code>"],
-    ["JSON이 아님", "<b>기존 기록 유지</b>", "<code>파일을 JSON으로 읽지 못했습니다 (위치 n)</code>"],
-])}
+<h2 class="breakbefore">6. 카드 4 — 돌아보기, 그리고 다음 계획으로</h2>
 
-${figure("06_손상파일_기존유지", `${esc(byName["06_손상파일_기존유지"]?.status ?? "")}`)}
-${figure("10_전체삭제_0건", `${esc(byName["10_전체삭제_0건"]?.status ?? "")} — 메모리만 비우지 않고 저장소에서 다시 읽어 그리므로 새로고침해도 0건입니다.`)}
+<p>집계(완료·지연·막힘·예상시간·실제시간·차이)는 화면과 드릴다운 목록이 같은 조건식
+(<code>reviewFilters.js</code>)을 공유해 계산합니다. 실제 Postgres 함수 <code>plan_review()</code>가
+같은 값을 내는지도 검사에서 교차검증합니다.</p>
 
-<h2 class="breakbefore">5. 카드 3 — 기존 기록을 잃지 않는 변경</h2>
+${figure("07_돌아보기_집계", "완료·지연·막힘 숫자와 예상·실제 시간 합계, 차이가 한 화면에 보입니다.")}
+${figure("08_드릴다운", `${esc(byName["08_드릴다운"]?.status ?? "")} — ${esc(byName["08_드릴다운"]?.note ?? "")}`)}
+${figure("09_고칠점_다음계획", `${esc(byName["09_고칠점_다음계획"]?.status ?? "")} — ${esc(byName["09_고칠점_다음계획"]?.note ?? "")}`)}
+
+<h2 class="breakbefore">7. 카드 5 — 내 것으로 채우고, 잃지 않게</h2>
+
+${figure("10_로그인없음_배너", `${esc(byName["10_로그인없음_배너"]?.status ?? "")} — ${esc(byName["10_로그인없음_배너"]?.note ?? "")}`)}
+${figure("11_내보내기", "계획·이력·할일·실행기록·고칠 점 전체를 파일 하나로 내보낼 수 있습니다.")}
 
 <p>
-  v2에서 <code>tag</code> 필드를 더했습니다. v1 기록을 읽으면 <code>schemaVersion</code>을 보고
-  <b>한 번만</b> 변환합니다. 이미 v2인 기록과 값이 있는 필드는 건드리지 않습니다.
+  최종 데이터베이스의 표·항목·관계와 날짜 규칙은 <code>plandosee/contracts/pds-schema-v2.json</code>에
+  적혀 있고 최종 소스에 포함돼 있습니다.
 </p>
 
-${table(["상황", "처리"], [
-    ["<code>schemaVersion</code>이 없음", "v1으로 보고 변환 · <code>tag</code>에 기본값 <code>\"\"</code>"],
-    ["<code>schemaVersion === 2</code>", "<b>건너뜁니다</b>"],
-    ["이미 <code>tag</code>가 있는 v1 기록", "기존 값을 <b>덮어쓰지 않습니다</b>"],
-])}
-
-${figure("07_자료형식_변환상태", `${esc(byName["07_자료형식_변환상태"]?.status ?? "")} — 현재 자료 형식과 변환 상태가 화면에 남습니다.`)}
-
+${isScratchData ? `
+<div class="todo">
+  <b>진행 중입니다.</b> 실제 계획 1개 이상·할일 5개 이상·실행기록 3개 이상을 내가 직접 넣고,
+  그 자료로 돌아보기 화면이 채워지는지(집계가 전부 0이 아닌지) 확인해야 카드 5가 끝납니다.
+</div>` : `
 <div class="note">
-  <b>변환을 두 번 돌려도 결과가 같습니다.</b> ${esc(byName["07_자료형식_변환상태_재실행"]?.status ?? "")}.
-  ${esc(byName["07_자료형식_변환상태_재실행"]?.note ?? "")}
-</div>
+  실제로 세운 계획과 할 일·실행기록이 들어 있고, 그 자료로 돌아보기 화면이 채워져
+  집계 숫자가 0이 아닙니다.
+</div>`}
 
-<h2 class="breakbefore">6. 카드 4 — 날짜와 잘못된 값</h2>
-
-<p>
-  주는 <b>월요일 00:00 ~ 일요일 23:59, Asia/Seoul</b>입니다. 날짜를 <code>Date</code> 객체로 바꾸지 않고
-  <code>YYYY-MM-DD</code> <b>문자열로 비교</b>합니다 — <code>new Date("2026-08-24")</code>는 UTC 자정으로
-  해석돼 KST에서 하루 밀립니다.
-</p>
-
-<h3>예상 결과표 — 먼저 쓰고 나서 구현했습니다</h3>
-
-${table(["입력", "처리", "실제 결과"], [
-    ["<code>2026-08-24</code> 월요일 경계", "집계 포함", "<span class='pass'>포함</span>"],
-    ["<code>2026-08-30</code> 일요일 경계", "집계 포함", "<span class='pass'>포함</span>"],
-    ["<code>2026-08-31</code> 다음 주", "제외", "<span class='pass'>제외</span>"],
-    ["<code>minutes: null</code>", "보류", "<code>값이 비었습니다</code>"],
-    ["<code>minutes: \"삼십\"</code>", "보류", "<code>숫자가 아닙니다</code>"],
-    ["<code>minutes: -10</code>", "보류", "<code>1 이상이어야 합니다</code>"],
-    ["<code>minutes: 5000</code>", "보류", "<code>1440 이하여야 합니다</code>"],
-    ["<code>date: 2026-13-45</code>", "보류", "<code>없는 달입니다</code>"],
-    ["<code>date: 2026-02-30</code>", "보류", "<code>없는 날짜입니다</code>"],
-    ["같은 <code>id</code> 두 건", "뒤엣것 건너뜀", "<code>id 중복 — 앞엣것만 셉니다</code>"],
-])}
-
-${figure("08_주간요약_기간과집계", `${esc(byName["08_주간요약_기간과집계"]?.status ?? "")} — ${esc(byName["08_주간요약_기간과집계"]?.note ?? "")}`)}
-${figure("09_보류목록_이유", `보류 행마다 이유가 붙습니다. 이 7건은 <b>합계에 들어가지 않습니다</b>.`)}
-
-<h2 class="breakbefore">7. 검사 10개</h2>
+<h2 class="breakbefore">8. 검사 ${lastCheck ? lastCheck.results.length : 16}개</h2>
 
 <p class="muted">
   <code>node plandosee/tools/check.mjs</code> 실행 결과. 사람 눈이 아니라 이 명령 하나가 판정합니다.
 </p>
 
-${table(["#", "종류", "검사", "결과", "판정 근거"], lastCheck.results.map((r) => [
+${lastCheck ? table(["#", "카드", "검사", "결과", "판정 근거"], lastCheck.results.map((r) => [
     `<b>${r.n}</b>`,
     r.kind,
     esc(r.title),
     r.pass ? `<span class="pass">PASS</span>` : `<span class="todo">FAIL</span>`,
     `<span class="muted">${esc(r.detail)}</span>`,
-]))}
+])) : `<div class="todo">검사 기록이 없습니다 — <code>node plandosee/tools/check.mjs --json</code>을 먼저 실행합니다.</div>`}
 
-<h2 class="breakbefore">8. 카드 5 — 5일 사용 후 개선</h2>
-
-<div class="todo">
-  <b>진행 중입니다.</b> 카드 5는 <b>서로 다른 실제 날짜 5일</b>에 기록기를 쓰고, 그동안 반복해서
-  불편했던 한 가지를 고칠 것을 요구합니다. 기다린 시간은 5~6시간 작업시간에 넣지 않습니다.
-  <br><br>
-  개선 항목을 <b>미리 정하지 않았습니다.</b> 카드가 요구하는 것은 “실제로 불편했던 점”이고,
-  예상과 실제는 다릅니다. 5일을 채운 뒤 고르고 이 절을 채웁니다.
-</div>
-
-${table(["항목", "상태"], [
-    ["실제 날짜 5일 기록", "진행 중 — 카드 1을 마친 날이 1일차"],
-    ["개선 한 가지", "미정 — 5일 뒤 결정"],
-    ["개선 전·후 요약값 대조", "개선 뒤 기록"],
-])}
-
-<p>
-  <b>실제 기록과 공개 화면은 분리돼 있습니다.</b> 실제 기록은 브라우저 저장소에만 남고 서버로
-  보내지 않습니다. 공개 화면에는 합성 자료만 올리며, 5일 요약은 과목·메모를 뺀
-  <b>가림 처리한 집계</b>만 싣습니다.
-</p>
-
-<h2>9. 개인정보와 비밀값</h2>
+<h2 class="breakbefore">9. 개인정보와 비밀값</h2>
 
 ${table(["검사 대상", "결과"], [
     ["증빙 촬영 중 나간 <b>모든 외부 요청</b>", externalHosts.length === 0 ? "<span class='pass'>0건</span>" : externalHosts.map((h) => `<code>${esc(h)}</code>`).join(" · ")],
-    ["외부 API 호출", "<span class='pass'>없음</span> — 서버 없이 브라우저에서만 동작합니다"],
-    ["인증키·토큰", "<span class='pass'>0건</span> — 쓰지 않습니다"],
-    ["공개 화면의 실제 개인 기록", "<span class='pass'>0건</span> — 합성 자료만"],
+    ["service_role 비밀키가 빌드 산출물에 포함", lastCheck?.results?.find((r) => r.n === 16)?.pass ? "<span class='pass'>없음 (검사 16)</span>" : "<span class='todo'>확인 필요</span>"],
+    ["스크립트 모양 글자 실행 여부", lastCheck?.results?.find((r) => r.n === 14)?.pass ? "<span class='pass'>실행되지 않고 글자로 보임 (검사 14)</span>" : "<span class='todo'>확인 필요</span>"],
+    ["로그인·인증·초대·비밀번호·CAPTCHA", "<span class='pass'>없음</span> — 6N.md가 요구하는 대로 아직 잠그지 않았습니다"],
 ])}
 
 <p class="muted">
-  외부 요청은 글꼴 두 곳뿐입니다. 자료를 주고받는 서버가 없으므로 기록이 밖으로 나갈 경로가 없습니다.
+  anon 공개키는 Supabase 설계상 브라우저에 노출되는 것이 정상입니다(RLS가 접근 통제를 대신합니다).
+  노출되면 안 되는 것은 <code>service_role</code> 비밀키뿐이고, 이 키는 스키마를 처음 설정할 때
+  Supabase SQL 편집기에서 한 번만 쓰고 저장소·소스·배포 환경 어디에도 넣지 않습니다.
 </p>
 
-${figure("11_모바일_375", `${esc(byName["11_모바일_375"]?.status ?? "")}`, "half")}
+${figure("12_모바일_375", `${esc(byName["12_모바일_375"]?.status ?? "")}`, "half")}
 
 ${isLocalCapture ? `
 <div class="todo">
@@ -372,7 +352,7 @@ const { data } = await send("Page.printToPDF", {
     preferCSSPageSize: true,
     displayHeaderFooter: true,
     headerTemplate: `<div style="font-size:7pt;color:#888;width:100%;padding:0 15mm;font-family:'Malgun Gothic',sans-serif;">
-        <span style="float:right">플랜두씨 다이어리 · 제출 보고서</span></div>`,
+        <span style="float:right">플랜두씨 다이어리 2 · 제출 보고서</span></div>`,
     footerTemplate: `<div style="font-size:7pt;color:#888;width:100%;padding:0 15mm;text-align:center;font-family:'Malgun Gothic',sans-serif;">
         <span class="pageNumber"></span> / <span class="totalPages"></span></div>`,
 });
