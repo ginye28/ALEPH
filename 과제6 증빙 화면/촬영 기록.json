@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-08-31T08:36:56.068Z",
-  "url": "http://localhost:5177",
+  "capturedAt": "2026-08-31T08:41:12.074Z",
+  "url": "https://aleph-pds.vercel.app",
   "backendMode": "supabase",
   "externalRequests": [
     "https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap",
