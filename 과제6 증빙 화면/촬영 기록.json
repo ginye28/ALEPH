@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-08-31T08:41:12.074Z",
+  "capturedAt": "2026-09-01T01:30:44.220Z",
   "url": "https://aleph-pds.vercel.app",
   "backendMode": "supabase",
   "externalRequests": [
@@ -23,7 +23,7 @@
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.111.woff2",
     "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXduUBwuF9Wxop-KlAZIoTrf6uFZh_9Q.114.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.109.woff2",
-    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/plans?select=*&order=created_at.desc",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/plans?select=*&deleted_at=is.null&order=created_at.desc",
     "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/plan_current?select=*",
     "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/plan_revisions?select=*&plan_id=eq.dc3c4c56-1492-48aa-84d3-8b470e9fdb77&order=revision_no.asc",
     "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/plan_revisions?select=*&plan_id=eq.3ab9c89a-a6d7-4ee1-8c8b-5aaf84e73dad&order=revision_no.asc",

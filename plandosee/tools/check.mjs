@@ -171,6 +171,7 @@ const CHECKS = [
     { n: 14, kind: "카드5", title: "스크립트 모양 글자를 저장해도 실행되지 않고 글자 그대로 보인다" },
     { n: 15, kind: "카드5", title: "첫 화면에 로그인 없음 안내 문구가 있다" },
     { n: 16, kind: "카드5", title: "빌드 산출물 어디에도 service_role 비밀키가 없다" },
+    { n: 17, kind: "부가", title: "계획을 지우면 목록에서 사라지고 DB에는 소프트삭제로 남는다" },
 ];
 
 const results = new Map();
@@ -481,6 +482,24 @@ await guard(16, async () => {
     }
     if (files.length > 0 && hits.length === 0) pass(16, `빌드 산출물 ${files.length}개 파일 검사 — service_role 문자열 0건`);
     else fail(16, hits.length > 0 ? `${hits.join(", ")}에서 service_role 발견` : "검사할 JS 파일이 없습니다");
+});
+
+// ── 검사 17 · 계획 소프트 삭제 (다른 검사가 쓰는 scratchPlanId는 건드리지 않는 별도 계획으로 시험)
+await guard(17, async () => {
+    const disposable = await evaluate(`window.__db.plans.createWithRevision({
+        planId: crypto.randomUUID(), revisionId: crypto.randomUUID(), carriedFromReviewId: null,
+        revision: {
+            title: ${JSON.stringify(TAG + " 지울 계획")}, periodStart: "2026-08-25", periodEnd: "2026-08-26",
+            priority: "low", successCriteria: "삭제 검사", estimatedMinutes: 5, note: null,
+        },
+    }).then(r => r.data.plan)`);
+    await evaluate(`window.__db.plans.softDelete(${JSON.stringify(disposable.id)})`);
+    const afterList = await evaluate(`window.__db.plans.listWithCurrent().then(r => r.data)`);
+    const stillInDb = await evaluate(`window.__db.plans.get(${JSON.stringify(disposable.id)}).then(r => r.data)`);
+    const goneFromList = !afterList.some((p) => p.id === disposable.id);
+    const softDeleted = stillInDb && stillInDb.deletedAt !== null;
+    if (goneFromList && softDeleted) pass(17, `목록에서 사라짐 · DB에는 deleted_at 채워진 채 남아 있음(하드 삭제 아님)`);
+    else fail(17, `목록 제외 ${goneFromList} · deletedAt ${stillInDb?.deletedAt}`);
 });
 
 // ───────────────────────────────────────── 출력
