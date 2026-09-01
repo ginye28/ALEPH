@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-09-01T01:30:44.220Z",
+  "capturedAt": "2026-09-01T02:00:59.878Z",
   "url": "https://aleph-pds.vercel.app",
   "backendMode": "supabase",
   "externalRequests": [
@@ -27,10 +27,10 @@
     "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/plan_current?select=*",
     "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/plan_revisions?select=*&plan_id=eq.dc3c4c56-1492-48aa-84d3-8b470e9fdb77&order=revision_no.asc",
     "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/plan_revisions?select=*&plan_id=eq.3ab9c89a-a6d7-4ee1-8c8b-5aaf84e73dad&order=revision_no.asc",
+    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/tasks?select=*&plan_id=eq.3ab9c89a-a6d7-4ee1-8c8b-5aaf84e73dad&deleted_at=is.null",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.106.woff2",
     "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/tasks?select=*&deleted_at=is.null&plan_id=eq.dc3c4c56-1492-48aa-84d3-8b470e9fdb77&order=created_at.desc.nullslast%2Cid.asc",
     "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/tasks?select=*&plan_id=eq.dc3c4c56-1492-48aa-84d3-8b470e9fdb77&deleted_at=is.null",
-    "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/tasks?select=*&plan_id=eq.3ab9c89a-a6d7-4ee1-8c8b-5aaf84e73dad&deleted_at=is.null",
     "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/tasks?select=*&deleted_at=is.null&plan_id=eq.3ab9c89a-a6d7-4ee1-8c8b-5aaf84e73dad&order=created_at.desc.nullslast%2Cid.asc",
     "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/execution_records?select=*&task_id=in.%28546b3457-3315-43fa-b38f-94fe4e7bc444%2C1626ca31-3344-4978-a546-13819a493dd4%2C08d9112d-de56-4d37-9e01-9cbe54ada07a%2C60d5f923-4dbc-4a95-b100-811ba09cd925%2C0da84bb6-c894-4dd1-86a6-967667cf2657%2C7a40831e-e868-4829-852c-96554ce3d98f%29",
     "https://zdlnlhowiadonbybvqef.supabase.co/rest/v1/tasks?select=*&deleted_at=is.null&plan_id=eq.3ab9c89a-a6d7-4ee1-8c8b-5aaf84e73dad&priority=eq.high&order=created_at.desc.nullslast%2Cid.asc",
