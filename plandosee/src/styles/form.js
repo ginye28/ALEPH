@@ -103,6 +103,21 @@ export const rowActions = css`
     flex-wrap: wrap;
 `;
 
+/** 완료한 할 일은 옅은 초록 바탕 + 제목 취소선으로 진행 중인 것과 한눈에 갈립니다. */
+export const doneRow = css`
+    background: var(--good-bg);
+`;
+
+export const doneTitle = css`
+    color: var(--ink-faint);
+    text-decoration: line-through;
+`;
+
+export const statusDone = css`
+    color: var(--good);
+    font-weight: 700;
+`;
+
 export const smallButton = css`
     padding: 4px 9px;
     border: 1px solid var(--line);

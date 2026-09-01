@@ -154,9 +154,11 @@ function TaskSection({
                             </td>
                         </tr>
                     )}
-                    {tasks.map((task) => (
-                        <tr key={task.id} data-testid="task-row" data-task-id={task.id}>
-                            <td>{task.title}</td>
+                    {tasks.map((task) => {
+                        const done = task.status === "done";
+                        return (
+                        <tr key={task.id} data-testid="task-row" data-task-id={task.id} css={done ? f.doneRow : undefined}>
+                            <td css={done ? f.doneTitle : undefined}>{task.title}</td>
                             <td>{task.dueDate ?? "-"}</td>
                             <td>{PRIORITY_LABEL[task.priority]}</td>
                             <td>
@@ -167,7 +169,7 @@ function TaskSection({
                                 ))}
                             </td>
                             <td>{task.estimatedMinutes}분</td>
-                            <td data-testid="task-status">{task.status === "done" ? "완료" : "진행 중"}</td>
+                            <td data-testid="task-status" css={done ? f.statusDone : undefined}>{done ? "완료" : "진행 중"}</td>
                             <td>
                                 <span css={f.rowActions}>
                                     <button type="button" css={f.smallButton} onClick={() => onSelectTask(task.id)}>
@@ -191,7 +193,8 @@ function TaskSection({
                                 </span>
                             </td>
                         </tr>
-                    ))}
+                        );
+                    })}
                 </tbody>
             </table>
 
