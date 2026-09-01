@@ -16,6 +16,7 @@ const planFromDb = (row) => ({
     id: row.id,
     createdAt: row.created_at,
     carriedFromReviewId: row.carried_from_review_id,
+    deletedAt: row.deleted_at,
 });
 
 const revisionFromDb = (row) => ({
@@ -137,6 +138,7 @@ export const createSupabaseBackend = (supabase) => {
             const { data: planRows, error: planError } = await supabase
                 .from("plans")
                 .select("*")
+                .is("deleted_at", null)
                 .order("created_at", { ascending: false });
             if (planError) return { data: null, error: planError };
 
@@ -164,6 +166,18 @@ export const createSupabaseBackend = (supabase) => {
             const { data, error } = await supabase.from("plans").select("*").eq("id", planId).maybeSingle();
             if (error) return { data: null, error };
             return { data: data ? planFromDb(data) : null, error: null };
+        },
+
+        async softDelete(planId) {
+            const { data, error } = await supabase
+                .from("plans")
+                .update({ deleted_at: new Date().toISOString() })
+                .eq("id", planId)
+                .is("deleted_at", null)
+                .select();
+            if (error) return { data: null, error };
+            if (data.length > 0) return { data: planFromDb(data[0]), error: null };
+            return plans.get(planId); // 이미 지워짐 — 현재 값을 그대로 돌려줍니다.
         },
     };
 

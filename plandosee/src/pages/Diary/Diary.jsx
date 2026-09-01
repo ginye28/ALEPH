@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { exportAllData } from "../../api/exportAll";
 import { createExecution, listExecutionsByTask } from "../../api/executionRecords";
 import { addReviewNote, getReview } from "../../api/reviews";
-import { createPlan, listPlans, planHistory, revisePlan } from "../../api/plans";
+import { createPlan, deletePlan, listPlans, planHistory, revisePlan } from "../../api/plans";
 import { completeTask, createTask, deleteTask, listTasks, reopenTask, updateTask } from "../../api/tasks";
 import { backendMode } from "../../api/client";
 import { filterTasks } from "../../api/reviewFilters";
@@ -124,6 +124,15 @@ function Diary() {
         return result;
     };
 
+    const handleDeletePlan = async (planId) => {
+        const result = await deletePlan(planId);
+        if (result.ok) {
+            const rows = await refreshPlans();
+            if (selectedPlanId === planId) setSelectedPlanId(rows[0]?.id ?? null);
+        }
+        return result;
+    };
+
     const handleCreateTask = async (planId, form) => {
         const result = await createTask(planId, form);
         if (result.ok) await afterTaskMutation();
@@ -189,7 +198,7 @@ function Diary() {
         <main css={s.page}>
             <header css={s.masthead}>
                 <div>
-                    <h1 css={s.title}>플랜두씨 다이어리 2</h1>
+                    <h1 css={s.title}>플랜두씨 다이어리</h1>
                     <p css={s.subtitle}>
                         계획(Plan) → 실제로 한 일(Do) → 돌아보기(See) · 기준 시간대 {TIMEZONE_LABEL}
                     </p>
@@ -214,6 +223,7 @@ function Diary() {
                     history={history}
                     onCreate={handleCreatePlan}
                     onRevise={handleRevisePlan}
+                    onDelete={handleDeletePlan}
                     carryNote={carryNote}
                 />
 

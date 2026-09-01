@@ -78,7 +78,7 @@ const html = `<!doctype html>
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<title>플랜두씨 다이어리 2 · 제출 보고서</title>
+<title>플랜두씨 다이어리 · 제출 보고서</title>
 <style>
   @page { size: A4; margin: 16mm 15mm 18mm; }
   :root {
@@ -135,7 +135,7 @@ const html = `<!doctype html>
 <body>
 
 <section class="cover">
-  <div class="kicker">T06 · 플랜두씨 다이어리 2</div>
+  <div class="kicker">T06 · 플랜두씨 다이어리</div>
   <h1>계획(Plan) → 실제(Do)<br>→ 돌아보기(See)</h1>
   <p class="sub">서버의 실제 데이터베이스로 이어지는 개인 계획·실행·회고 다이어리 (6N.md)</p>
   <dl>
@@ -352,7 +352,7 @@ const { data } = await send("Page.printToPDF", {
     preferCSSPageSize: true,
     displayHeaderFooter: true,
     headerTemplate: `<div style="font-size:7pt;color:#888;width:100%;padding:0 15mm;font-family:'Malgun Gothic',sans-serif;">
-        <span style="float:right">플랜두씨 다이어리 2 · 제출 보고서</span></div>`,
+        <span style="float:right">플랜두씨 다이어리 · 제출 보고서</span></div>`,
     footerTemplate: `<div style="font-size:7pt;color:#888;width:100%;padding:0 15mm;text-align:center;font-family:'Malgun Gothic',sans-serif;">
         <span class="pageNumber"></span> / <span class="totalPages"></span></div>`,
 });

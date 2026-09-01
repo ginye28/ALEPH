@@ -34,7 +34,7 @@ export const createMemoryBackend = () => {
     const plans = {
         async createWithRevision({ planId, revisionId, carriedFromReviewId = null, revision }) {
             if (!state.plans.some((p) => p.id === planId)) {
-                state.plans.push({ id: planId, createdAt: new Date().toISOString(), carriedFromReviewId });
+                state.plans.push({ id: planId, createdAt: new Date().toISOString(), carriedFromReviewId, deletedAt: null });
             }
             if (!state.planRevisions.some((r) => r.id === revisionId)) {
                 state.planRevisions.push({
@@ -57,7 +57,9 @@ export const createMemoryBackend = () => {
             return { data: clone(row), error: null };
         },
         async listWithCurrent() {
-            const rows = state.plans.map((p) => ({ ...p, current: currentRevisionOf(p.id) }));
+            const rows = state.plans
+                .filter((p) => !p.deletedAt)
+                .map((p) => ({ ...p, current: currentRevisionOf(p.id) }));
             rows.sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1));
             return { data: clone(rows), error: null };
         },
@@ -70,6 +72,12 @@ export const createMemoryBackend = () => {
         async get(planId) {
             const plan = state.plans.find((p) => p.id === planId) ?? null;
             return { data: plan ? clone(plan) : null, error: null };
+        },
+        async softDelete(planId) {
+            const row = state.plans.find((p) => p.id === planId);
+            if (!row) return { data: null, error: { message: "계획을 찾지 못했습니다" } };
+            if (!row.deletedAt) row.deletedAt = new Date().toISOString();
+            return { data: clone(row), error: null };
         },
     };
 

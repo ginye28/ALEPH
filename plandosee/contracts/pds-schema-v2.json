@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "description": "플랜두씨 다이어리 2 (6N.md) — Supabase Postgres 스키마 계약. 실제 DDL은 plandosee/supabase/schema.sql.",
+  "description": "플랜두씨 다이어리 (6N.md) — Supabase Postgres 스키마 계약. 실제 DDL은 plandosee/supabase/schema.sql.",
   "dateRules": {
     "timezoneOfRecord": "Asia/Seoul (KST, UTC+9)",
     "timestamptzColumns": "UTC로 저장됩니다. 화면 표시는 Intl.DateTimeFormat({ timeZone: 'Asia/Seoul' })로 변환합니다.",
@@ -13,7 +13,8 @@
       "columns": {
         "id": "uuid, PK, 클라이언트가 생성해 upsert(id로 멱등)",
         "created_at": "timestamptz, 기본 now()",
-        "carried_from_review_id": "uuid, nullable, FK → review_notes.id — 이전 돌아보기의 '고칠 점'에서 시작된 계획이면 그 노트를 가리킵니다 (T06-C33)"
+        "carried_from_review_id": "uuid, nullable, FK → review_notes.id — 이전 돌아보기의 '고칠 점'에서 시작된 계획이면 그 노트를 가리킵니다 (T06-C33)",
+        "deleted_at": "timestamptz, nullable — null이면 살아있는 계획. DELETE 정책이 없어 소프트 삭제만 가능하며, 지워도 그 계획의 개정 이력·할일·실행기록은 그대로 남고 목록에서만 빠집니다"
       }
     },
     "plan_revisions": {
@@ -86,6 +87,6 @@
   "rls": {
     "model": "로그인이 없습니다. anon 키에 대해 대부분 SELECT/INSERT를 using(true)/with check(true)로 엽니다 — 이것은 '링크를 아는 사람은 볼 수 있다'는 6N.md의 명시된 전제이지, 실제 접근 통제가 아닙니다. 잠그는 일은 과제 7의 몫입니다.",
     "immutableTables": ["plan_revisions", "execution_records", "review_notes"],
-    "softDeleteOnly": ["tasks"]
+    "softDeleteOnly": ["plans", "tasks"]
   }
 }

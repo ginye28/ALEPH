@@ -10,7 +10,7 @@ import PlanForm from "./PlanForm";
  * 계획을 골라도 화면에는 언제나 "현재 개정본"만 강조하고, 이력은 접어서 보여줍니다 —
  * 그래도 처음 계획(1판)이 그대로 남아 있다는 걸 펼치면 바로 확인할 수 있습니다 (T06-C08).
  */
-function PlanSection({ sectionRef, plans, selectedPlanId, onSelectPlan, history, onCreate, onRevise, carryNote }) {
+function PlanSection({ sectionRef, plans, selectedPlanId, onSelectPlan, history, onCreate, onRevise, onDelete, carryNote }) {
     const [revisingId, setRevisingId] = useState(null);
     const [historyOpenFor, setHistoryOpenFor] = useState(null);
 
@@ -41,7 +41,11 @@ function PlanSection({ sectionRef, plans, selectedPlanId, onSelectPlan, history,
                         <Fragment key={plan.id}>
                             <tr
                                 data-testid={plan.id === selectedPlanId ? "plan-row-selected" : undefined}
-                                css={{ background: plan.id === selectedPlanId ? "var(--accent-bg)" : "transparent" }}>
+                                onClick={() => onSelectPlan(plan.id)}
+                                css={{
+                                    cursor: "pointer",
+                                    background: plan.id === selectedPlanId ? "var(--accent-bg)" : "transparent",
+                                }}>
                                 <td>{plan.current?.title ?? "-"}</td>
                                 <td>
                                     {plan.current?.periodStart} ~ {plan.current?.periodEnd}
@@ -57,11 +61,29 @@ function PlanSection({ sectionRef, plans, selectedPlanId, onSelectPlan, history,
                                         <button
                                             type="button"
                                             css={f.smallButton}
-                                            onClick={() => setHistoryOpenFor((prev) => (prev === plan.id ? null : plan.id))}>
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setHistoryOpenFor((prev) => (prev === plan.id ? null : plan.id));
+                                            }}>
                                             이력 {historyOpenFor === plan.id ? "숨기기" : "보기"}
                                         </button>
-                                        <button type="button" css={f.smallButton} onClick={() => setRevisingId(plan.id)}>
+                                        <button
+                                            type="button"
+                                            css={f.smallButton}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setRevisingId(plan.id);
+                                            }}>
                                             고치기
+                                        </button>
+                                        <button
+                                            type="button"
+                                            css={f.smallButton}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                onDelete(plan.id);
+                                            }}>
+                                            삭제
                                         </button>
                                     </span>
                                 </td>

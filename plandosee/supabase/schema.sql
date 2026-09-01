@@ -1,10 +1,11 @@
--- 플랜두씨 다이어리 2 (6N.md) — Supabase 스키마.
+-- 플랜두씨 다이어리 (6N.md) — Supabase 스키마.
 -- Supabase 프로젝트의 SQL 편집기에서 이 파일 전체를 한 번 실행합니다.
 --
 -- 설계 원칙:
 --   1. 계획은 고치지 않고 갈아엎지도 않습니다 — plan_revisions에 이력만 쌓습니다 (T06-C08).
---   2. 할일 삭제는 하드 삭제가 아니라 deleted_at 소프트 삭제입니다. tasks에는 DELETE 정책이
+--   2. 계획·할일 삭제는 하드 삭제가 아니라 deleted_at 소프트 삭제입니다. 둘 다 DELETE 정책이
 --      아예 없어 anon 키로도 하드 삭제가 구조적으로 불가능합니다 (T06-C28 "지우지 않은" 요건).
+--      계획을 지워도 그 계획의 개정 이력·할일·실행기록은 그대로 DB에 남습니다 — 목록에서만 빠집니다.
 --   3. 완료는 이벤트가 아니라 상태입니다 — status/completed_at을 WHERE로 가드해 갱신하므로
 --      두 번 눌러도 쌓일 무언가 자체가 없습니다 (T06-C21·C22).
 --   4. 이력 테이블(plan_revisions·execution_records·review_notes)은 UPDATE/DELETE 정책을
@@ -19,7 +20,8 @@ create extension if not exists pgcrypto;
 create table plans (
   id uuid primary key default gen_random_uuid(),
   created_at timestamptz not null default now(),
-  carried_from_review_id uuid null
+  carried_from_review_id uuid null,
+  deleted_at timestamptz null
 );
 
 create table plan_revisions (
@@ -130,6 +132,8 @@ alter table review_notes enable row level security;
 
 create policy plans_select on plans for select using (true);
 create policy plans_insert on plans for insert with check (true);
+create policy plans_update on plans for update using (true) with check (true);
+-- DELETE 정책 없음 → 하드 삭제 불가, deleted_at 소프트 삭제만 가능합니다 (tasks와 같은 방식).
 
 create policy plan_revisions_select on plan_revisions for select using (true);
 create policy plan_revisions_insert on plan_revisions for insert with check (true);

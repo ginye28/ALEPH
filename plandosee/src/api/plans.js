@@ -27,6 +27,13 @@ export const createPlan = async (form, { carriedFromReviewId = null } = {}) => {
     return { ok: true, data };
 };
 
+/** 계획을 지웁니다 — 소프트 삭제라 개정 이력·할일·실행기록은 그대로 남고 목록에서만 빠집니다. */
+export const deletePlan = async (planId) => {
+    const { data, error } = await db.plans.softDelete(planId);
+    if (error) return { ok: false, errors: { form: error.message } };
+    return { ok: true, data };
+};
+
 /** 계획을 고칩니다 — 기존 개정본은 손대지 않고 새 개정본을 추가합니다. */
 export const revisePlan = async (planId, form) => {
     const checked = checkPlanForm(form);
