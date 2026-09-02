@@ -156,7 +156,26 @@ returns table (
 $$;
 grant execute on function plan_review(uuid, date) to authenticated;
 
--- ── RLS ──────────────────────────────────────────────────────────
+-- ── 세션 즉시 무효화 ──────────────────────────────────────────────
+-- JWT 액세스 토큰은 stateless라 signOut()을 불러도 그 자체로는 만료 시각(exp, 기본 1시간)까지
+-- 계속 "서명은 유효"합니다. 그래서 auth.uid()만 검사하면 로그아웃한 뒤에도 훔친 토큰이
+-- 한동안 계속 통합니다. Supabase Auth는 로그인마다 auth.sessions에 행을 하나 만들고
+-- signOut()이 그 행을 지우므로, 토큰 안의 session_id 클레임이 auth.sessions에 지금도 있는지를
+-- 매 요청마다 같이 검사하면 로그아웃 즉시(=행이 사라진 순간) 그 토큰은 완전히 죽습니다.
+-- authenticated 역할은 auth.sessions에 직접 SELECT 권한이 없어 security definer로 우회합니다.
+create or replace function session_is_active()
+returns boolean
+language sql
+security definer
+set search_path = auth, public
+stable
+as $$
+  select exists (
+    select 1 from auth.sessions where id = (auth.jwt()->>'session_id')::uuid
+  );
+$$;
+grant execute on function session_is_active() to authenticated;
+
 -- 로그인하지 않으면 auth.uid()가 null이라 모든 정책이 자동으로 거절합니다.
 -- anon 역할에는 아무 정책도 주지 않아 비로그인 접근이 구조적으로 막힙니다.
 alter table plans enable row level security;
@@ -165,26 +184,26 @@ alter table tasks enable row level security;
 alter table execution_records enable row level security;
 alter table review_notes enable row level security;
 
-create policy plans_select on plans for select using (auth.uid() = user_id);
-create policy plans_insert on plans for insert with check (auth.uid() = user_id);
-create policy plans_update on plans for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy plans_select on plans for select using (auth.uid() = user_id and session_is_active());
+create policy plans_insert on plans for insert with check (auth.uid() = user_id and session_is_active());
+create policy plans_update on plans for update using (auth.uid() = user_id and session_is_active()) with check (auth.uid() = user_id and session_is_active());
 -- DELETE 정책 없음 → 하드 삭제 불가, deleted_at 소프트 삭제만 가능합니다.
 
-create policy plan_revisions_select on plan_revisions for select using (auth.uid() = user_id);
-create policy plan_revisions_insert on plan_revisions for insert with check (auth.uid() = user_id);
+create policy plan_revisions_select on plan_revisions for select using (auth.uid() = user_id and session_is_active());
+create policy plan_revisions_insert on plan_revisions for insert with check (auth.uid() = user_id and session_is_active());
 -- UPDATE/DELETE 정책 없음 → 계획 개정 이력은 항상 append-only입니다.
 
-create policy tasks_select on tasks for select using (auth.uid() = user_id);
-create policy tasks_insert on tasks for insert with check (auth.uid() = user_id);
-create policy tasks_update on tasks for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+create policy tasks_select on tasks for select using (auth.uid() = user_id and session_is_active());
+create policy tasks_insert on tasks for insert with check (auth.uid() = user_id and session_is_active());
+create policy tasks_update on tasks for update using (auth.uid() = user_id and session_is_active()) with check (auth.uid() = user_id and session_is_active());
 -- DELETE 정책 없음 → 하드 삭제 불가, deleted_at 소프트 삭제만 가능합니다.
 
-create policy execution_records_select on execution_records for select using (auth.uid() = user_id);
-create policy execution_records_insert on execution_records for insert with check (auth.uid() = user_id);
+create policy execution_records_select on execution_records for select using (auth.uid() = user_id and session_is_active());
+create policy execution_records_insert on execution_records for insert with check (auth.uid() = user_id and session_is_active());
 -- UPDATE/DELETE 정책 없음 → 실행기록은 항상 append-only입니다.
 
-create policy review_notes_select on review_notes for select using (auth.uid() = user_id);
-create policy review_notes_insert on review_notes for insert with check (auth.uid() = user_id);
+create policy review_notes_select on review_notes for select using (auth.uid() = user_id and session_is_active());
+create policy review_notes_insert on review_notes for insert with check (auth.uid() = user_id and session_is_active());
 -- UPDATE/DELETE 정책 없음 → 고칠 점 이력도 항상 append-only입니다.
 
 -- ── 계정 삭제 (카드 5) ───────────────────────────────────────────

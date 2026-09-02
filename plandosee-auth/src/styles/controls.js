@@ -88,6 +88,21 @@ export const primaryButton = css`
     }
 `;
 
+/** 되돌릴 수 없는 파괴적 동작(계정 삭제 등) 전용. 로그아웃 같은 평범한 버튼과 한눈에 갈립니다. */
+export const dangerButton = css`
+    ${button};
+    border-color: var(--bad);
+    color: var(--bad);
+    background: var(--bad-bg);
+    font-weight: 700;
+
+    &:hover:not(:disabled) {
+        border-color: var(--bad);
+        background: var(--bad);
+        color: var(--on-accent);
+    }
+`;
+
 /** 작은 제목. 자간을 벌려 본문과 확실히 구분합니다. */
 export const label = css`
     display: block;

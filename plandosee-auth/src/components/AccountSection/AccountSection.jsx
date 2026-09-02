@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { deleteMyData, signOut } from "../../api/auth";
 import * as c from "../../styles/controls";
+import * as s from "./styles";
 
 /**
  * 로그아웃 + 계정 삭제 (카드 5, T07-C134).
@@ -38,29 +39,34 @@ function AccountSection({ email, onSignedOut }) {
                 로그아웃
             </button>
 
-            <p css={c.note}>
-                <b>계정 삭제</b>는 내 계획·할일·실행기록·고칠 점을 전부 지웁니다. 다만{" "}
-                <b>가입 정보(이메일) 자체는 이 버튼으로 지워지지 않고 별도 절차가 필요합니다</b>{" "}
-                — Auth 계정 레코드의 하드 삭제는 관리자 권한이 있어야 해 이 화면에서는 못 만들었습니다.
-            </p>
+            <hr css={s.divider} />
 
-            {!confirming && (
-                <button type="button" css={c.button} data-testid="account-delete-start" onClick={() => setConfirming(true)}>
-                    내 계정 삭제
-                </button>
-            )}
+            <div css={s.dangerZone}>
+                <p css={s.dangerLabel}>⚠ 위험 구역</p>
+                <p css={c.note}>
+                    <b>계정 삭제</b>는 내 계획·할일·실행기록·고칠 점을 전부 지웁니다. 다만{" "}
+                    <b>가입 정보(이메일) 자체는 이 버튼으로 지워지지 않고 별도 절차가 필요합니다</b>{" "}
+                    — Auth 계정 레코드의 하드 삭제는 관리자 권한이 있어야 해 이 화면에서는 못 만들었습니다.
+                </p>
 
-            {confirming && (
-                <div css={c.note}>
-                    <p>정말 지울까요? 계획·할일·실행기록이 전부 사라지고 되돌릴 수 없습니다.</p>
-                    <button type="button" css={c.primaryButton} data-testid="account-delete-confirm" disabled={pending} onClick={handleDelete}>
-                        네, 지웁니다
-                    </button>{" "}
-                    <button type="button" css={c.button} onClick={() => setConfirming(false)}>
-                        취소
+                {!confirming && (
+                    <button type="button" css={c.dangerButton} data-testid="account-delete-start" onClick={() => setConfirming(true)}>
+                        내 계정 삭제
                     </button>
-                </div>
-            )}
+                )}
+
+                {confirming && (
+                    <div css={c.note}>
+                        <p>정말 지울까요? 계획·할일·실행기록이 전부 사라지고 되돌릴 수 없습니다.</p>
+                        <button type="button" css={c.dangerButton} data-testid="account-delete-confirm" disabled={pending} onClick={handleDelete}>
+                            네, 지웁니다 — 되돌릴 수 없습니다
+                        </button>{" "}
+                        <button type="button" css={c.button} onClick={() => setConfirming(false)}>
+                            취소
+                        </button>
+                    </div>
+                )}
+            </div>
 
             {message && (
                 <p css={c.note} data-testid="account-message" style={{ color: message.tone === "bad" ? "var(--bad)" : undefined }}>

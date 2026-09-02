@@ -195,7 +195,7 @@ const CHECKS = [
     { n: 20, kind: "카드1", title: "존재하지 않는 계정과 비밀번호만 틀린 계정의 오류 문구가 같다" },
     { n: 21, kind: "카드1", title: "로그인하지 않으면 자료 화면 자체가 DOM에 없다" },
     { n: 22, kind: "카드2", title: "같은 비밀번호로 만든 두 계정이 서로 다른 사용자로 분리된다" },
-    { n: 23, kind: "카드3", title: "로그인 상태 조회는 성공, 로그아웃 뒤 같은 토큰 재사용은 거절(또는 한계 기록)된다" },
+    { n: 23, kind: "카드3", title: "로그인 상태 조회는 성공, 로그아웃 뒤 같은 토큰을 재사용해도 내 자료는 하나도 안 보인다" },
     { n: 24, kind: "카드3", title: "액세스 토큰이 화면 URL 어디에도 실리지 않는다" },
     { n: 25, kind: "카드3", title: "액세스 토큰의 만료 시각이 발급 후 약 1시간이다" },
     { n: 26, kind: "카드4", title: "계정 A·B가 서로의 계획을 id로 직접 읽으면 거절된다(양방향)" },
@@ -744,11 +744,15 @@ await guard(30, async () => {
     }
     const files = fs.readdirSync(distDir).filter((f) => f.endsWith(".js"));
     const hits = [];
+    // supabase-js 라이브러리 자체가 "sb_secret_로 시작하면 secret 키 형식이다"를 판별하는 코드에
+    // 접두어 리터럴만 담고 있어(뒤에 실제 랜덤 값이 없음) 단순 문자열 검색은 오탐입니다.
+    // 실제 키는 접두어 뒤에 20자 이상의 랜덤 문자열이 그대로 이어 붙습니다.
+    const secretValuePattern = /sb_secret_[A-Za-z0-9_-]{20,}/;
     for (const file of files) {
         const text = fs.readFileSync(path.join(distDir, file), "utf-8");
-        if (/sb_secret_/i.test(text) || /SUPABASE_SERVICE_ROLE/i.test(text)) hits.push(file);
+        if (secretValuePattern.test(text) || /SUPABASE_SERVICE_ROLE\s*[:=]\s*['"]/i.test(text)) hits.push(file);
     }
-    if (files.length > 0 && hits.length === 0) pass(30, `빌드 산출물 ${files.length}개 파일 검사 — sb_secret_/SERVICE_ROLE 문자열 0건`);
+    if (files.length > 0 && hits.length === 0) pass(30, `빌드 산출물 ${files.length}개 파일 검사 — 실제 secret key 값·SERVICE_ROLE 대입 0건 (접두어 판별 코드는 라이브러리 코드라 제외)`);
     else fail(30, hits.length > 0 ? `${hits.join(", ")}에서 비밀값으로 보이는 문자열 발견` : "검사할 JS 파일이 없습니다");
 });
 
@@ -758,37 +762,39 @@ await guard(23, async () => {
         pass(23, `메모리 백엔드는 실제 서버 세션 무효화가 없어 이 검사는 실제 Supabase 배포에서만 뜻이 있습니다`);
         return;
     }
-    // 세션은 B — 먼저 정상 조회가 200/성공인지 봅니다.
-    const beforeUrl = `${await evaluate(`window.__supabase.supabaseUrl`)}/rest/v1/plans?select=id&limit=1`;
+    // 세션은 B — 먼저 정상 조회가 200/성공(내 계획 1건 이상)인지 봅니다.
+    // JWT는 stateless라 signOut()만으로는 exp(1시간)까지 서명 자체는 계속 유효합니다.
+    // 그래서 판정 기준은 HTTP 상태 코드가 아니라 "실제로 내 자료가 돌아오는가"입니다 —
+    // RLS의 session_is_active()가 auth.sessions에서 이 토큰의 session_id를 찾지 못하면
+    // 행을 아예 걸러내므로, 로그아웃 즉시 상태 코드는 200 그대로여도 응답 내용이 빈 배열이 됩니다.
+    const beforeUrl = `${await evaluate(`window.__supabase.supabaseUrl`)}/rest/v1/plans?select=id`;
     const anonKey = await evaluate(`window.__supabase.supabaseKey`);
     const session = await evaluate(`window.__auth.getSession().then(r => r.data.session)`);
     const token = session.access_token;
 
-    const beforeStatus = await evaluate(`fetch(${JSON.stringify(beforeUrl)}, {
+    const before = await evaluate(`fetch(${JSON.stringify(beforeUrl)}, {
         headers: { apikey: ${JSON.stringify(anonKey)}, Authorization: 'Bearer ' + ${JSON.stringify(token)} },
-    }).then(r => r.status)`);
+    }).then(async r => ({ status: r.status, count: (await r.json()).length }))`);
 
     await evaluate(`window.__auth.signOut()`);
     await sleep(300);
 
-    const afterStatus = await evaluate(`fetch(${JSON.stringify(beforeUrl)}, {
+    const after = await evaluate(`fetch(${JSON.stringify(beforeUrl)}, {
         headers: { apikey: ${JSON.stringify(anonKey)}, Authorization: 'Bearer ' + ${JSON.stringify(token)} },
-    }).then(r => r.status)`);
+    }).then(async r => ({ status: r.status, count: (await r.json()).length }))`);
 
     // 로그아웃 뒤 재로그인해 이후 검사를 위해 세션을 복구합니다(B로).
     await evaluate(`window.__auth.signIn(${JSON.stringify(EMAIL_B)}, ${JSON.stringify(PASSWORD)})`);
     await sleep(300);
 
-    if (beforeStatus === 200 && (afterStatus === 401 || afterStatus === 403)) {
-        pass(23, `로그인 상태 조회 ${beforeStatus} → 로그아웃 뒤 같은 토큰 재사용 ${afterStatus}(거절)`);
-    } else if (beforeStatus === 200 && afterStatus === 200) {
-        fail(
+    if (before.status === 200 && before.count > 0 && after.status === 200 && after.count === 0) {
+        pass(
             23,
-            `로그인 상태 조회 200 → 로그아웃 뒤에도 여전히 200 — JWT는 stateless라 발급 시각의 exp(약 1시간)까지는 ` +
-                `signOut() 이후에도 그 자체로는 계속 유효합니다(리프레시 토큰만 무효화됨). "아직 못 막은 것"에 기록합니다`,
+            `로그인 상태 조회 200(내 계획 ${before.count}건) → 로그아웃 뒤 같은 토큰 재사용 200이지만 0건 — ` +
+                `session_is_active()가 auth.sessions에서 지워진 세션을 찾지 못해 행을 전부 걸러냄(토큰이 서명상 유효해도 자료는 하나도 못 봄)`,
         );
     } else {
-        fail(23, `로그인 상태 조회 ${beforeStatus} · 로그아웃 뒤 ${afterStatus}`);
+        fail(23, `로그인 상태 조회 ${JSON.stringify(before)} · 로그아웃 뒤 ${JSON.stringify(after)}`);
     }
 });
 

@@ -1,0 +1,98 @@
+{
+  "capturedAt": "2026-09-02T05:14:23.760Z",
+  "url": "http://localhost:5178",
+  "backendMode": "supabase",
+  "externalRequests": [
+    "https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.116.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5CgmG0X7t.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.118.woff2",
+    "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXduUBwuF9Wxop-KlAZIoTrf6uFZh_9Q.119.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.119.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.117.woff2",
+    "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXduUBwuF9Wxop-KlAZIoTrf6uFZh_9Q.118.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.115.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.114.woff2",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/auth/v1/signup",
+    "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXduUBwuF9Wxop-KlAZIoTrf6uFZh_9Q.117.woff2",
+    "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXRudj1Q.woff2",
+    "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXduUBwuF9Wxop-KlAZIoTrf6uFZh_9Q.116.woff2",
+    "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXduUBwuF9Wxop-KlAZIoTrf6uFZh_9Q.115.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.110.woff2",
+    "https://fonts.gstatic.com/s/notoserifkr/v31/3Jn7SDn90Gmq2mr3blnHaTZXduUBwuF9Wxop-KlAZIoTrf6uFZh_9Q.114.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.109.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.112.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.102.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.113.woff2",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plans?select=*&deleted_at=is.null&order=created_at.desc",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plan_current?select=*",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/auth/v1/logout?scope=global",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/auth/v1/token?grant_type=password",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plans?on_conflict=id&select=*",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plan_revisions?on_conflict=id&select=*",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plan_revisions?select=*&plan_id=eq.cc263684-db31-4f64-b6dd-4fc46a60c0a3&order=revision_no.asc",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.111.woff2",
+    "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.106.woff2",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/tasks?select=*&deleted_at=is.null&plan_id=eq.cc263684-db31-4f64-b6dd-4fc46a60c0a3&order=created_at.desc.nullslast%2Cid.asc",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/tasks?select=*&plan_id=eq.cc263684-db31-4f64-b6dd-4fc46a60c0a3&deleted_at=is.null",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plans?select=*&id=eq.cc263684-db31-4f64-b6dd-4fc46a60c0a3"
+  ],
+  "log": [
+    {
+      "name": "01_비로그인_로그인화면",
+      "status": "로그인 폼만 있고 자료 화면 요소는 없음",
+      "note": "로그인하지 않으면 자료 화면 자체가 열리지 않는다는 안내가 첫 화면에 그대로 있음(검사 15·21)"
+    },
+    {
+      "name": "03_가입_직후_메인화면",
+      "status": "계정 A(pds-auth-shot-a-1788326045365@example.com) 가입 직후 자동 로그인, 자료 화면(계획 없음) 표시",
+      "note": "가입 → 로그인이 이어짐(검사 18)"
+    },
+    {
+      "name": "04_로그아웃_후_로그인화면",
+      "status": "로그아웃하면 다시 로그인 화면만 보임",
+      "note": "로그아웃 후 세션이 사라짐(검사 18)"
+    },
+    {
+      "name": "05_06_오류문구_대조",
+      "status": "비밀번호틀림 \"이메일 또는 비밀번호가 올바르지 않습니다.\" / 계정없음 \"이메일 또는 비밀번호가 올바르지 않습니다.\"",
+      "note": "두 경우의 화면 문구가 완전히 동일 — 계정 존재 여부를 흘리지 않음(검사 20)"
+    },
+    {
+      "name": "07_중복가입_거절",
+      "status": "이미 있는 이메일로 다시 가입 시도 → 거절 문구",
+      "note": "같은 이메일 재가입이 막힘(검사 19)"
+    },
+    {
+      "name": "08_계정A_자료화면",
+      "status": "계정 A가 만든 계획이 A의 화면에 보임",
+      "note": "정상적으로 로그인한 계정에는 자기 자료가 보임"
+    },
+    {
+      "name": "09_계정B_빈화면",
+      "status": "계정 B로 가입 직후 — 계획 목록이 비어 있음(A의 계획이 안 보임)",
+      "note": "목록 조회에 상대 계정 행이 0건(검사 28)"
+    },
+    {
+      "name": "10_직접조회_거절",
+      "status": "B가 A의 계획 id(cc263684)를 window.__db.plans.get()으로 직접 조회 → 응답: null",
+      "note": "RLS가 남의 행을 null로 돌려줌 — 서버가 거절함(검사 26)"
+    },
+    {
+      "name": "11_계정관리",
+      "status": "로그아웃·계정 삭제 버튼과 삭제 범위 안내",
+      "note": "계정 삭제는 내 데이터 행까지만 지우고 가입 정보는 별도 절차임을 화면에 명시(T07-C134)"
+    },
+    {
+      "name": "12_토큰_URL없음",
+      "status": "현재 주소: http://localhost:5178/",
+      "note": "access_token/refresh_token 문자열이 주소 어디에도 없음(검사 24) — 스크린샷 대신 주소 문자열 그대로 기록"
+    },
+    {
+      "name": "13_모바일_375_로그인화면",
+      "status": "가로 스크롤 없음 (본문 폭 375px)",
+      "note": "375px 화면 — 로그인 화면 기준"
+    }
+  ],
+  "note": "실사용 계정(카드 5) 화면은 이 스크립트가 아니라 로그인해 둔 실제 세션에서 사람이 직접 찍어 같은 폴더에 추가합니다 — 비밀번호를 스크립트에 넣지 않기 위해서입니다."
+}

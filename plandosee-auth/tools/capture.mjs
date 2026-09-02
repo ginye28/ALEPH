@@ -1,12 +1,14 @@
 /**
- * 증빙 자동 촬영기 (6N.md).
+ * 증빙 자동 촬영기 (7.md).
  *
- *   node plandosee/tools/capture.mjs
- *   BOARD_URL=https://... node plandosee/tools/capture.mjs
+ *   node plandosee-auth/tools/capture.mjs
+ *   BOARD_URL=https://... node plandosee-auth/tools/capture.mjs
  *
- * 6N.md는 구 과제 6과 반대로 "합성 대신 진짜, 대신 공개 가능한 내용만"을 요구합니다.
- * 그래서 이 스크립트는 합성 자료를 새로 만들지 않고, 실제로 넣어 둔 계획 "ALEPH 과제 진행"과
- * 그 할일·실행기록을 그대로 찾아서 찍습니다. 카드 5 내용을 먼저 화면에 넣어야 이 스크립트가 돕니다.
+ * 7.md의 핵심은 "막았다"는 문장이 아니라 막히는 장면(성공 요청과 거절 요청을 나란히)입니다.
+ * 이 스크립트는 check.mjs와 같은 방식으로 스크래치 계정 두 개(A·B)를 직접 만들어 가입·로그인·
+ * 로그아웃·계정 간 격리를 화면으로 찍습니다. 실제 개인 계정(카드 5의 진짜 5일 기록)은
+ * 이 스크립트가 손댈 수 없습니다 — 비밀번호를 이 스크립트에 넣지 않기 때문입니다(설계 원칙 2).
+ * 그 화면은 로그인해 둔 실제 세션에서 따로, 사람이 직접 찍어 같은 폴더에 둡니다.
  */
 import { spawn } from "node:child_process";
 import fs from "node:fs";
@@ -20,6 +22,12 @@ const PROFILE = fs.mkdtempSync(path.join(os.tmpdir(), "pds-auth-shot-"));
 
 const CHROME = "C:/Program Files/Google/Chrome/Application/chrome.exe";
 const PORT = 9356;
+const RUN_STAMP = Date.now();
+const EMAIL_A = `pds-auth-shot-a-${RUN_STAMP}@example.com`;
+const EMAIL_B = `pds-auth-shot-b-${RUN_STAMP}@example.com`;
+const PASSWORD = "ShotPass!23456";
+const WRONG_PASSWORD = "WrongPass!99999";
+const NONEXISTENT_EMAIL = `pds-auth-shot-none-${RUN_STAMP}@example.com`;
 
 fs.mkdirSync(SHOT_DIR, { recursive: true });
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -30,7 +38,7 @@ const chrome = spawn(
         "--headless=new",
         `--remote-debugging-port=${PORT}`,
         `--user-data-dir=${PROFILE}`,
-        "--window-size=1180,2600",
+        "--window-size=1180,1600",
         "--hide-scrollbars",
         "--force-device-scale-factor=2",
         "--no-first-run",
@@ -142,19 +150,8 @@ const shotSectionByHeading = async (name, h2Text, pad = 14) => {
 
 const helpers = `
 window.__click = (t) => { const b = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === t); if (!b) throw new Error('버튼 없음: ' + t); b.click(); };
-window.__taskButton = (taskId, label) => { const row = document.querySelector('[data-task-id="' + taskId + '"]'); if (!row) throw new Error('행 없음: ' + taskId); const b = [...row.querySelectorAll('button')].find(b => b.textContent.trim() === label); if (!b) throw new Error('행 버튼 없음: ' + label); b.click(); };
-window.__planRowButton = (titleIncludes, label) => {
-    const rows = [...document.querySelectorAll('table[aria-label="계획 목록"] tbody tr')];
-    const row = rows.find(tr => tr.textContent.includes(titleIncludes) && tr.querySelector('button'));
-    if (!row) throw new Error('계획 행 없음: ' + titleIncludes);
-    const b = [...row.querySelectorAll('button')].find(b => b.textContent.trim() === label);
-    if (!b) throw new Error('계획 행 버튼 없음: ' + label);
-    b.click();
-};
 window.__fill = (id, value) => { const el = document.getElementById(id); const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set; setter.call(el, value); el.dispatchEvent(new Event('input', { bubbles: true })); };
-window.__select = (id, value) => { const el = document.getElementById(id); const setter = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value').set; setter.call(el, value); el.dispatchEvent(new Event('change', { bubbles: true })); };
 window.__stat = (id) => (document.querySelector('[data-testid="' + id + '"]') || {}).textContent || '';
-window.__num = (id) => Number(String(window.__stat(id)).replace(/[^0-9.-]/g, ''));
 true;
 `;
 
@@ -162,6 +159,11 @@ const goto = async (query = "") => {
     await send("Page.navigate", { url: URL_APP + query });
     await sleep(1500);
     await evaluate(helpers);
+};
+
+const fillLogin = async (email, password) => {
+    await evaluate(`window.__fill('auth-email', ${JSON.stringify(email)})`);
+    await evaluate(`window.__fill('auth-password', ${JSON.stringify(password)})`);
 };
 
 // ───────────────────────────────────────── 촬영
@@ -172,104 +174,116 @@ await connect();
 await send("Page.enable");
 await send("Runtime.enable");
 await send("Network.enable");
-await send("Emulation.setDeviceMetricsOverride", { width: 1180, height: 2600, deviceScaleFactor: 2, mobile: false });
+await send("Emulation.setDeviceMetricsOverride", { width: 1180, height: 1600, deviceScaleFactor: 2, mobile: false });
 await goto();
 
 const backendMode = await evaluate(`window.__backendMode`);
 console.log(`백엔드: ${backendMode}`);
 
-console.log("A. 실제 계획·할일·실행기록 확인 (합성 자료를 새로 만들지 않습니다 — 6N.md는 진짜 내용을 요구합니다)");
-const planId = await evaluate(`window.__db.plans.listWithCurrent().then(r => r.data.find(p => p.current?.title === 'ALEPH 과제 진행')?.id)`);
-if (!planId) {
-    throw new Error("실제 계획 'ALEPH 과제 진행'을 찾지 못했습니다. 카드 5 내용을 먼저 넣어주세요.");
-}
-const planTasks = await evaluate(`window.__db.tasks.listAllByPlan(${JSON.stringify(planId)}).then(r => r.data)`);
-const taskA = planTasks.find((t) => t.title.includes("Supabase 스키마"))?.id; // 실행기록·완료중복방지 시연용
-if (!taskA) throw new Error("실행기록이 붙은 실제 할일을 찾지 못했습니다.");
-await evaluate(`window.__reloadPlans()`);
-await sleep(400);
-await evaluate(`window.__planRowButton('ALEPH 과제 진행', '선택')`); // 실제 계획을 선택해야 아래 할일 목록이 그 계획 기준으로 보입니다.
-await sleep(400);
+console.log("A. 카드1 · 비로그인 첫 화면");
+await shot("01_비로그인_로그인화면");
+record("01_비로그인_로그인화면", "로그인 폼만 있고 자료 화면 요소는 없음", "로그인하지 않으면 자료 화면 자체가 열리지 않는다는 안내가 첫 화면에 그대로 있음(검사 15·21)");
 
-console.log("B. 카드 1 · 계획 + 이력");
-await shotSectionByHeading("02_계획_이력_닫힘", "계획");
-await evaluate(`window.__planRowButton('ALEPH 과제 진행', '이력 보기')`);
+console.log("B. 카드1 · 가입 → 세션 생김");
+await evaluate(`window.__click('처음이라면 가입하기')`);
 await sleep(300);
-const history = await evaluate(`window.__db.plans.history(${JSON.stringify(planId)}).then(r => r.data)`);
-const first = history.find((r) => r.revisionNo === 1);
-const latest = history.reduce((a, b) => (b.revisionNo > a.revisionNo ? b : a));
-await shotSectionByHeading("02_계획_이력", "계획");
-record(
-    "02_계획_이력",
-    `1판(처음) ${first.estimatedMinutes}분 그대로 · ${latest.revisionNo}판(현재) ${latest.estimatedMinutes}분`,
-    "계획을 고쳐도 처음 개정본이 이력에 그대로 남습니다",
-);
-await evaluate(`window.__planRowButton('ALEPH 과제 진행', '이력 숨기기')`);
+await fillLogin(EMAIL_A, PASSWORD);
+await shot("02_가입_입력");
+await evaluate(`window.__click('가입하기')`);
+await sleep(700);
+await shot("03_가입_직후_메인화면");
+record("03_가입_직후_메인화면", `계정 A(${EMAIL_A}) 가입 직후 자동 로그인, 자료 화면(계획 없음) 표시`, "가입 → 로그인이 이어짐(검사 18)");
 
-console.log("C. 카드 2 · 할일 CRUD + 검색/필터/정렬");
-await shotSectionByHeading("03_할일_목록", "할 일");
-await evaluate(`window.__select('task-priority-filter', 'high')`);
-await sleep(300);
-const filteredCount = await evaluate(`document.querySelectorAll('[data-testid="task-row"]').length`);
-await shotSectionByHeading("04_검색필터정렬", "할 일");
-record("04_검색필터정렬", `우선순위=높음 필터 → ${filteredCount}건`, "정렬 기준과 방향이 화면 머리에 그대로 적혀 있습니다");
-await evaluate(`window.__select('task-priority-filter', 'all')`);
-await sleep(300);
-
-console.log("D. 카드 3 · 실행기록");
-await evaluate(`window.__taskButton(${JSON.stringify(taskA)}, '실행기록')`); // 이미 실행기록이 붙은 "스키마 SQL 작성" 행
-await sleep(400);
-await shotSectionByHeading("05_실행기록", "실행 기록");
-record("05_실행기록", "시작·끝·90분·막힌 이유가 어느 할일에 붙었는지와 함께 보임", "계획·할일 값은 실행기록 저장 전후로 바뀌지 않습니다(검사 8)");
-
-console.log("E. 카드 3 · 완료 중복방지");
-// taskA는 이미 실제로 완료된 할일입니다 — 이미 완료된 것에 완료를 동시에 두 번 더 호출해도
-// 완료시각이 조금도 바뀌지 않는다는 게 이 검사의 핵심입니다.
-const [beforeCompletedAt, afterPair] = await Promise.all([
-    evaluate(`window.__db.tasks.get(${JSON.stringify(taskA)}).then(r => r.data.completedAt)`),
-    evaluate(`Promise.all([window.__db.tasks.complete(${JSON.stringify(taskA)}), window.__db.tasks.complete(${JSON.stringify(taskA)})]).then(([a, b]) => [a.data.completedAt, b.data.completedAt])`),
-]);
-const unchanged = beforeCompletedAt === afterPair[0] && afterPair[0] === afterPair[1];
-record(
-    "06_완료중복방지",
-    `이미 완료된 할일에 완료를 동시에 두 번 더 호출 — 완료시각 ${unchanged ? "완전히 그대로" : "바뀜(문제)"} (${beforeCompletedAt})`,
-    "완료는 상태 전이라 몇 번을 호출해도 새로 쌓이는 기록이 없습니다(검사 9)",
-);
-
-console.log("F. 카드 4 · 돌아보기 + 드릴다운");
-await shotSectionByHeading("07_돌아보기_집계", "돌아보기");
-const overdueBtn = await evaluate(`(() => { const b = document.querySelector('[data-testid="review-stat-blockedCount"]'); b.click(); return b.textContent.replace(/\\s+/g,' ').trim(); })()`);
-await sleep(400);
-await shotSectionByHeading("08_드릴다운", "할 일");
-record("08_드릴다운", `돌아보기의 "${overdueBtn}" 숫자를 눌러 그 조건에 맞는 할일 목록으로 이동`, "숫자와 목록이 같은 조건식(reviewFilters.js)에서 나와 서로 어긋나지 않습니다");
-await evaluate(`window.__click('필터 해제')`);
-
-console.log("G. 카드 4 · 고칠 점 → 다음 계획");
-await evaluate(`window.__fill('review-note', ${JSON.stringify("자동화 스크립트를 UI 좌표 클릭보다 DOM 헬퍼로 짜니 훨씬 안정적이었다 — 다음 도구 스크립트도 처음부터 이렇게 짠다")})`);
-await evaluate(`window.__click('고칠 점 저장')`);
-await sleep(400);
-await evaluate(`window.__click(${JSON.stringify("이 고칠 점으로 다음 계획 만들기")})`);
+console.log("C. 카드1 · 로그아웃");
+await evaluate(`window.__click('로그아웃')`);
 await sleep(500);
-await shotSectionByHeading("09_고칠점_다음계획", "계획");
-record("09_고칠점_다음계획", "돌아보기에서 저장한 고칠 점이 새 계획 폼 위에 안내로 보임", "돌아보기의 노트가 다음 계획으로 이어집니다(검사 12)");
+await shot("04_로그아웃_후_로그인화면");
+record("04_로그아웃_후_로그인화면", "로그아웃하면 다시 로그인 화면만 보임", "로그아웃 후 세션이 사라짐(검사 18)");
 
-console.log("H. 카드 5 · 로그인 없음 안내 + 전체");
-await shotSelector("10_로그인없음_배너", '[data-testid="no-login-banner"]');
-record("10_로그인없음_배너", "첫 화면에 6N.md 원문 그대로의 안내 문구", "아직 로그인이 없다는 사실을 첫 화면에 못박음(검사 15)");
+console.log("D. 카드1 · 존재하지 않는 계정 vs 비밀번호만 틀림 — 같은 오류 문구");
+await fillLogin(EMAIL_A, WRONG_PASSWORD);
+await evaluate(`window.__click('로그인')`);
+await sleep(500);
+await shotSelector("05_오류_비밀번호틀림", '[data-testid="auth-error"]');
+const errWrongPw = await evaluate(`window.__stat('auth-error')`);
 
-console.log("I. 카드 5 · 내보내기");
-await shotSectionByHeading("11_내보내기", "내 자료 내보내기");
+await fillLogin(NONEXISTENT_EMAIL, PASSWORD);
+await evaluate(`window.__click('로그인')`);
+await sleep(500);
+await shotSelector("06_오류_계정없음", '[data-testid="auth-error"]');
+const errNoAccount = await evaluate(`window.__stat('auth-error')`);
+record(
+    "05_06_오류문구_대조",
+    `비밀번호틀림 "${errWrongPw.trim()}" / 계정없음 "${errNoAccount.trim()}"`,
+    errWrongPw.trim() === errNoAccount.trim() ? "두 경우의 화면 문구가 완전히 동일 — 계정 존재 여부를 흘리지 않음(검사 20)" : "문구가 다름(문제)",
+);
 
-await shot("01_전체화면");
+console.log("E. 카드1 · 가입 중복 거절");
+await evaluate(`window.__click('처음이라면 가입하기')`);
+await sleep(300);
+await fillLogin(EMAIL_A, PASSWORD);
+await evaluate(`window.__click('가입하기')`);
+await sleep(600);
+await shotSelector("07_중복가입_거절", '[data-testid="auth-error"]');
+record("07_중복가입_거절", "이미 있는 이메일로 다시 가입 시도 → 거절 문구", "같은 이메일 재가입이 막힘(검사 19)");
 
-console.log("J. 모바일");
+console.log("F. 카드4 · 계정 A로 실제 로그인해 계획 하나 만들기");
+await evaluate(`window.__click('이미 계정이 있습니다')`); // 중복가입 시도 뒤라 아직 "가입" 모드입니다 — 로그인 모드로 되돌립니다.
+await sleep(200);
+await evaluate(`window.__fill('auth-email', ${JSON.stringify(EMAIL_A)})`);
+await evaluate(`window.__fill('auth-password', ${JSON.stringify(PASSWORD)})`);
+await evaluate(`window.__click('로그인')`);
+await sleep(700);
+await evaluate(`window.__fill('plan-title', ${JSON.stringify("[검사] A의 계획")})`);
+await evaluate(`window.__fill('plan-start', '2026-09-01')`);
+await evaluate(`window.__fill('plan-end', '2026-09-05')`);
+await evaluate(`window.__fill('plan-success', '격리 증빙용')`);
+await evaluate(`window.__fill('plan-estimated', '60')`);
+await evaluate(`window.__click('계획 만들기')`);
+await sleep(600);
+await shot("08_계정A_자료화면");
+record("08_계정A_자료화면", "계정 A가 만든 계획이 A의 화면에 보임", "정상적으로 로그인한 계정에는 자기 자료가 보임");
+
+const planAId = await evaluate(`window.__db.plans.listWithCurrent().then(r => r.data.find(p => p.current?.title === '[검사] A의 계획')?.id)`);
+
+console.log("G. 카드4 · 계정 B 가입 — A의 계획이 안 보임");
+await evaluate(`window.__click('로그아웃')`);
+await sleep(400);
+await evaluate(`window.__click('처음이라면 가입하기')`);
+await sleep(300);
+await fillLogin(EMAIL_B, PASSWORD);
+await evaluate(`window.__click('가입하기')`);
+await sleep(700);
+await shot("09_계정B_빈화면");
+record("09_계정B_빈화면", "계정 B로 가입 직후 — 계획 목록이 비어 있음(A의 계획이 안 보임)", "목록 조회에 상대 계정 행이 0건(검사 28)");
+
+console.log("H. 카드4 · 계정 B가 A의 계획 id를 직접 조회 — 거절");
+let directReadBlocked = null;
+if (planAId) {
+    directReadBlocked = await evaluate(`window.__db.plans.get(${JSON.stringify(planAId)}).then(r => r.data)`);
+}
+record(
+    "10_직접조회_거절",
+    `B가 A의 계획 id(${planAId ? planAId.slice(0, 8) : "?"})를 window.__db.plans.get()으로 직접 조회 → 응답: ${JSON.stringify(directReadBlocked)}`,
+    directReadBlocked === null ? "RLS가 남의 행을 null로 돌려줌 — 서버가 거절함(검사 26)" : "차단되지 않음(문제)",
+);
+
+console.log("I. 카드5 · 계정 관리 화면");
+await shotSectionByHeading("11_계정관리", "내 계정");
+record("11_계정관리", "로그아웃·계정 삭제 버튼과 삭제 범위 안내", "계정 삭제는 내 데이터 행까지만 지우고 가입 정보는 별도 절차임을 화면에 명시(T07-C134)");
+
+console.log("J. 토큰이 URL에 없음 (텍스트 기록)");
+const currentUrl = await evaluate(`window.location.href`);
+record("12_토큰_URL없음", `현재 주소: ${currentUrl}`, "access_token/refresh_token 문자열이 주소 어디에도 없음(검사 24) — 스크린샷 대신 주소 문자열 그대로 기록");
+
+console.log("K. 모바일");
 await send("Emulation.setDeviceMetricsOverride", { width: 375, height: 1200, deviceScaleFactor: 2, mobile: true });
 await goto();
 await sleep(300);
-await shot("12_모바일_375");
+await shot("13_모바일_375_로그인화면");
 {
     const mobile = await evaluate(`({ scroll: document.body.scrollWidth > document.documentElement.clientWidth, width: document.body.scrollWidth })`);
-    record("12_모바일_375", `가로 스크롤 ${mobile.scroll ? "발생" : "없음"} (본문 폭 ${mobile.width}px)`, "375px 화면");
+    record("13_모바일_375_로그인화면", `가로 스크롤 ${mobile.scroll ? "발생" : "없음"} (본문 폭 ${mobile.width}px)`, "375px 화면 — 로그인 화면 기준");
 }
 
 // ───────────────────────────────────────── 기록 저장
@@ -277,7 +291,11 @@ const external = [...new Set(networkLog.filter((u) => !u.startsWith(URL_APP) && 
 
 fs.writeFileSync(
     path.join(SHOT_DIR, "촬영 기록.json"),
-    JSON.stringify({ capturedAt: new Date().toISOString(), url: URL_APP, backendMode, externalRequests: external, log }, null, 2),
+    JSON.stringify(
+        { capturedAt: new Date().toISOString(), url: URL_APP, backendMode, externalRequests: external, log, note: "실사용 계정(카드 5) 화면은 이 스크립트가 아니라 로그인해 둔 실제 세션에서 사람이 직접 찍어 같은 폴더에 추가합니다 — 비밀번호를 스크립트에 넣지 않기 위해서입니다." },
+        null,
+        2,
+    ),
     "utf-8",
 );
 
