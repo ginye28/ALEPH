@@ -1,0 +1,107 @@
+{
+  "schemaVersion": 3,
+  "description": "플랜두씨 다이어리 2 (7.md) — Supabase Postgres 스키마 계약. 실제 DDL은 plandosee-auth/supabase/schema.sql. v2(과제 6)에 user_id 소유권 칼럼·stamp_owner 트리거·auth 기반 RLS를 더했습니다. 과제 6의 plandosee 프로젝트와는 별개의 새 Supabase 프로젝트입니다.",
+  "dateRules": {
+    "timezoneOfRecord": "Asia/Seoul (KST, UTC+9)",
+    "timestamptzColumns": "UTC로 저장됩니다. 화면 표시는 Intl.DateTimeFormat({ timeZone: 'Asia/Seoul' })로 변환합니다.",
+    "dateColumns": "이미 KST 기준 달력 날짜(YYYY-MM-DD)입니다. new Date('YYYY-MM-DD')로 재해석하지 않고 문자열로 비교합니다.",
+    "todayComparison": "'오늘'·지연 판정은 DB의 now()/CURRENT_DATE(UTC)를 쓰지 않습니다. 클라이언트가 KST 기준으로 계산한 날짜 문자열을 plan_review(plan_id, today) 함수의 인자로 넘깁니다."
+  },
+  "ownership": {
+    "model": "plans·plan_revisions·tasks·execution_records·review_notes 모두 user_id uuid not null references auth.users(id)를 직접 가집니다(부모 표를 조인해 소유자를 확인하지 않습니다).",
+    "howItIsSet": "클라이언트는 user_id를 절대 보내지 않습니다(보내도 무시됩니다). 모든 INSERT 전에 stamp_owner() 트리거가 항상 auth.uid()로 덮어씁니다 — 요청 본문에 남의 계정 id를 적어 보내는 공격을 구조적으로 막습니다.",
+    "howItIsChecked": "모든 SELECT/INSERT/UPDATE 정책이 auth.uid() = user_id를 조건으로 겁니다. 로그인하지 않으면 auth.uid()가 null이라 모든 정책이 자동으로 거절합니다."
+  },
+  "tables": {
+    "plans": {
+      "purpose": "계획의 안정적인 정체성. 내용은 담지 않습니다 — 전부 plan_revisions에 있습니다.",
+      "columns": {
+        "id": "uuid, PK, 클라이언트가 생성해 upsert(id로 멱등)",
+        "user_id": "uuid, FK → auth.users.id — stamp_owner 트리거가 항상 auth.uid()로 채움",
+        "created_at": "timestamptz, 기본 now()",
+        "carried_from_review_id": "uuid, nullable, FK → review_notes.id — 이전 돌아보기의 '고칠 점'에서 시작된 계획이면 그 노트를 가리킵니다",
+        "deleted_at": "timestamptz, nullable — null이면 살아있는 계획. DELETE 정책이 없어 소프트 삭제만 가능하며, 지워도 그 계획의 개정 이력·할일·실행기록은 그대로 남고 목록에서만 빠집니다"
+      }
+    },
+    "plan_revisions": {
+      "purpose": "계획 내용의 append-only 이력. UPDATE/DELETE 정책이 없어 절대 수정되지 않습니다.",
+      "columns": {
+        "id": "uuid, PK",
+        "user_id": "uuid, FK → auth.users.id — stamp_owner 트리거가 채움",
+        "plan_id": "uuid, FK → plans.id",
+        "revision_no": "int, plan_id별 1부터 증가, unique(plan_id, revision_no)",
+        "title": "text",
+        "period_start": "date (KST 달력 날짜)",
+        "period_end": "date (KST 달력 날짜)",
+        "priority": "text, 'low'|'medium'|'high'",
+        "success_criteria": "text",
+        "estimated_minutes": "int, > 0",
+        "note": "text, nullable",
+        "created_at": "timestamptz"
+      },
+      "currentValueRule": "그 plan_id의 현재 값 = revision_no가 가장 큰 행. plan_current 뷰가 이를 대신 계산합니다. '처음 계획'은 항상 revision_no = 1."
+    },
+    "plan_current": {
+      "purpose": "뷰. plan_id별 최신 개정본 한 줄만 (distinct on plan_id order by revision_no desc). 일반 뷰라 별도 RLS 없이 plan_revisions의 RLS를 그대로 물려받습니다."
+    },
+    "tasks": {
+      "purpose": "계획에 딸린 할 일. 삭제는 소프트 삭제만 가능합니다 (DELETE 정책 없음).",
+      "columns": {
+        "id": "uuid, PK, 클라이언트가 생성해 upsert",
+        "user_id": "uuid, FK → auth.users.id — stamp_owner 트리거가 채움",
+        "plan_id": "uuid, FK → plans.id",
+        "title": "text",
+        "detail": "text, nullable",
+        "due_date": "date, nullable (KST 달력 날짜)",
+        "priority": "text, 'low'|'medium'|'high'",
+        "tags": "text[]",
+        "estimated_minutes": "int, > 0",
+        "status": "text, 'todo'|'done'",
+        "completed_at": "timestamptz, nullable — check (status='done') = (completed_at is not null)",
+        "deleted_at": "timestamptz, nullable — null이면 살아있는 할 일. 모든 목록·집계는 deleted_at is null로 거릅니다",
+        "created_at": "timestamptz",
+        "updated_at": "timestamptz"
+      },
+      "completionIdempotency": "완료 전환은 UPDATE tasks SET status='done', completed_at=now() WHERE id=$1 AND status<>'done'. 두 번째 호출은 0행에 적용되어 아무 변화가 없습니다 — 완료는 이벤트가 아니라 상태라 애초에 중복이 쌓일 수 없습니다."
+    },
+    "execution_records": {
+      "purpose": "실제로 한 일의 append-only 로그. UPDATE/DELETE 정책이 없습니다. 계획·할일 내용은 절대 건드리지 않습니다.",
+      "columns": {
+        "id": "uuid, PK, 클라이언트가 생성해 upsert",
+        "user_id": "uuid, FK → auth.users.id — stamp_owner 트리거가 채움",
+        "task_id": "uuid, FK → tasks.id",
+        "started_at": "timestamptz",
+        "ended_at": "timestamptz, nullable — check ended_at is null or ended_at >= started_at",
+        "actual_minutes": "int, >= 0",
+        "blocked_reason": "text, nullable — 비어있지 않으면 그 할일은 '막힘'으로 집계됩니다",
+        "created_at": "timestamptz"
+      }
+    },
+    "review_notes": {
+      "purpose": "돌아보기에서 정한 '고칠 점'의 append-only 이력. UPDATE/DELETE 정책이 없습니다.",
+      "columns": {
+        "id": "uuid, PK",
+        "user_id": "uuid, FK → auth.users.id — stamp_owner 트리거가 채움",
+        "plan_id": "uuid, FK → plans.id — 어느 계획을 돌아보고 나온 노트인지",
+        "note": "text",
+        "created_at": "timestamptz"
+      }
+    }
+  },
+  "functions": {
+    "plan_review(p_plan_id uuid, p_today date)": {
+      "returns": "plan_count, done_count, overdue_count, blocked_count, estimated_total, actual_total, diff",
+      "purpose": "돌아보기 집계를 매번 실시간으로 계산합니다 (materialize하지 않음). overdue_count는 status<>'done' AND due_date < p_today인 행만 셉니다 — 완료된 할일은 지연으로 이중 집계되지 않습니다. diff = actual_total - estimated_total, 대상이 없으면 0. security definer가 아닌 invoker 권한이라 tasks/execution_records의 RLS를 그대로 통과해 호출자 본인 소유 행만 집계합니다."
+    },
+    "delete_my_data()": {
+      "returns": "void",
+      "purpose": "로그인한 본인 소유의 모든 행(계획·개정이력·할일·실행기록·고칠점)을 하드 삭제합니다. RLS를 우회하지 않는 invoker 권한이라 남의 행은 건드릴 수 없습니다. auth.users 레코드 자체(가입 정보)는 service_role 관리자 API가 필요해 이 함수로는 지우지 않습니다 — 별도 절차 안내로 대신합니다."
+    }
+  },
+  "rls": {
+    "model": "로그인 필수. 모든 표의 SELECT/INSERT/UPDATE 정책이 auth.uid() = user_id를 조건으로 겁니다. anon 역할에는 아무 정책도 주지 않아 비로그인 접근이 구조적으로 거절됩니다. 접근 통제는 화면 조건문이 아니라 이 RLS 정책이 전부입니다.",
+    "immutableTables": ["plan_revisions", "execution_records", "review_notes"],
+    "softDeleteOnly": ["plans", "tasks"],
+    "ownerEnforcedBy": "stamp_owner() 트리거 — INSERT 시 클라이언트가 보낸 user_id 값과 무관하게 항상 auth.uid()로 덮어씁니다."
+  }
+}
