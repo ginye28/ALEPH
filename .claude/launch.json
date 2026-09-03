@@ -30,6 +30,12 @@
       "runtimeExecutable": "C:\\Program Files\\nodejs\\npm.cmd",
       "runtimeArgs": ["--prefix", "plandosee-auth", "run", "dev", "--", "--port", "5178", "--strictPort"],
       "port": 5178
+    },
+    {
+      "name": "portfolio-passkey",
+      "runtimeExecutable": "C:\\Program Files\\nodejs\\npm.cmd",
+      "runtimeArgs": ["--prefix", "portfolio-passkey", "run", "dev"],
+      "port": 5179
     }
   ]
 }

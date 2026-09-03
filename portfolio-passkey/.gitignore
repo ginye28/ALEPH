@@ -1,0 +1,19 @@
+node_modules
+
+# 비밀값은 저장소에 들어가지 않습니다.
+# 특히 SUPABASE_SERVICE_ROLE_KEY는 이 키 하나로 모든 자료를 읽고 쓸 수 있습니다.
+.env
+.env.*
+!.env.example
+
+# 로컬 개발용 파일 저장소 (Supabase 환경변수가 없을 때 대신 쓰는 곳)
+.dev-store/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/*
+.idea
+.DS_Store

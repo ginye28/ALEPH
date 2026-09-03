@@ -1,0 +1,1103 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JIN | Portfolio</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: Arial, "Noto Sans KR", sans-serif;
+            background: #f7f7f5;
+            color: #202020;
+            line-height: 1.6;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        /* Header */
+        header {
+            width: 100%;
+            padding: 24px 6%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #e5e5e5;
+            background: rgba(247, 247, 245, 0.95);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        nav {
+            display: flex;
+            gap: 24px;
+            font-size: 14px;
+        }
+
+        nav a {
+            transition: opacity 0.2s;
+        }
+
+        nav a:hover,
+        nav a:focus {
+            opacity: 0.5;
+        }
+
+        /* Hero */
+        .hero {
+            min-height: calc(100vh - 73px);
+            padding: 100px 6%;
+            display: flex;
+            align-items: center;
+        }
+
+        .hero-content {
+            max-width: 900px;
+        }
+
+        .eyebrow {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        h1 {
+            font-size: clamp(48px, 8vw, 96px);
+            line-height: 1.05;
+            letter-spacing: -4px;
+            margin-bottom: 28px;
+        }
+
+        .hero-description {
+            font-size: clamp(18px, 2vw, 24px);
+            color: #555;
+            max-width: 700px;
+        }
+
+	        .hero-summary {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 40px;
+            max-width: 1000px;
+        }
+
+        .summary-item {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .summary-label {
+            display: block;
+            font-size: 11px;
+            color: #888;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        .summary-item strong {
+            display: block;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .scroll-button {
+            display: inline-block;
+            margin-top: 40px;
+            padding: 12px 20px;
+            border: 1px solid #202020;
+            border-radius: 999px;
+            transition: 0.2s;
+        }
+
+        .scroll-button:hover,
+        .scroll-button:focus {
+            background: #202020;
+            color: white;
+        }
+
+        /* Common section */
+        section {
+            padding: 100px 6%;
+            border-top: 1px solid #e5e5e5;
+        }
+
+        .section-inner {
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 14px;
+            color: #777;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Target */
+        .target-box {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid #e5e5e5;
+        }
+
+        .target-box h2 {
+            font-size: 32px;
+            line-height: 1.45;
+            letter-spacing: -1px;
+        }
+
+        /* Public range */
+        .range-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 24px;
+        }
+
+        .range-card {
+            background: white;
+            padding: 32px;
+            border-radius: 20px;
+            border: 1px solid #e5e5e5;
+        }
+
+        .range-card h3 {
+            margin-bottom: 20px;
+            font-size: 20px;
+        }
+
+        .range-card ul {
+            list-style: none;
+        }
+
+        .range-card li {
+            padding: 10px 0;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .range-card li:last-child {
+            border-bottom: none;
+        }
+
+        /* Strengths */
+        .strengths {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .strength-card {
+            background: white;
+            border: 1px solid #e5e5e5;
+            border-radius: 20px;
+            padding: 30px;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .strength-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.06);
+        }
+
+        .strength-number {
+            font-size: 13px;
+            color: #888;
+            margin-bottom: 18px;
+        }
+
+        .strength-card h3 {
+            font-size: 22px;
+            margin-bottom: 24px;
+            letter-spacing: -0.5px;
+        }
+
+        .story {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .story-item {
+            padding-bottom: 14px;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .story-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .story-label {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 4px;
+        }
+
+        .story-text {
+            font-size: 14px;
+            color: #444;
+        }
+
+        /* Proof */
+        .proof-box {
+            background: #202020;
+            color: white;
+            border-radius: 20px;
+            padding: 40px;
+        }
+
+        .proof-box .section-label {
+            color: #aaa;
+            font-size: 13px;
+            margin-bottom: 14px;
+        }
+
+        .proof-box h3 {
+            font-size: 28px;
+            margin-bottom: 20px;
+        }
+
+        .proof-box p {
+            color: #ccc;
+            max-width: 750px;
+        }
+
+        .proof-note {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #444;
+            font-size: 13px;
+            color: #aaa;
+        }
+
+        /* display를 직접 준 요소들이 있어서, hidden 속성이 항상 이기도록 못 박는다. */
+        [hidden] {
+            display: none !important;
+        }
+
+        /* ── 나만 보는 자리 (과제 8에서 추가) ──
+           공개 영역과 눈으로 바로 갈리도록 배경과 테두리를 다르게 준다. */
+        #private {
+            background: #efeee8;
+        }
+
+        .private-box {
+            background: white;
+            border: 2px solid #202020;
+            border-radius: 20px;
+            padding: 40px;
+        }
+
+        .private-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .private-head h2 {
+            font-size: 28px;
+            letter-spacing: -1px;
+        }
+
+        .private-state {
+            font-size: 13px;
+            padding: 6px 14px;
+            border-radius: 999px;
+            white-space: nowrap;
+        }
+
+        .private-state[data-state="locked"] {
+            background: #f6e7c6;
+            color: #7a5713;
+        }
+
+        .private-state[data-state="unlocked"] {
+            background: #dcefe1;
+            color: #1d6a33;
+        }
+
+        .private-lead {
+            color: #555;
+            margin: 18px 0 28px;
+            max-width: 760px;
+            font-size: 15px;
+        }
+
+        .pk-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pk-button {
+            padding: 11px 18px;
+            border: 1px solid #202020;
+            border-radius: 999px;
+            background: transparent;
+            color: #202020;
+            font-size: 14px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .pk-button:hover:not(:disabled) {
+            background: #202020;
+            color: white;
+        }
+
+        .pk-button.primary {
+            background: #202020;
+            color: white;
+        }
+
+        .pk-button.primary:hover:not(:disabled) {
+            opacity: 0.8;
+        }
+
+        .pk-button:disabled {
+            opacity: 0.4;
+            cursor: default;
+        }
+
+        .pk-form {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f7f7f5;
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .pk-form-title {
+            font-size: 13px;
+            color: #777;
+        }
+
+        .pk-field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        .pk-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pk-row input {
+            flex: 1;
+            min-width: 180px;
+        }
+
+        .pk-form input,
+        .pk-form select,
+        .pk-form textarea {
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            font-family: inherit;
+            font-size: 14px;
+            background: white;
+            color: #202020;
+        }
+
+        .pk-form button {
+            align-self: flex-start;
+        }
+
+        .auth-message {
+            margin-top: 16px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .auth-message[data-tone="bad"] {
+            color: #a3341f;
+        }
+
+        .notes {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .note {
+            background: #f7f7f5;
+            border: 1px solid #e5e5e5;
+            border-radius: 14px;
+            padding: 20px;
+        }
+
+        .note-kind {
+            display: inline-block;
+            font-size: 11px;
+            color: #888;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .note h4 {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        .note p {
+            font-size: 13px;
+            color: #555;
+        }
+
+        .pk-divider {
+            border: none;
+            border-top: 1px solid #e5e5e5;
+            margin: 32px 0 24px;
+        }
+
+        .pk-subtitle {
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .pk-note {
+            font-size: 13px;
+            color: #777;
+            margin-bottom: 16px;
+        }
+
+        .credentials {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .credential {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding: 14px 0;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .delete-confirm {
+            width: 100%;
+            margin-top: 12px;
+            padding: 16px;
+            border: 1px solid #d9b3ab;
+            background: #fbf1ef;
+            border-radius: 12px;
+        }
+
+        .delete-warning {
+            font-size: 13px;
+            color: #8a2c1a;
+            line-height: 1.7;
+            margin-bottom: 14px;
+        }
+
+        .credential:last-child {
+            border-bottom: none;
+        }
+
+        .credential-meta {
+            display: block;
+            font-size: 12px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .credential-key {
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .credential-key summary {
+            cursor: pointer;
+            color: #777;
+        }
+
+        .credential-key code {
+            display: block;
+            margin: 10px 0;
+            padding: 10px 12px;
+            background: #f7f7f5;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            font-size: 11px;
+            line-height: 1.5;
+            word-break: break-all;
+            color: #444;
+        }
+
+        .credential-key-note {
+            color: #777;
+            line-height: 1.6;
+            max-width: 640px;
+        }
+
+        .link-danger {
+            border: 1px solid #d9b3ab;
+            background: #fbf1ef;
+            color: #a3341f;
+            border-radius: 999px;
+            padding: 7px 14px;
+            font-size: 13px;
+            font-family: inherit;
+            cursor: pointer;
+        }
+
+        .link-danger:hover {
+            background: #a3341f;
+            color: white;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 6%;
+            text-align: center;
+            color: #888;
+            font-size: 13px;
+            border-top: 1px solid #e5e5e5;
+        }
+
+
+        /* Interactive detail */
+        .detail-button {
+            margin-top: 24px;
+            padding: 10px 16px;
+            border: 1px solid #202020;
+            border-radius: 999px;
+            background: transparent;
+            color: #202020;
+            cursor: pointer;
+            font-size: 13px;
+            transition: 0.2s;
+        }
+
+        .detail-button:hover {
+            background: #202020;
+            color: white;
+        }
+
+        .detail-content {
+            margin-top: 16px;
+            padding: 16px;
+            background: #f7f7f5;
+            border-radius: 12px;
+            font-size: 13px;
+            color: #555;
+        }
+
+        /* Keyboard focus */
+        :focus-visible {
+            outline: 3px solid #202020;
+            outline-offset: 4px;
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+
+            .strengths,
+            .notes {
+                grid-template-columns: 1fr;
+            }
+
+            .private-box {
+                padding: 26px;
+            }
+        }
+
+        @media (max-width: 700px) {
+            header {
+                padding: 18px 5%;
+            }
+
+            nav {
+                gap: 12px;
+                font-size: 12px;
+            }
+
+            .hero {
+                min-height: auto;
+                padding: 90px 5%;
+            }
+
+            h1 {
+                letter-spacing: -2px;
+            }
+
+            section {
+                padding: 70px 5%;
+            }
+
+            .target-box {
+                padding: 28px;
+            }
+
+            .target-box h2 {
+                font-size: 24px;
+            }
+
+            .range-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .range-card,
+            .strength-card,
+            .proof-box {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<header>
+    <a href="#" class="logo">JIN.</a>
+
+    <nav aria-label="주요 메뉴">
+        <a href="#about">About</a>
+        <a href="#range">공개 범위</a>
+        <a href="#strengths">Strengths</a>
+        <a href="#proof">Proof</a>
+        <a href="#private">🔒 나만 보는 자리</a>
+	<a
+            href="https://github.com/ginye28"
+            target="_blank"
+            rel="noopener noreferrer">
+            GitHub ↗
+        </a>
+    </nav>
+</header>
+
+
+<main>
+
+    <!-- Hero -->
+<section class="hero">
+    <div class="hero-content">
+
+        <p class="eyebrow">IT PORTFOLIO</p>
+
+        <h1>
+            Hello,<br>
+            I'm JIN.
+        </h1>
+
+        <p class="hero-description">
+            IT 분야를 공부하며 직접 부딪히고,
+            문제를 해결하며 배우고 있습니다.
+        </p>
+
+        <div class="hero-summary">
+
+            <div class="summary-item">
+                <span class="summary-label">INTRODUCTION</span>
+                <strong>문제가 생기면 원인을 찾습니다.</strong>
+            </div>
+
+            <div class="summary-item">
+                <span class="summary-label">ACTIVITY</span>
+                <strong>Java · Spring Boot · Git · GitHub</strong>
+            </div>
+
+            <div class="summary-item">
+                <span class="summary-label">PROOF</span>
+                <strong>소셜 로그인 오류를 분석하고 해결한 경험</strong>
+            </div>
+
+        </div>
+
+        <a href="#about" class="scroll-button">
+            자세히 보기 ↓
+        </a>
+
+    </div>
+</section>
+
+
+    <!-- 대상 -->
+    <section id="about">
+        <div class="section-inner">
+
+            <p class="section-title">01 — About this page</p>
+
+            <div class="target-box">
+                <h2>
+                    이 페이지는 IT 분야 취업을 준비하는 나를
+                    처음 보는 사람에게 나의 강점과 관심 분야를
+                    보여주기 위한 것이다.
+                </h2>
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- 공개 범위 -->
+    <section id="range">
+        <div class="section-inner">
+
+            <p class="section-title">02 — Public & Private</p>
+
+            <div class="range-grid">
+
+                <div class="range-card">
+                    <h3>공개할 것</h3>
+
+                    <ul>
+                        <li>개발 관심 분야</li>
+                        <li>사용해 본 기술</li>
+                        <li>프로젝트 및 학습 경험</li>
+                    </ul>
+                </div>
+
+
+                <div class="range-card">
+                    <h3>공개하지 않을 것</h3>
+
+                    <ul>
+                        <li>실명</li>
+                        <li>전화번호 및 이메일</li>
+                        <li>학교 및 거주지 등 개인 정보</li>
+                    </ul>
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- 강점 -->
+    <section id="strengths">
+        <div class="section-inner">
+
+            <p class="section-title">03 — My Strengths</p>
+
+            <div class="strengths">
+
+                <!-- Strength 1 -->
+                <article class="strength-card">
+                    <p class="strength-number">01</p>
+
+                    <h3>문제가 생기면 원인을 찾는다</h3>
+
+                    <div class="story">
+
+                        <div class="story-item">
+                            <span class="story-label">상황</span>
+                            <p class="story-text">
+                                학원 팀 프로젝트에서 소셜 로그인 기능을 구현하던 중
+                                특정 로그인 과정에서 오류가 발생했다.
+                            </p>
+                        </div>
+
+                        <div class="story-item">
+                            <span class="story-label">행동</span>
+                            <p class="story-text">
+                                오류 메시지와 로그인 데이터를 확인하면서
+                                전달되는 값의 타입과 데이터베이스 구조를 비교했다.
+                            </p>
+                        </div>
+
+                        <div class="story-item">
+                            <span class="story-label">결과</span>
+                            <p class="story-text">
+                                원인을 찾아 데이터 타입을 수정했고
+                                해당 로그인 과정이 정상적으로 동작하도록 해결했다.
+                            </p>
+                        </div>
+
+                    </div>
+
+                    <button
+                        type="button"
+                        class="detail-button"
+                        aria-expanded="false"
+                        aria-controls="strength-detail">
+                        자세히 보기
+                    </button>
+
+                    <div id="strength-detail" class="detail-content" hidden>
+                        오류 메시지만 확인하는 데 그치지 않고, 전달되는 데이터와
+                        데이터베이스 구조를 비교하면서 원인을 좁혀갔습니다.
+                        문제를 단순히 수정하는 것보다 왜 발생했는지 확인하는
+                        과정에 집중했습니다.
+                    </div>
+                </article>
+
+
+                <!-- Strength 2 -->
+                <article class="strength-card">
+                    <p class="strength-number">02</p>
+
+                    <h3>배운 것을 직접 적용한다</h3>
+
+                    <div class="story">
+
+                        <div class="story-item">
+                            <span class="story-label">상황</span>
+                            <p class="story-text">
+                                학원에서 Java와 Spring Boot, 데이터베이스 등
+                                새로운 개발 기술을 단계적으로 배웠다.
+                            </p>
+                        </div>
+
+                        <div class="story-item">
+                            <span class="story-label">행동</span>
+                            <p class="story-text">
+                                수업에서 배운 개념을 단순히 따라가는 데 그치지 않고
+                                직접 코드를 작성하고 실행하면서 확인했다.
+                            </p>
+                        </div>
+
+                        <div class="story-item">
+                            <span class="story-label">결과</span>
+                            <p class="story-text">
+                                Java 기반 웹 애플리케이션의 구조와
+                                여러 기능이 실제로 동작하는 과정을 경험했다.
+                            </p>
+                        </div>
+
+                    </div>
+                </article>
+
+
+                <!-- Strength 3 -->
+                <article class="strength-card">
+                    <p class="strength-number">03</p>
+
+                    <h3>작업 과정을 직접 관리한다</h3>
+
+                    <div class="story">
+
+                        <div class="story-item">
+                            <span class="story-label">상황</span>
+                            <p class="story-text">
+                                학원에서 프로젝트와 실습을 진행하면서
+                                작성한 코드를 관리할 필요가 있었다.
+                            </p>
+                        </div>
+
+                        <div class="story-item">
+                            <span class="story-label">행동</span>
+                            <p class="story-text">
+                                Git을 이용해 변경 내용을 커밋하고
+                                GitHub에 작업물을 push하며 작업 과정을 관리했다.
+                            </p>
+                        </div>
+
+                        <div class="story-item">
+                            <span class="story-label">결과</span>
+                            <p class="story-text">
+                                작업 내용을 원격 저장소에 남기고
+                                이전 작업과 현재 작업을 구분해서 관리할 수 있었다.
+                            </p>
+                        </div>
+
+                    </div>
+                </article>
+
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- 공개 가능한 근거 -->
+    <section id="proof">
+        <div class="section-inner">
+
+            <p class="section-title">04 — Proof</p>
+
+            <div class="proof-box">
+
+                <p class="section-label">PUBLIC EVIDENCE</p>
+
+                <h3>직접 해결한 문제의 기록</h3>
+
+                <p>
+                    학원 팀 프로젝트에서 소셜 로그인 기능을 구현하는 과정에서
+                    로그인 데이터와 데이터베이스의 타입 차이로 발생한 오류를 확인하고,
+                    원인을 분석하여 데이터 타입을 수정한 경험이 있습니다.
+                </p>
+
+                <p class="proof-note">
+                    개인정보와 계정 정보는 공개하지 않고,
+                    확인 가능한 문제 해결 과정과 결과만 기록했습니다.
+                </p>
+
+            </div>
+
+        </div>
+    </section>
+
+
+    <!-- 나만 보는 자리 — 과제 8에서 추가한 비공개 영역.
+         여기 마크업에는 비공개 내용이 한 글자도 들어 있지 않다. 로그인하지 않은 채 이
+         페이지의 소스를 열어 봐도 마찬가지다 — 내용은 인증을 통과한 뒤 app.js가 서버에서
+         받아 와 채운다. (T08-C18) -->
+    <section id="private">
+        <div class="section-inner">
+
+            <p class="section-title">05 — Private</p>
+
+            <div class="private-box">
+
+                <div class="private-head">
+                    <h2>🔒 나만 보는 자리</h2>
+                    <span class="private-state" data-testid="private-state" data-state="locked">
+                        잠김 — 패스키가 있어야 열립니다
+                    </span>
+                </div>
+
+                <p class="private-lead">
+                    위쪽 소개는 누구나 볼 수 있습니다. <b>여기서부터는 패스키를 등록한 본인만</b>
+                    열 수 있습니다. 이 사이트는 비밀번호를 아예 만들지 않습니다 — 등록할 때 기기가
+                    열쇠 한 쌍을 만들어 <b>공개키만</b> 서버로 보내고, 개인키는 기기 밖으로
+                    나가지 않습니다.
+                </p>
+
+                <!-- 잠긴 상태 -->
+                <div id="locked-view">
+
+                    <div class="pk-actions">
+                        <button type="button" class="pk-button primary" data-testid="login-start">
+                            패스키로 들어가기
+                        </button>
+                        <button type="button" class="pk-button" data-testid="register-start">
+                            패스키 새로 등록하기
+                        </button>
+                    </div>
+
+                    <div id="register-form" class="pk-form" hidden>
+                        <label class="pk-field">
+                            <span>이 패스키의 이름 — 나중에 목록에서 알아볼 이름입니다</span>
+                            <input type="text" data-testid="device-name" maxlength="40"
+                                placeholder="예: 노트북 지문">
+                        </label>
+                        <div class="pk-actions">
+                            <button type="button" class="pk-button primary" data-testid="register-submit">
+                                등록하기
+                            </button>
+                            <button type="button" class="pk-button" data-testid="register-cancel">
+                                취소
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="auth-message" data-testid="auth-message" hidden></p>
+
+                </div>
+
+                <!-- 열린 상태 -->
+                <div id="unlocked-view" hidden>
+
+                    <div class="notes" data-testid="notes"></div>
+
+                    <form id="note-form" class="pk-form">
+                        <p class="pk-form-title">한 줄 더 남기기</p>
+                        <div class="pk-row">
+                            <select name="kind" aria-label="종류">
+                                <option value="project_memo">프로젝트 메모</option>
+                                <option value="target_company">지원 목록</option>
+                                <option value="retro" selected>회고</option>
+                            </select>
+                            <input type="text" name="title" maxlength="80" placeholder="제목">
+                        </div>
+                        <textarea name="body" rows="2" maxlength="1000"
+                            placeholder="내용 — 실제 개인정보는 넣지 않습니다"></textarea>
+                        <button type="submit" class="pk-button primary">저장</button>
+                    </form>
+
+                    <hr class="pk-divider">
+
+                    <h3 class="pk-subtitle">
+                        등록된 패스키 <span data-testid="credential-count">0</span>개
+                    </h3>
+                    <p class="pk-note">
+                        패스키는 기기에 매여 있습니다. 기기를 잃어버렸을 때를 대비해
+                        <b>두 개 이상</b> 등록해 두세요 — 하나를 지워도 남은 것으로 들어올 수 있습니다.
+                    </p>
+
+                    <ul class="credentials" data-testid="credentials"></ul>
+
+                    <div class="pk-actions">
+                        <button type="button" class="pk-button" data-testid="add-passkey">
+                            패스키 추가
+                        </button>
+                        <button type="button" class="pk-button" data-testid="logout">
+                            로그아웃
+                        </button>
+                    </div>
+
+                    <div id="add-passkey-form" class="pk-form" hidden>
+                        <label class="pk-field">
+                            <span>추가할 패스키의 이름 — 다른 기기에서 등록하세요</span>
+                            <input type="text" data-testid="add-device-name" maxlength="40"
+                                placeholder="예: 휴대폰 지문">
+                        </label>
+                        <div class="pk-actions">
+                            <button type="button" class="pk-button primary" data-testid="add-passkey-submit">
+                                등록하기
+                            </button>
+                            <button type="button" class="pk-button" data-testid="add-passkey-cancel">
+                                취소
+                            </button>
+                        </div>
+                    </div>
+
+                    <p class="auth-message" data-testid="account-message" hidden></p>
+
+                </div>
+
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+
+<footer>
+    <p>JIN. Personal Portfolio</p>
+</footer>
+
+
+<script type="module" src="/app.js"></script>
+
+</body>
+</html>

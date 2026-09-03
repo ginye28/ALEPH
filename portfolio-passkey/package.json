@@ -1,0 +1,17 @@
+{
+    "name": "portfolio-passkey",
+    "private": true,
+    "version": "1.0.0",
+    "type": "module",
+    "description": "내 소개 페이지에 패스키(WebAuthn) 잠금 붙이기 — 과제 8",
+    "scripts": {
+        "dev": "node tools/dev-server.mjs",
+        "check": "node tools/check.mjs",
+        "capture": "node tools/capture.mjs",
+        "report": "node tools/report.mjs"
+    },
+    "dependencies": {
+        "@simplewebauthn/server": "^13.1.1",
+        "@supabase/supabase-js": "^2.58.0"
+    }
+}
