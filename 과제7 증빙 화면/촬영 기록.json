@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-09-02T05:14:23.760Z",
-  "url": "http://localhost:5178",
+  "capturedAt": "2026-09-02T05:36:46.824Z",
+  "url": "https://aleph-pds-auth.vercel.app",
   "backendMode": "supabase",
   "externalRequests": [
     "https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;500;700;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap",
@@ -30,12 +30,12 @@
     "https://ehtrcvrswaerpnzilnhk.supabase.co/auth/v1/token?grant_type=password",
     "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plans?on_conflict=id&select=*",
     "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plan_revisions?on_conflict=id&select=*",
-    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plan_revisions?select=*&plan_id=eq.cc263684-db31-4f64-b6dd-4fc46a60c0a3&order=revision_no.asc",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plan_revisions?select=*&plan_id=eq.9807ef51-3aa7-411b-8fc3-1cefb6555774&order=revision_no.asc",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.111.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.106.woff2",
-    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/tasks?select=*&deleted_at=is.null&plan_id=eq.cc263684-db31-4f64-b6dd-4fc46a60c0a3&order=created_at.desc.nullslast%2Cid.asc",
-    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/tasks?select=*&plan_id=eq.cc263684-db31-4f64-b6dd-4fc46a60c0a3&deleted_at=is.null",
-    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plans?select=*&id=eq.cc263684-db31-4f64-b6dd-4fc46a60c0a3"
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/tasks?select=*&deleted_at=is.null&plan_id=eq.9807ef51-3aa7-411b-8fc3-1cefb6555774&order=created_at.desc.nullslast%2Cid.asc",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/tasks?select=*&plan_id=eq.9807ef51-3aa7-411b-8fc3-1cefb6555774&deleted_at=is.null",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plans?select=*&id=eq.9807ef51-3aa7-411b-8fc3-1cefb6555774"
   ],
   "log": [
     {
@@ -45,7 +45,7 @@
     },
     {
       "name": "03_가입_직후_메인화면",
-      "status": "계정 A(pds-auth-shot-a-1788326045365@example.com) 가입 직후 자동 로그인, 자료 화면(계획 없음) 표시",
+      "status": "계정 A(pds-auth-shot-a-1788327386255@example.com) 가입 직후 자동 로그인, 자료 화면(계획 없음) 표시",
       "note": "가입 → 로그인이 이어짐(검사 18)"
     },
     {
@@ -75,7 +75,7 @@
     },
     {
       "name": "10_직접조회_거절",
-      "status": "B가 A의 계획 id(cc263684)를 window.__db.plans.get()으로 직접 조회 → 응답: null",
+      "status": "B가 A의 계획 id(9807ef51)를 window.__db.plans.get()으로 직접 조회 → 응답: null",
       "note": "RLS가 남의 행을 null로 돌려줌 — 서버가 거절함(검사 26)"
     },
     {
@@ -85,7 +85,7 @@
     },
     {
       "name": "12_토큰_URL없음",
-      "status": "현재 주소: http://localhost:5178/",
+      "status": "현재 주소: https://aleph-pds-auth.vercel.app/",
       "note": "access_token/refresh_token 문자열이 주소 어디에도 없음(검사 24) — 스크린샷 대신 주소 문자열 그대로 기록"
     },
     {
