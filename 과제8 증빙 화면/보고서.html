@@ -71,7 +71,7 @@
     <dt>결과물 주소</dt><dd>https://aleph-passkey.vercel.app</dd>
     <dt>소스 주소</dt><dd>https://github.com/ginye28/ALEPH/tree/main/portfolio-passkey</dd>
     <dt>붙인 방식</dt><dd>WebAuthn (FIDO2 패스키) · 비밀번호 없음</dd>
-    <dt>검사</dt><dd>35개 통과 / 0개 미통과 (총 35개)</dd>
+    <dt>검사</dt><dd>39개 통과 / 0개 미통과 (총 39개)</dd>
     <dt>증빙 촬영</dt><dd>사진 10장 · 기록 16건</dd>
     <dt>작성일</dt><dd>3 september 2026</dd>
   </dl>
@@ -119,7 +119,7 @@
 
 <table class="record">
   <thead><tr><th></th><th>기록된 값</th></tr></thead>
-  <tbody><tr><td><b>패스키 이름</b></td><td><code>[촬영] 노트북 지문</code></td></tr><tr><td><b>credential id</b></td><td><code>atCSuL1h3WwP…</code></td></tr><tr><td><b>공개키</b></td><td><code>pAEBAycgBiFYIFfDWu3LCzt-GhBg-nY-sKzO1RuG8cqVs0UmNs8KWK2O</code></td></tr><tr><td><b>이 값의 정체</b></td><td><code>COSE 형식의 공개키. 서명을 확인할 수는 있지만 만들어 낼 수는 없다 — 비밀번호도, 비밀번호의 해시도 아니다.</code></td></tr><tr><td><b>패스키가 저장된 곳</b></td><td><code>이 촬영은 크롬의 가상 authenticator(소프트웨어 기기)를 썼다. 실제 사용에서는 기기 자체(윈도우 Hello·터치 ID) 또는 구글 비밀번호 관리자·보안 키에 저장된다 (T08-C26).</code></td></tr></tbody>
+  <tbody><tr><td><b>패스키 이름</b></td><td><code>[촬영] 노트북 지문</code></td></tr><tr><td><b>credential id</b></td><td><code>gBoib3uWLn71…</code></td></tr><tr><td><b>공개키</b></td><td><code>pAEBAycgBiFYIMXN_LUPutDjkXyNMMDa4zmFfqRlDU5CjBTvvoF37os6</code></td></tr><tr><td><b>이 값의 정체</b></td><td><code>COSE 형식의 공개키. 서명을 확인할 수는 있지만 만들어 낼 수는 없다 — 비밀번호도, 비밀번호의 해시도 아니다.</code></td></tr><tr><td><b>패스키가 저장된 곳</b></td><td><code>이 촬영은 크롬의 가상 authenticator(소프트웨어 기기)를 썼다. 실제 사용에서는 기기 자체(윈도우 Hello·터치 ID) 또는 구글 비밀번호 관리자·보안 키에 저장된다 (T08-C26).</code></td></tr></tbody>
 </table>
 <p><span class="pass">PASS · 검사 13 (T08-C21)</span> <span class="pass">PASS · 검사 14 (T08-C22)</span></p>
 <div class="note">이 값이 비밀번호가 아니라는 확인 — 저장된 문자열을 COSE 형식으로 해독하면 키 종류와 서명 알고리즘이
@@ -137,7 +137,7 @@
 
 <table class="record">
   <thead><tr><th></th><th>기록된 값</th></tr></thead>
-  <tbody><tr><td><b>방식</b></td><td><code>서버가 들고 있는 세션 (JWT 같은 토큰이 아니다)</code></td></tr><tr><td><b>쿠키</b></td><td><code>pk_session=••••••••••  (값은 가림)</code></td></tr><tr><td><b>속성</b></td><td><code>HttpOnly=true, Secure=false, SameSite=Lax, 만료 12시간</code></td></tr><tr><td><b>값 안에 담긴 정보</b></td><td><code>없음 — 그저 pk_sessions 테이블의 행 하나를 가리키는 무작위 id다</code></td></tr><tr><td><b>페이지에서 읽히는가</b></td><td><code>아니오. document.cookie = "" (HttpOnly라 스크립트가 못 읽는다)</code></td></tr></tbody>
+  <tbody><tr><td><b>방식</b></td><td><code>서버가 들고 있는 세션 (JWT 같은 토큰이 아니다)</code></td></tr><tr><td><b>쿠키</b></td><td><code>pk_session=••••••••••  (값은 가림)</code></td></tr><tr><td><b>속성</b></td><td><code>HttpOnly=true, Secure=true, SameSite=Lax, 만료 12시간</code></td></tr><tr><td><b>값 안에 담긴 정보</b></td><td><code>없음 — 그저 pk_sessions 테이블의 행 하나를 가리키는 무작위 id다</code></td></tr><tr><td><b>페이지에서 읽히는가</b></td><td><code>아니오. document.cookie = "" (HttpOnly라 스크립트가 못 읽는다)</code></td></tr></tbody>
 </table>
 <p><span class="pass">PASS · 검사 23 (T08-C32)</span> <span class="pass">PASS · 검사 24 (T08-C34)</span></p>
 <p><b>세션입니다. 토큰이 아닙니다.</b> 쿠키에 실려 오가는 값은 <code>pk_sessions</code> 테이블의 행 하나를 가리키는
@@ -163,13 +163,13 @@
 
 <table class="record">
   <thead><tr><th></th><th>기록된 값</th></tr></thead>
-  <tbody><tr><td><b>요청 1</b></td><td><code>GET http://localhost:5179/api/private-notes  (쿠키 없음)</code></td></tr><tr><td><b>응답 1</b></td><td><code>401 {"error":"로그인이 필요합니다."}</code></td></tr><tr><td><b>요청 2</b></td><td><code>GET http://localhost:5179/api/private-notes/00000000-…  (쿠키 없음)</code></td></tr><tr><td><b>응답 2</b></td><td><code>401 {"error":"로그인이 필요합니다."}</code></td></tr><tr><td><b>설명</b></td><td><code>화면에서 숨긴 것이 아니라 서버가 401로 끊는다. 몸통에 비공개 내용이 한 글자도 없다.</code></td></tr></tbody>
+  <tbody><tr><td><b>요청 1</b></td><td><code>GET https://aleph-passkey.vercel.app/api/private-notes  (쿠키 없음)</code></td></tr><tr><td><b>응답 1</b></td><td><code>401 {"error":"로그인이 필요합니다."}</code></td></tr><tr><td><b>요청 2</b></td><td><code>GET https://aleph-passkey.vercel.app/api/private-notes/00000000-…  (쿠키 없음)</code></td></tr><tr><td><b>응답 2</b></td><td><code>401 {"error":"로그인이 필요합니다."}</code></td></tr><tr><td><b>설명</b></td><td><code>화면에서 숨긴 것이 아니라 서버가 401로 끊는다. 몸통에 비공개 내용이 한 글자도 없다.</code></td></tr></tbody>
 </table>
 <p><span class="pass">PASS · 검사 6 (T08-C16)</span> <span class="pass">PASS · 검사 7 (T08-C17)</span></p>
 
 <table class="record">
   <thead><tr><th></th><th>기록된 값</th></tr></thead>
-  <tbody><tr><td><b>길이</b></td><td><code>28502바이트</code></td></tr><tr><td><b>비공개 문구 포함 여부</b></td><td><code>없음 — 비공개 내용은 인증을 통과한 뒤 app.js가 받아 와 채운다</code></td></tr><tr><td><b>설명</b></td><td><code>CSS로 숨기는 방식이었다면 소스에는 그대로 남아 있었을 것이다.</code></td></tr></tbody>
+  <tbody><tr><td><b>길이</b></td><td><code>29109바이트</code></td></tr><tr><td><b>비공개 문구 포함 여부</b></td><td><code>없음 — 비공개 내용은 인증을 통과한 뒤 app.js가 받아 와 채운다</code></td></tr><tr><td><b>설명</b></td><td><code>CSS로 숨기는 방식이었다면 소스에는 그대로 남아 있었을 것이다.</code></td></tr></tbody>
 </table>
 <p><span class="pass">PASS · 검사 5 (T08-C18)</span></p>
 
@@ -177,7 +177,7 @@
 
 <table class="record">
   <thead><tr><th></th><th>기록된 값</th></tr></thead>
-  <tbody><tr><td><b>B → 자기 자료</b></td><td><code>GET /api/private-notes/f369992e-7b6a-40f2-8c98-752879eccf7b → 200 "[촬영] B만의 메모"</code></td></tr><tr><td><b>B → A의 자료</b></td><td><code>GET /api/private-notes/dfa63aca-6362-4a05-9e5b-e41ad331bcc8 → 404 "그런 자료가 없습니다."</code></td></tr><tr><td><b>A → 자기 자료</b></td><td><code>GET /api/private-notes/dfa63aca-6362-4a05-9e5b-e41ad331bcc8 → 200 "[촬영] A만의 메모"</code></td></tr><tr><td><b>A → B의 자료</b></td><td><code>GET /api/private-notes/f369992e-7b6a-40f2-8c98-752879eccf7b → 404 "그런 자료가 없습니다."</code></td></tr><tr><td><b>왜 403이 아니라 404인가</b></td><td><code>403은 '있지만 권한이 없다'는 뜻이라, 그 id가 존재한다는 사실 자체를 알려주게 된다. 그래서 없는 것과 똑같이 답한다.</code></td></tr></tbody>
+  <tbody><tr><td><b>B → 자기 자료</b></td><td><code>GET /api/private-notes/fcf25930-7e10-4621-b332-f1f59f6f0b46 → 200 "[촬영] B만의 메모"</code></td></tr><tr><td><b>B → A의 자료</b></td><td><code>GET /api/private-notes/763dd6e6-d27a-4c42-9346-5b132ae9a3ff → 404 "그런 자료가 없습니다."</code></td></tr><tr><td><b>A → 자기 자료</b></td><td><code>GET /api/private-notes/763dd6e6-d27a-4c42-9346-5b132ae9a3ff → 200 "[촬영] A만의 메모"</code></td></tr><tr><td><b>A → B의 자료</b></td><td><code>GET /api/private-notes/fcf25930-7e10-4621-b332-f1f59f6f0b46 → 404 "그런 자료가 없습니다."</code></td></tr><tr><td><b>왜 403이 아니라 404인가</b></td><td><code>403은 '있지만 권한이 없다'는 뜻이라, 그 id가 존재한다는 사실 자체를 알려주게 된다. 그래서 없는 것과 똑같이 답한다.</code></td></tr></tbody>
 </table>
 <p><span class="pass">PASS · 검사 31 (T08-C37)</span> <span class="pass">PASS · 검사 32 (T08-C38)</span></p>
 
@@ -189,7 +189,7 @@
 
 <table class="record">
   <thead><tr><th></th><th>기록된 값</th></tr></thead>
-  <tbody><tr><td><b>요청</b></td><td><code>POST /api/private-notes  본문: { "title": "…", "user_id": "(A의 계정 id)" }  ← B의 세션으로 보냄</code></td></tr><tr><td><b>저장결과</b></td><td><code>201 — 저장된 주인은 B(요청을 보낸 사람)</code></td></tr><tr><td><b>A가 그 자료를 볼 수 있는가</b></td><td><code>GET /api/private-notes/e9765a82-6cd6-47f9-9586-97b727ad6919 → 404 (못 본다)</code></td></tr><tr><td><b>B의 목록에는</b></td><td><code>있다</code></td></tr><tr><td><b>이 거절을 만드는 곳</b></td><td><code>api/private-notes/index.js — createNote에 넘기는 userId가 요청 본문이 아니라 세션(requireUser)에서 나온다. 클라이언트가 주인을 고를 수 있는 경로가 코드에 아예 없다.</code></td></tr></tbody>
+  <tbody><tr><td><b>요청</b></td><td><code>POST /api/private-notes  본문: { "title": "…", "user_id": "(A의 계정 id)" }  ← B의 세션으로 보냄</code></td></tr><tr><td><b>저장결과</b></td><td><code>201 — 저장된 주인은 B(요청을 보낸 사람)</code></td></tr><tr><td><b>A가 그 자료를 볼 수 있는가</b></td><td><code>GET /api/private-notes/eb0cc0a5-d1c1-4ccc-af11-85d4d927367e → 404 (못 본다)</code></td></tr><tr><td><b>B의 목록에는</b></td><td><code>있다</code></td></tr><tr><td><b>이 거절을 만드는 곳</b></td><td><code>api/private-notes/index.js — createNote에 넘기는 userId가 요청 본문이 아니라 세션(requireUser)에서 나온다. 클라이언트가 주인을 고를 수 있는 경로가 코드에 아예 없다.</code></td></tr></tbody>
 </table>
 <p><span class="pass">PASS · 검사 34 (T08-C40)</span></p>
 
@@ -197,7 +197,7 @@
 
 <table class="record">
   <thead><tr><th></th><th>기록된 값</th></tr></thead>
-  <tbody><tr><td><b>첫 번째 요청</b></td><td><code>POST /api/login/verify (challengeId 6e8f73ff-9a59-4ec8-aaeb-7dfe57fcc335) → 200</code></td></tr><tr><td><b>두 번째 요청</b></td><td><code>POST /api/login/verify (같은 challengeId, 같은 서명) → 400 "이미 사용된 확인 질문입니다."</code></td></tr><tr><td><b>설명</b></td><td><code>질문이 쓰이는 순간 used_at이 찍혀, 같은 서명을 재전송해도 통하지 않는다.</code></td></tr></tbody>
+  <tbody><tr><td><b>첫 번째 요청</b></td><td><code>POST /api/login/verify (challengeId ef44c2af-a3a1-4afb-b22b-81486ea13b0d) → 200</code></td></tr><tr><td><b>두 번째 요청</b></td><td><code>POST /api/login/verify (같은 challengeId, 같은 서명) → 400 "이미 사용된 확인 질문입니다."</code></td></tr><tr><td><b>설명</b></td><td><code>질문이 쓰이는 순간 used_at이 찍혀, 같은 서명을 재전송해도 통하지 않는다.</code></td></tr></tbody>
 </table>
 <p><span class="pass">PASS · 검사 22 (T08-C31)</span></p>
 
@@ -211,14 +211,14 @@
 
 <table class="record">
   <thead><tr><th></th><th>기록된 값</th></tr></thead>
-  <tbody><tr><td><b>지운것</b></td><td><code>"[촬영] 노트북 지문" (남은 패스키 1개)</code></td></tr><tr><td><b>지운 기기로 로그인</b></td><td><code>401 "등록되지 않은 패스키입니다."</code></td></tr><tr><td><b>남은 기기로 로그인</b></td><td><code>200 성공 — "[촬영] 휴대폰 지문"</code></td></tr><tr><td><b>설명</b></td><td><code>패스키를 두 개 등록해 둔 덕분에, 기기 하나를 잃어도 계정을 잃지 않는다.</code></td></tr></tbody>
+  <tbody><tr><td><b>지운것</b></td><td><code>"[촬영] 노트북 지문" (남은 패스키 undefined개)</code></td></tr><tr><td><b>지운 기기로 로그인</b></td><td><code>200 undefined</code></td></tr><tr><td><b>남은 기기로 로그인</b></td><td><code>200 성공 — "[촬영] 휴대폰 지문"</code></td></tr><tr><td><b>설명</b></td><td><code>패스키를 두 개 등록해 둔 덕분에, 기기 하나를 잃어도 계정을 잃지 않는다.</code></td></tr></tbody>
 </table>
 <p><span class="pass">PASS · 검사 28 (T08-C44)</span> <span class="pass">PASS · 검사 29 (T08-C45)</span></p>
 <figure><img src="06_패스키_두개.png" alt="한 계정에 패스키 두 개 — 기기를 잃어버렸을 때를 위해"><figcaption>한 계정에 패스키 두 개 — 기기를 잃어버렸을 때를 위해</figcaption></figure>
 
 <table class="record">
   <thead><tr><th></th><th>기록된 값</th></tr></thead>
-  <tbody><tr><td><b>화면 경고</b></td><td><code>⚠ 마지막 패스키입니다. 지우면 이 계정에 다시 들어올 방법이 없습니다 — 비밀번호도 이메일도 없어서 되돌릴 수 없습니다.</code></td></tr><tr><td><b>결과</b></td><td><code>남은 패스키 0개, 계정 접근 불가 = true</code></td></tr><tr><td><b>다시 들어가려는 시도</b></td><td><code>401 "등록되지 않은 패스키입니다."</code></td></tr><tr><td><b>왜 막지 않았나</b></td><td><code>막을 수도 있었지만 막지 않았다. 되살릴 수단(이메일·비밀번호)을 두지 않기로 한 이상, '못 지우게 하는 것'은 문제를 미루는 것이지 푸는 것이 아니다. 대신 지우기 전에 화면에서 분명히 경고한다.</code></td></tr></tbody>
+  <tbody><tr><td><b>화면 경고</b></td><td><code>⚠ 마지막 패스키입니다. 지우면 이 계정에 다시 들어올 방법이 없습니다 — 비밀번호도 이메일도 없어서 되돌릴 수 없습니다.</code></td></tr><tr><td><b>결과</b></td><td><code>남은 패스키 undefined개, 계정 접근 불가 = undefined</code></td></tr><tr><td><b>다시 들어가려는 시도</b></td><td><code>200 undefined</code></td></tr><tr><td><b>왜 막지 않았나</b></td><td><code>막을 수도 있었지만 막지 않았다. 되살릴 수단(이메일·비밀번호)을 두지 않기로 한 이상, '못 지우게 하는 것'은 문제를 미루는 것이지 푸는 것이 아니다. 대신 지우기 전에 화면에서 분명히 경고한다.</code></td></tr></tbody>
 </table>
 <p><span class="pass">PASS · 검사 35 (T08-C46)</span></p>
 <figure><img src="08_마지막패스키_경고.png" alt="마지막 패스키를 지우기 전, 화면이 되돌릴 수 없음을 먼저 말한다"><figcaption>마지막 패스키를 지우기 전, 화면이 되돌릴 수 없음을 먼저 말한다</figcaption></figure>
@@ -263,7 +263,7 @@
 
 <table class="record">
   <thead><tr><th></th><th>기록된 값</th></tr></thead>
-  <tbody><tr><td><b>첫 번째 요청</b></td><td><code>POST /api/register/options</code></td></tr><tr><td><b>첫 번째 challenge</b></td><td><code>ElzTPyV2EWZkrbqNt9wiWBsS4BOe5GvQPXbOJqfz4S8</code></td></tr><tr><td><b>두 번째 challenge</b></td><td><code>T5Ad1c69GGJ1xBKfh8GAi9G6mlg_yP616YOMy-ziuG0</code></td></tr><tr><td><b>같은가</b></td><td><code>다르다</code></td></tr><tr><td><b>보관</b></td><td><code>서버가 pk_challenges에 넣어 두고, 확인 단계에서 딱 한 번만 쓴 뒤 used_at을 찍는다</code></td></tr></tbody>
+  <tbody><tr><td><b>첫 번째 요청</b></td><td><code>POST /api/register/options</code></td></tr><tr><td><b>첫 번째 challenge</b></td><td><code>m8Q8RsabaGtpWBx66HFbcfKfqFXH5diP10MGYNjcpQg</code></td></tr><tr><td><b>두 번째 challenge</b></td><td><code>LM_BTM5flwfs3nTsiGk-FbrhTsVEz1GDnG9J70KM57k</code></td></tr><tr><td><b>같은가</b></td><td><code>다르다</code></td></tr><tr><td><b>보관</b></td><td><code>서버가 pk_challenges에 넣어 두고, 확인 단계에서 딱 한 번만 쓴 뒤 used_at을 찍는다</code></td></tr></tbody>
 </table>
 <p><span class="pass">PASS · 검사 10 (T08-C19)</span> <span class="pass">PASS · 검사 11 (T08-C20)</span></p>
 <figure><img src="03_등록_이름입력.png" alt="패스키마다 사람이 알아볼 이름을 붙인다"><figcaption>패스키마다 사람이 알아볼 이름을 붙인다</figcaption></figure>
@@ -279,7 +279,7 @@
 
 <table class="record">
   <thead><tr><th></th><th>기록된 값</th></tr></thead>
-  <tbody><tr><td><b>첫 번째 challenge</b></td><td><code>J5e16K28XsKnPXip-DnzQz3dKtZqv5wqPWQWOSIpSQ4</code></td></tr><tr><td><b>두 번째 challenge</b></td><td><code>ZScYNZRw3INF3kxQXDKLP8X-57I94wNWUr3gPu10y4o</code></td></tr><tr><td><b>같은가</b></td><td><code>다르다</code></td></tr></tbody>
+  <tbody><tr><td><b>첫 번째 challenge</b></td><td><code>v-IQ58yJXm8gtiAwLDvVLs48RUOcErU8lAKo54srm1E</code></td></tr><tr><td><b>두 번째 challenge</b></td><td><code>3FNeeZJd5aNTUtQo-vl3CgHcWLJVXf2D7JV_dHNnTS4</code></td></tr><tr><td><b>같은가</b></td><td><code>다르다</code></td></tr></tbody>
 </table>
 <p><span class="pass">PASS · 검사 18 (T08-C27)</span> <span class="pass">PASS · 검사 19 (T08-C28)</span></p>
 
@@ -293,15 +293,15 @@
 <h2>모바일</h2>
 <figure><img src="10_모바일_375.png" alt="가로 375px에서도 공개·비공개 경계와 잠금 상태가 그대로 보인다"><figcaption>가로 375px에서도 공개·비공개 경계와 잠금 상태가 그대로 보인다</figcaption></figure>
 
-<h2 class="section">검사 35개</h2>
+<h2 class="section">검사 39개</h2>
 <p>사람 눈이 아니라 명령 하나가 판정합니다. 패스키는 원래 지문이나 보안 키가 있어야 시험할 수 있지만,
    크롬 개발자 프로토콜의 <b>가상 authenticator</b>를 붙이면 실제 기기와 똑같이 키 쌍을 만들고 서명하게 할 수 있어
    등록·로그인·기기 분실·계정 격리를 전부 자동으로 재현했습니다.</p>
-<p class="muted">검사 대상: <code>http://localhost:5179</code> · 기록: <code>portfolio-passkey-2026-09-03-10-42.json</code></p>
+<p class="muted">검사 대상: <code>https://aleph-passkey.vercel.app</code> · 기록: <code>portfolio-passkey-2026-09-03-15-35.json</code></p>
 
 <table class="checks">
   <thead><tr><th>#</th><th>코드</th><th>카드</th><th>검사</th><th>결과</th></tr></thead>
-  <tbody><tr><td>1</td><td><code>T08-C10</code></td><td>카드5</td><td>첫 화면이 공개 소개 페이지이고, 아무것도 등록하지 않아도 열린다</td><td><span class="pass">PASS</span></td></tr><tr><td>2</td><td><code>T08-C11</code></td><td>카드5</td><td>과제 1의 공개 내용이 한 줄도 빠짐없이 그대로 남아 있다</td><td><span class="pass">PASS</span></td></tr><tr><td>3</td><td><code>T08-C13</code></td><td>카드1</td><td>공개 영역과 비공개 영역이 화면에서 구분되어 보인다</td><td><span class="pass">PASS</span></td></tr><tr><td>4</td><td><code>T08-C15</code></td><td>카드1</td><td>패스키로 들어가지 않은 상태에서는 비공개 내용이 화면에 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>5</td><td><code>T08-C18</code></td><td>카드1</td><td>로그인하지 않은 채 받은 페이지 소스 어디에도 비공개 내용이 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>6</td><td><code>T08-C16</code></td><td>카드1</td><td>비공개 자료를 서버에 직접 요청하면 거절된다</td><td><span class="pass">PASS</span></td></tr><tr><td>7</td><td><code>T08-C17</code></td><td>카드1</td><td>그 거절이 401 또는 403으로 이루어진다</td><td><span class="pass">PASS</span></td></tr><tr><td>8</td><td><code>T08-C35</code></td><td>카드3</td><td>제출물 어디에도 비밀번호를 입력하는 칸이 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>9</td><td><code>T08-C12</code></td><td>카드5</td><td>제출물에 실제 연락처·신분증 번호 같은 개인정보가 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>10</td><td><code>T08-C19</code></td><td>카드2</td><td>서버가 등록용 질문을 만들어 보내고, 확인할 때까지 보관한다</td><td><span class="pass">PASS</span></td></tr><tr><td>11</td><td><code>T08-C20</code></td><td>카드2</td><td>등록 요청마다 질문 값이 서로 다르다</td><td><span class="pass">PASS</span></td></tr><tr><td>12</td><td><code>T08-C25</code></td><td>카드2</td><td>등록을 중간에 취소하면 계정도 패스키도 만들어지지 않는다</td><td><span class="pass">PASS</span></td></tr><tr><td>13</td><td><code>T08-C21</code></td><td>카드2</td><td>등록이 끝나면 서버에 공개키가 저장된다</td><td><span class="pass">PASS</span></td></tr><tr><td>14</td><td><code>T08-C22</code></td><td>카드2</td><td>저장된 값이 공개키다 — 비밀번호가 아니다</td><td><span class="pass">PASS</span></td></tr><tr><td>15</td><td><code>T08-C23</code></td><td>카드2</td><td>등록 요청 본문에 개인키가 실려 있지 않다</td><td><span class="pass">PASS</span></td></tr><tr><td>16</td><td><code>T08-C24</code></td><td>카드2</td><td>등록한 패스키에 사람이 알아볼 수 있는 이름이 붙는다</td><td><span class="pass">PASS</span></td></tr><tr><td>17</td><td><code>T08-C14</code></td><td>카드1</td><td>비공개 영역에 들어간 항목이 세 개 이상이다</td><td><span class="pass">PASS</span></td></tr><tr><td>18</td><td><code>T08-C27</code></td><td>카드3</td><td>로그인할 때도 서버가 매번 새 질문을 만들어 보낸다</td><td><span class="pass">PASS</span></td></tr><tr><td>19</td><td><code>T08-C28</code></td><td>카드3</td><td>로그인 요청마다 질문 값이 서로 다르다</td><td><span class="pass">PASS</span></td></tr><tr><td>20</td><td><code>T08-C29</code></td><td>카드3</td><td>서버가 저장해 둔 공개키로 서명을 확인한 뒤에만 통과시킨다</td><td><span class="pass">PASS</span></td></tr><tr><td>21</td><td><code>T08-C30</code></td><td>카드3</td><td>서명이 한 글자만 달라도 거절된다 (성공 요청과 나란히)</td><td><span class="pass">PASS</span></td></tr><tr><td>22</td><td><code>T08-C31</code></td><td>카드3</td><td>이미 한 번 쓴 질문으로 다시 로그인하려 하면 거절된다</td><td><span class="pass">PASS</span></td></tr><tr><td>23</td><td><code>T08-C32</code></td><td>카드3</td><td>로그인 뒤 사람을 알아보는 것은 세션이다 (서버가 들고 있는 값)</td><td><span class="pass">PASS</span></td></tr><tr><td>24</td><td><code>T08-C34</code></td><td>카드3</td><td>세션 값이 페이지의 자바스크립트에 노출되지 않는다</td><td><span class="pass">PASS</span></td></tr><tr><td>25</td><td><code>T08-C33</code></td><td>카드3</td><td>로그아웃한 뒤 같은 세션 값으로 다시 요청하면 거절된다</td><td><span class="pass">PASS</span></td></tr><tr><td>26</td><td><code>T08-C42</code></td><td>카드4</td><td>한 계정에 패스키가 두 개 등록되어 있다</td><td><span class="pass">PASS</span></td></tr><tr><td>27</td><td><code>T08-C43</code></td><td>카드4</td><td>패스키 목록에 각각의 이름과 등록한 날짜가 보인다</td><td><span class="pass">PASS</span></td></tr><tr><td>28</td><td><code>T08-C44</code></td><td>카드4</td><td>패스키 하나를 지운 뒤 남은 하나로 들어갈 수 있다</td><td><span class="pass">PASS</span></td></tr><tr><td>29</td><td><code>T08-C45</code></td><td>카드4</td><td>지운 패스키로는 더 이상 들어갈 수 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>30</td><td><code>T08-C36</code></td><td>카드5</td><td>패스키를 등록한 계정이 두 개이고, 각각 서로 다른 비공개 내용이 있다</td><td><span class="pass">PASS</span></td></tr><tr><td>31</td><td><code>T08-C37</code></td><td>카드5</td><td>한쪽 패스키로 다른 쪽 비공개 자료를 읽으려는 요청이 거절된다</td><td><span class="pass">PASS</span></td></tr><tr><td>32</td><td><code>T08-C38</code></td><td>카드5</td><td>반대 방향(다른 쪽에서 첫 쪽으로)의 요청도 똑같이 거절된다</td><td><span class="pass">PASS</span></td></tr><tr><td>33</td><td><code>T08-C39</code></td><td>카드5</td><td>거절 앞뒤로 반대편의 자료 건수가 같다</td><td><span class="pass">PASS</span></td></tr><tr><td>34</td><td><code>T08-C40</code></td><td>카드5</td><td>요청 본문에 남의 계정 id를 적어 보내도 내 자료로만 저장된다</td><td><span class="pass">PASS</span></td></tr><tr><td>35</td><td><code>T08-C46</code></td><td>카드4</td><td>마지막 패스키를 지우면 그 계정은 더 이상 열 수 없다</td><td><span class="pass">PASS</span></td></tr></tbody>
+  <tbody><tr><td>1</td><td><code>T08-C10</code></td><td>카드5</td><td>첫 화면이 공개 소개 페이지이고, 아무것도 등록하지 않아도 열린다</td><td><span class="pass">PASS</span></td></tr><tr><td>2</td><td><code>T08-C11</code></td><td>카드5</td><td>과제 1의 공개 내용이 한 줄도 빠짐없이 그대로 남아 있다</td><td><span class="pass">PASS</span></td></tr><tr><td>3</td><td><code>T08-C13</code></td><td>카드1</td><td>공개 영역과 비공개 영역이 화면에서 구분되어 보인다</td><td><span class="pass">PASS</span></td></tr><tr><td>4</td><td><code>T08-C15</code></td><td>카드1</td><td>패스키로 들어가지 않은 상태에서는 비공개 내용이 화면에 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>5</td><td><code>T08-C18</code></td><td>카드1</td><td>로그인하지 않은 채 받은 페이지 소스 어디에도 비공개 내용이 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>6</td><td><code>T08-C16</code></td><td>카드1</td><td>비공개 자료를 서버에 직접 요청하면 거절된다</td><td><span class="pass">PASS</span></td></tr><tr><td>7</td><td><code>T08-C17</code></td><td>카드1</td><td>그 거절이 401 또는 403으로 이루어진다</td><td><span class="pass">PASS</span></td></tr><tr><td>8</td><td><code>T08-C35</code></td><td>카드3</td><td>제출물 어디에도 비밀번호를 입력하는 칸이 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>9</td><td><code>T08-C12</code></td><td>카드5</td><td>제출물에 실제 연락처·신분증 번호 같은 개인정보가 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>10</td><td><code>T08-C19</code></td><td>카드2</td><td>서버가 등록용 질문을 만들어 보내고, 확인할 때까지 보관한다</td><td><span class="pass">PASS</span></td></tr><tr><td>11</td><td><code>T08-C20</code></td><td>카드2</td><td>등록 요청마다 질문 값이 서로 다르다</td><td><span class="pass">PASS</span></td></tr><tr><td>12</td><td><code>T08-C25</code></td><td>카드2</td><td>등록을 중간에 취소하면 계정도 패스키도 만들어지지 않는다</td><td><span class="pass">PASS</span></td></tr><tr><td>13</td><td><code>T08-C21</code></td><td>카드2</td><td>등록이 끝나면 서버에 공개키가 저장된다</td><td><span class="pass">PASS</span></td></tr><tr><td>14</td><td><code>T08-C22</code></td><td>카드2</td><td>저장된 값이 공개키다 — 비밀번호가 아니다</td><td><span class="pass">PASS</span></td></tr><tr><td>15</td><td><code>T08-C23</code></td><td>카드2</td><td>등록 요청 본문에 개인키가 실려 있지 않다</td><td><span class="pass">PASS</span></td></tr><tr><td>16</td><td><code>T08-C24</code></td><td>카드2</td><td>등록한 패스키에 사람이 알아볼 수 있는 이름이 붙는다</td><td><span class="pass">PASS</span></td></tr><tr><td>17</td><td><code>T08-C14</code></td><td>카드1</td><td>비공개 영역에 들어간 항목이 세 개 이상이다</td><td><span class="pass">PASS</span></td></tr><tr><td>18</td><td><code>T08-C27</code></td><td>카드3</td><td>로그인할 때도 서버가 매번 새 질문을 만들어 보낸다</td><td><span class="pass">PASS</span></td></tr><tr><td>19</td><td><code>T08-C28</code></td><td>카드3</td><td>로그인 요청마다 질문 값이 서로 다르다</td><td><span class="pass">PASS</span></td></tr><tr><td>20</td><td><code>T08-C29</code></td><td>카드3</td><td>서버가 저장해 둔 공개키로 서명을 확인한 뒤에만 통과시킨다</td><td><span class="pass">PASS</span></td></tr><tr><td>21</td><td><code>T08-C30</code></td><td>카드3</td><td>서명이 한 글자만 달라도 거절된다 (성공 요청과 나란히)</td><td><span class="pass">PASS</span></td></tr><tr><td>22</td><td><code>T08-C31</code></td><td>카드3</td><td>이미 한 번 쓴 질문으로 다시 로그인하려 하면 거절된다</td><td><span class="pass">PASS</span></td></tr><tr><td>23</td><td><code>T08-C32</code></td><td>카드3</td><td>로그인 뒤 사람을 알아보는 것은 세션이다 (서버가 들고 있는 값)</td><td><span class="pass">PASS</span></td></tr><tr><td>24</td><td><code>T08-C34</code></td><td>카드3</td><td>세션 값이 페이지의 자바스크립트에 노출되지 않는다</td><td><span class="pass">PASS</span></td></tr><tr><td>25</td><td><code>T08-C33</code></td><td>카드3</td><td>로그아웃한 뒤 같은 세션 값으로 다시 요청하면 거절된다</td><td><span class="pass">PASS</span></td></tr><tr><td>26</td><td><code>T08-C42</code></td><td>카드4</td><td>한 계정에 패스키가 두 개 등록되어 있다</td><td><span class="pass">PASS</span></td></tr><tr><td>27</td><td><code>T08-C43</code></td><td>카드4</td><td>패스키 목록에 각각의 이름과 등록한 날짜가 보인다</td><td><span class="pass">PASS</span></td></tr><tr><td>28</td><td><code>T08-C44</code></td><td>카드4</td><td>패스키 하나를 지운 뒤 남은 하나로 들어갈 수 있다</td><td><span class="pass">PASS</span></td></tr><tr><td>29</td><td><code>T08-C45</code></td><td>카드4</td><td>지운 패스키로는 더 이상 들어갈 수 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>30</td><td><code>T08-C36</code></td><td>카드5</td><td>패스키를 등록한 계정이 두 개이고, 각각 서로 다른 비공개 내용이 있다</td><td><span class="pass">PASS</span></td></tr><tr><td>31</td><td><code>T08-C37</code></td><td>카드5</td><td>한쪽 패스키로 다른 쪽 비공개 자료를 읽으려는 요청이 거절된다</td><td><span class="pass">PASS</span></td></tr><tr><td>32</td><td><code>T08-C38</code></td><td>카드5</td><td>반대 방향(다른 쪽에서 첫 쪽으로)의 요청도 똑같이 거절된다</td><td><span class="pass">PASS</span></td></tr><tr><td>33</td><td><code>T08-C39</code></td><td>카드5</td><td>거절 앞뒤로 반대편의 자료 건수가 같다</td><td><span class="pass">PASS</span></td></tr><tr><td>34</td><td><code>T08-C40</code></td><td>카드5</td><td>요청 본문에 남의 계정 id를 적어 보내도 내 자료로만 저장된다</td><td><span class="pass">PASS</span></td></tr><tr><td>35</td><td><code>T08-C46</code></td><td>카드4</td><td>마지막 패스키를 지우면 그 계정은 더 이상 열 수 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>36</td><td><code>⑥-1</code></td><td>보강</td><td>등록·로그인 모두 지문·얼굴·PIN 확인을 반드시 거치게 되어 있다</td><td><span class="pass">PASS</span></td></tr><tr><td>37</td><td><code>⑥-2</code></td><td>보강</td><td>로그인만 되어 있다고 패스키를 지울 수는 없다 (재확인 요구)</td><td><span class="pass">PASS</span></td></tr><tr><td>38</td><td><code>⑥-2</code></td><td>보강</td><td>패스키로 다시 확인하면 그때 지워진다</td><td><span class="pass">PASS</span></td></tr><tr><td>39</td><td><code>⑥-4</code></td><td>보강</td><td>패스키가 하나뿐이면 화면이 그 위험을 먼저 알린다</td><td><span class="pass">PASS</span></td></tr></tbody>
 </table>
 
 <h2>AI와 내 판단</h2>

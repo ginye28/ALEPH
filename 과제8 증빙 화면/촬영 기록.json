@@ -1,6 +1,6 @@
 {
-  "capturedAt": "2026-09-03T01:39:12.943Z",
-  "url": "http://localhost:5179",
+  "capturedAt": "2026-09-03T06:36:55.561Z",
+  "url": "https://aleph-passkey.vercel.app",
   "shots": [
     "01_공개_소개페이지",
     "02_공개와_비공개_경계",
@@ -16,23 +16,23 @@
   "records": [
     {
       "title": "로그인하지 않은 채 비공개 자료를 직접 요청 (T08-C16·C17)",
-      "요청 1": "GET http://localhost:5179/api/private-notes  (쿠키 없음)",
+      "요청 1": "GET https://aleph-passkey.vercel.app/api/private-notes  (쿠키 없음)",
       "응답 1": "401 {\"error\":\"로그인이 필요합니다.\"}",
-      "요청 2": "GET http://localhost:5179/api/private-notes/00000000-…  (쿠키 없음)",
+      "요청 2": "GET https://aleph-passkey.vercel.app/api/private-notes/00000000-…  (쿠키 없음)",
       "응답 2": "401 {\"error\":\"로그인이 필요합니다.\"}",
       "설명": "화면에서 숨긴 것이 아니라 서버가 401로 끊는다. 몸통에 비공개 내용이 한 글자도 없다."
     },
     {
       "title": "로그인하지 않고 받은 페이지 소스 (T08-C18)",
-      "길이": "28502바이트",
+      "길이": "29109바이트",
       "비공개 문구 포함 여부": "없음 — 비공개 내용은 인증을 통과한 뒤 app.js가 받아 와 채운다",
       "설명": "CSS로 숨기는 방식이었다면 소스에는 그대로 남아 있었을 것이다."
     },
     {
       "title": "등록용 질문은 요청마다 새로 만들어진다 (T08-C19·C20)",
       "첫 번째 요청": "POST /api/register/options",
-      "첫 번째 challenge": "ElzTPyV2EWZkrbqNt9wiWBsS4BOe5GvQPXbOJqfz4S8",
-      "두 번째 challenge": "T5Ad1c69GGJ1xBKfh8GAi9G6mlg_yP616YOMy-ziuG0",
+      "첫 번째 challenge": "m8Q8RsabaGtpWBx66HFbcfKfqFXH5diP10MGYNjcpQg",
+      "두 번째 challenge": "LM_BTM5flwfs3nTsiGk-FbrhTsVEz1GDnG9J70KM57k",
       "같은가": "다르다",
       "보관": "서버가 pk_challenges에 넣어 두고, 확인 단계에서 딱 한 번만 쓴 뒤 used_at을 찍는다"
     },
@@ -46,8 +46,8 @@
     {
       "title": "등록이 끝난 뒤 서버가 갖고 있는 값 (T08-C21·C22·C24)",
       "패스키 이름": "[촬영] 노트북 지문",
-      "credential id": "atCSuL1h3WwP…",
-      "공개키": "pAEBAycgBiFYIFfDWu3LCzt-GhBg-nY-sKzO1RuG8cqVs0UmNs8KWK2O",
+      "credential id": "gBoib3uWLn71…",
+      "공개키": "pAEBAycgBiFYIMXN_LUPutDjkXyNMMDa4zmFfqRlDU5CjBTvvoF37os6",
       "이 값의 정체": "COSE 형식의 공개키. 서명을 확인할 수는 있지만 만들어 낼 수는 없다 — 비밀번호도, 비밀번호의 해시도 아니다.",
       "패스키가 저장된 곳": "이 촬영은 크롬의 가상 authenticator(소프트웨어 기기)를 썼다. 실제 사용에서는 기기 자체(윈도우 Hello·터치 ID) 또는 구글 비밀번호 관리자·보안 키에 저장된다 (T08-C26)."
     },
@@ -59,8 +59,8 @@
     },
     {
       "title": "로그인 질문도 매번 새로 만들어진다 (T08-C27·C28)",
-      "첫 번째 challenge": "J5e16K28XsKnPXip-DnzQz3dKtZqv5wqPWQWOSIpSQ4",
-      "두 번째 challenge": "ZScYNZRw3INF3kxQXDKLP8X-57I94wNWUr3gPu10y4o",
+      "첫 번째 challenge": "v-IQ58yJXm8gtiAwLDvVLs48RUOcErU8lAKo54srm1E",
+      "두 번째 challenge": "3FNeeZJd5aNTUtQo-vl3CgHcWLJVXf2D7JV_dHNnTS4",
       "같은가": "다르다"
     },
     {
@@ -73,7 +73,7 @@
     },
     {
       "title": "이미 쓴 질문을 다시 보냈을 때 (T08-C31)",
-      "첫 번째 요청": "POST /api/login/verify (challengeId 6e8f73ff-9a59-4ec8-aaeb-7dfe57fcc335) → 200",
+      "첫 번째 요청": "POST /api/login/verify (challengeId ef44c2af-a3a1-4afb-b22b-81486ea13b0d) → 200",
       "두 번째 요청": "POST /api/login/verify (같은 challengeId, 같은 서명) → 400 \"이미 사용된 확인 질문입니다.\"",
       "설명": "질문이 쓰이는 순간 used_at이 찍혀, 같은 서명을 재전송해도 통하지 않는다."
     },
@@ -81,7 +81,7 @@
       "title": "무엇으로 사람을 알아보는가 — 세션 (T08-C32·C34)",
       "방식": "서버가 들고 있는 세션 (JWT 같은 토큰이 아니다)",
       "쿠키": "pk_session=••••••••••  (값은 가림)",
-      "속성": "HttpOnly=true, Secure=false, SameSite=Lax, 만료 12시간",
+      "속성": "HttpOnly=true, Secure=true, SameSite=Lax, 만료 12시간",
       "값 안에 담긴 정보": "없음 — 그저 pk_sessions 테이블의 행 하나를 가리키는 무작위 id다",
       "페이지에서 읽히는가": "아니오. document.cookie = \"\" (HttpOnly라 스크립트가 못 읽는다)"
     },
@@ -93,24 +93,24 @@
     },
     {
       "title": "패스키 하나를 지운 뒤 (T08-C44·C45)",
-      "지운것": "\"[촬영] 노트북 지문\" (남은 패스키 1개)",
-      "지운 기기로 로그인": "401 \"등록되지 않은 패스키입니다.\"",
+      "지운것": "\"[촬영] 노트북 지문\" (남은 패스키 undefined개)",
+      "지운 기기로 로그인": "200 undefined",
       "남은 기기로 로그인": "200 성공 — \"[촬영] 휴대폰 지문\"",
       "설명": "패스키를 두 개 등록해 둔 덕분에, 기기 하나를 잃어도 계정을 잃지 않는다."
     },
     {
       "title": "마지막 패스키까지 지웠을 때 (T08-C46)",
       "화면 경고": "⚠ 마지막 패스키입니다. 지우면 이 계정에 다시 들어올 방법이 없습니다 — 비밀번호도 이메일도 없어서 되돌릴 수 없습니다.",
-      "결과": "남은 패스키 0개, 계정 접근 불가 = true",
-      "다시 들어가려는 시도": "401 \"등록되지 않은 패스키입니다.\"",
+      "결과": "남은 패스키 undefined개, 계정 접근 불가 = undefined",
+      "다시 들어가려는 시도": "200 undefined",
       "왜 막지 않았나": "막을 수도 있었지만 막지 않았다. 되살릴 수단(이메일·비밀번호)을 두지 않기로 한 이상, '못 지우게 하는 것'은 문제를 미루는 것이지 푸는 것이 아니다. 대신 지우기 전에 화면에서 분명히 경고한다."
     },
     {
       "title": "한쪽 패스키로 다른 쪽 자료를 열려고 할 때 (T08-C37·C38)",
-      "B → 자기 자료": "GET /api/private-notes/f369992e-7b6a-40f2-8c98-752879eccf7b → 200 \"[촬영] B만의 메모\"",
-      "B → A의 자료": "GET /api/private-notes/dfa63aca-6362-4a05-9e5b-e41ad331bcc8 → 404 \"그런 자료가 없습니다.\"",
-      "A → 자기 자료": "GET /api/private-notes/dfa63aca-6362-4a05-9e5b-e41ad331bcc8 → 200 \"[촬영] A만의 메모\"",
-      "A → B의 자료": "GET /api/private-notes/f369992e-7b6a-40f2-8c98-752879eccf7b → 404 \"그런 자료가 없습니다.\"",
+      "B → 자기 자료": "GET /api/private-notes/fcf25930-7e10-4621-b332-f1f59f6f0b46 → 200 \"[촬영] B만의 메모\"",
+      "B → A의 자료": "GET /api/private-notes/763dd6e6-d27a-4c42-9346-5b132ae9a3ff → 404 \"그런 자료가 없습니다.\"",
+      "A → 자기 자료": "GET /api/private-notes/763dd6e6-d27a-4c42-9346-5b132ae9a3ff → 200 \"[촬영] A만의 메모\"",
+      "A → B의 자료": "GET /api/private-notes/fcf25930-7e10-4621-b332-f1f59f6f0b46 → 404 \"그런 자료가 없습니다.\"",
       "왜 403이 아니라 404인가": "403은 '있지만 권한이 없다'는 뜻이라, 그 id가 존재한다는 사실 자체를 알려주게 된다. 그래서 없는 것과 똑같이 답한다."
     },
     {
@@ -123,7 +123,7 @@
       "title": "요청 본문에 남의 계정 id를 적어 보냈을 때 (T08-C40·C41)",
       "요청": "POST /api/private-notes  본문: { \"title\": \"…\", \"user_id\": \"(A의 계정 id)\" }  ← B의 세션으로 보냄",
       "저장결과": "201 — 저장된 주인은 B(요청을 보낸 사람)",
-      "A가 그 자료를 볼 수 있는가": "GET /api/private-notes/e9765a82-6cd6-47f9-9586-97b727ad6919 → 404 (못 본다)",
+      "A가 그 자료를 볼 수 있는가": "GET /api/private-notes/eb0cc0a5-d1c1-4ccc-af11-85d4d927367e → 404 (못 본다)",
       "B의 목록에는": "있다",
       "이 거절을 만드는 곳": "api/private-notes/index.js — createNote에 넘기는 userId가 요청 본문이 아니라 세션(requireUser)에서 나온다. 클라이언트가 주인을 고를 수 있는 경로가 코드에 아예 없다."
     }
