@@ -9,13 +9,25 @@
 
 import { clearSessionCookie, methodNotAllowed, sendError, sendJson } from "../../lib/http.js";
 import { requireUser } from "../../lib/session.js";
-import { store } from "../../lib/store.js";
+import { REAUTH_MINUTES, store } from "../../lib/store.js";
 
 export default async function handler(req, res) {
     if (req.method !== "DELETE") return methodNotAllowed(res, ["DELETE"]);
 
     const found = await requireUser(req, res);
     if (!found) return;
+
+    // 로그인만으로는 지울 수 없다. 최근 5분 안에 패스키로 한 번 더 확인받아야 한다
+    // (/api/reauth/*). 로그인한 채 자리를 비운 사이에 남이 와서 지워 버리는 것을 막는다.
+    const reauthAt = found.session.reauth_at ? Date.parse(found.session.reauth_at) : 0;
+    const fresh = Date.now() - reauthAt < REAUTH_MINUTES * 60 * 1000;
+    if (!fresh) {
+        res.setHeader("Cache-Control", "no-store");
+        return sendJson(res, 403, {
+            error: "패스키를 다시 확인해 주세요.",
+            needsReauth: true,
+        });
+    }
 
     const id = String(req.query?.id || "");
 

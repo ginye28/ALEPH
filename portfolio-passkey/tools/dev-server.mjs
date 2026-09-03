@@ -87,6 +87,22 @@ function resolveApiRoute(segments) {
     return null;
 }
 
+/** api/ 와 lib/ 를 통틀어 가장 최근 수정 시각 — 모듈 캐시를 깨는 열쇠로 쓴다. */
+function newestSourceTime() {
+    let newest = 0;
+    const walk = (dir) => {
+        if (!existsSync(dir)) return;
+        for (const entry of readdirSync(dir, { withFileTypes: true })) {
+            const full = join(dir, entry.name);
+            if (entry.isDirectory()) walk(full);
+            else if (full.endsWith(".js")) newest = Math.max(newest, statSync(full).mtimeMs);
+        }
+    };
+    walk(API_ROOT);
+    walk(join(ROOT, "lib"));
+    return newest;
+}
+
 function serveStatic(pathname, res) {
     const relative = pathname === "/" ? "index.html" : normalize(pathname).replace(/^[/\\]+/, "");
     const target = join(ROOT, relative);
@@ -125,8 +141,9 @@ const server = createServer(async (req, res) => {
     try {
         // 파일이 바뀌면 다시 읽도록 수정 시각을 쿼리로 붙인다 — 안 그러면 ES 모듈 캐시 때문에
         // 핸들러를 고쳐도 서버를 껐다 켜기 전까지 옛 코드가 돈다.
-        const version = statSync(route.file).mtimeMs;
-        const module = await import(`${pathToFileURL(route.file).href}?v=${version}`);
+        // 핸들러 하나만 보면 lib/ 를 고쳤을 때 반영되지 않으므로, api/ 와 lib/ 를 통틀어
+        // 가장 최근 수정 시각을 쓴다.
+        const module = await import(`${pathToFileURL(route.file).href}?v=${newestSourceTime()}`);
         await module.default(req, res);
     } catch (error) {
         console.error(`[api] ${url.pathname}`, error);

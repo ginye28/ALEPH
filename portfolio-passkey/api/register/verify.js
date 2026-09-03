@@ -48,7 +48,9 @@ export default async function handler(req, res) {
             expectedChallenge: pending.challenge,
             expectedOrigin: rp.origin,
             expectedRPID: rp.rpID,
-            requireUserVerification: false,
+            // 기기가 실제로 지문·얼굴·PIN을 확인했는지까지 서버가 검사한다.
+            // 옵션에 required라고 적어 보내는 것만으로는 부족하다 — 응답의 UV 플래그를 봐야 한다.
+            requireUserVerification: true,
         });
     } catch (error) {
         return sendError(res, 400, `등록을 확인하지 못했습니다: ${error.message}`);

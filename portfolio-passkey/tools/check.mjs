@@ -23,7 +23,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { decodeCredentialPublicKey } from "@simplewebauthn/server/helpers";
 import { SEED_NOTES } from "../lib/seed.js";
-import { openBrowser } from "./harness.mjs";
+import { openBrowser, sleep } from "./harness.mjs";
 
 const URL_APP = (process.env.BOARD_URL ?? "http://localhost:5179").replace(/\/$/, "");
 const ROOT = path.resolve(import.meta.dirname, "..", "..");
@@ -76,6 +76,11 @@ const CHECKS = [
     { n: 33, code: "T08-C39", kind: "카드5", title: "거절 앞뒤로 반대편의 자료 건수가 같다" },
     { n: 34, code: "T08-C40", kind: "카드5", title: "요청 본문에 남의 계정 id를 적어 보내도 내 자료로만 저장된다" },
     { n: 35, code: "T08-C46", kind: "카드4", title: "마지막 패스키를 지우면 그 계정은 더 이상 열 수 없다" },
+    // ── 설명서 ⑥("아직 못 막은 것")에 적었다가 실제로 막은 것들 ──
+    { n: 36, code: "⑥-1", kind: "보강", title: "등록·로그인 모두 지문·얼굴·PIN 확인을 반드시 거치게 되어 있다" },
+    { n: 37, code: "⑥-2", kind: "보강", title: "로그인만 되어 있다고 패스키를 지울 수는 없다 (재확인 요구)" },
+    { n: 38, code: "⑥-2", kind: "보강", title: "패스키로 다시 확인하면 그때 지워진다" },
+    { n: 39, code: "⑥-4", kind: "보강", title: "패스키가 하나뿐이면 화면이 그 위험을 먼저 알린다" },
 ];
 
 const results = new Map();
@@ -529,26 +534,29 @@ await guard(27, async () => {
 });
 
 let deletedCredentialId = null;
+let deletionEvidence = null;
 await guard(29, async () => {
     const me = await evaluate(`window.__flow.get('/api/me')`);
     const first = me.data.credentials.find((c) => c.deviceName === `${TAG} 기기1`);
     deletedCredentialId = first.id;
 
-    const deleted = await evaluate(`window.__flow.del('/api/credentials/${first.id}')`);
+    // 삭제는 이제 재확인을 거친다 (검사 37·38이 그 단계를 따로 본다).
+    const removal = await evaluate(`window.__flow.deleteCredential('${first.id}')`);
+    deletionEvidence = removal;
     await evaluate(`window.__flow.post('/api/logout')`);
 
     // 지운 패스키가 들어 있는 기기1로 바꿔 끼우고 들어가려 해 본다.
     await useDevice("기기1");
     const attempt = await evaluate(`window.__flow.login()`);
 
-    if (deleted.ok && deleted.data.remaining === 1 && !attempt.ok) {
+    if (removal.final.ok && removal.final.data.remaining === 1 && !attempt.ok) {
         pass(
             29,
-            `기기1의 패스키를 지움(남은 ${deleted.data.remaining}개) → 그 기기로 로그인 시도 ${attempt.status} "${attempt.data?.error ?? attempt.error}" ` +
+            `기기1의 패스키를 지움(남은 ${removal.final.data.remaining}개) → 그 기기로 로그인 시도 ${attempt.status} "${attempt.data?.error ?? attempt.error}" ` +
                 `— 서버에 그 자격증명이 없으니 서명을 확인할 대상 자체가 없다`,
         );
     } else {
-        fail(29, `삭제 ${JSON.stringify(deleted.data)} · 로그인 시도 ${JSON.stringify(attempt)}`);
+        fail(29, `삭제 ${JSON.stringify(removal.final)} · 로그인 시도 ${JSON.stringify(attempt)}`);
     }
 });
 
@@ -687,7 +695,8 @@ await guard(35, async () => {
     // 지금 세션은 B, 기기3 하나뿐이다.
     const me = await evaluate(`window.__flow.get('/api/me')`);
     const only = me.data.credentials[0];
-    const deleted = await evaluate(`window.__flow.del('/api/credentials/${only.id}')`);
+    const removal = await evaluate(`window.__flow.deleteCredential('${only.id}')`);
+    const deleted = removal.final;
     const afterMe = await evaluate(`window.__flow.get('/api/me')`);
     const attempt = await evaluate(`window.__flow.login()`);
 
@@ -708,6 +717,104 @@ await guard(35, async () => {
             35,
             `삭제 ${JSON.stringify(deleted.data)} · me ${afterMe.status} · 재로그인 ${JSON.stringify(attempt).slice(0, 120)}`,
         );
+    }
+});
+
+/* ── 7단계 · 설명서 ⑥에 적었다가 실제로 막은 것들 ─────────────────────── */
+
+await guard(36, async () => {
+    // 새 계정을 하나 만들어 등록·로그인 옵션을 그대로 들여다본다.
+    await useDevice("기기4");
+    const registerOptions = await evaluate(`window.__flow.registerOptions('${TAG} 기기4')`);
+    const registered = await evaluate(`window.__flow.register('${TAG} 기기4')`);
+    await evaluate(`window.__flow.post('/api/logout')`);
+    const loginOptions = await evaluate(`window.__flow.loginOptions()`);
+    const loginOptionsFull = await evaluate(
+        `window.__pk.api('/api/login/options', { method: 'POST' }).then(r => r.data.options)`,
+    );
+
+    const registerUv = registerOptions.options?.authenticatorSelection?.userVerification;
+    const loginUv = loginOptionsFull?.userVerification;
+
+    if (registerUv === "required" && loginUv === "required" && registered.ok) {
+        pass(
+            36,
+            `등록 옵션 userVerification="${registerUv}", 로그인 옵션 userVerification="${loginUv}" — ` +
+                `서버도 응답의 UV 플래그를 requireUserVerification:true로 다시 확인한다. ` +
+                `기기가 잠금 해제돼 있어도 지문·얼굴·PIN을 매번 새로 받는다`,
+        );
+    } else {
+        fail(36, `등록 uv=${registerUv} · 로그인 uv=${loginUv} · 등록성공=${registered.ok}`);
+    }
+});
+
+await guard(37, async () => {
+    await evaluate(`window.__flow.login()`);
+    const me = await evaluate(`window.__flow.get('/api/me')`);
+    const target = me.data.credentials[0];
+
+    // 재확인 없이 곧장 지워 본다.
+    const bare = await evaluate(`window.__flow.del('/api/credentials/${target.id}')`);
+    const stillThere = await evaluate(`window.__flow.get('/api/me')`);
+
+    if (bare.status === 403 && bare.data.needsReauth === true && stillThere.data.credentials.length === 1) {
+        pass(
+            37,
+            `로그인된 세션으로 DELETE /api/credentials/… → ${bare.status} "${bare.data.error}" (needsReauth) · 패스키는 그대로 ${stillThere.data.credentials.length}개. ` +
+                `세션이 살아 있다는 것만으로는 되돌릴 수 없는 동작을 허용하지 않는다`,
+        );
+    } else {
+        fail(37, `${bare.status} ${JSON.stringify(bare.data)} · 남은 ${stillThere.data.credentials?.length}개`);
+    }
+});
+
+await guard(38, async () => {
+    const me = await evaluate(`window.__flow.get('/api/me')`);
+    const target = me.data.credentials[0];
+    const removal = await evaluate(`window.__flow.deleteCredential('${target.id}')`);
+
+    if (removal.reauthAsked && removal.reauth.ok && removal.final.ok) {
+        pass(
+            38,
+            `같은 요청을 재확인 뒤에 다시 보냄 → 첫 번째 ${removal.first.status}(거절) / 패스키 재확인 ${removal.reauth.status} / 두 번째 ${removal.final.status}(삭제됨). ` +
+                `다른 건 "방금 패스키를 댔는가" 하나뿐이다`,
+        );
+    } else {
+        fail(38, JSON.stringify(removal).slice(0, 300));
+    }
+});
+
+await guard(39, async () => {
+    // 패스키가 하나뿐인 계정을 만들어 화면 경고를 확인한다.
+    await useDevice("기기5");
+    await evaluate(`window.__flow.register('${TAG} 기기5')`);
+    await evaluate(`window.__pk.refresh()`);
+    await sleep(500);
+
+    const one = await evaluate(`({
+        hidden: document.querySelector("[data-testid='single-passkey-warning']").hidden,
+        text: document.querySelector("[data-testid='single-passkey-warning']").innerText.replace(/\\s+/g,' ').trim(),
+        count: document.querySelector("[data-testid='credential-count']").textContent,
+    })`);
+
+    // 두 개가 되면 경고가 사라지는지도 본다.
+    await useDevice("기기6");
+    await evaluate(`window.__flow.register('${TAG} 기기6')`);
+    await evaluate(`window.__pk.refresh()`);
+    await sleep(500);
+    const two = await evaluate(`({
+        hidden: document.querySelector("[data-testid='single-passkey-warning']").hidden,
+        count: document.querySelector("[data-testid='credential-count']").textContent,
+    })`);
+
+    if (!one.hidden && two.hidden && one.count === "1" && two.count === "2") {
+        pass(
+            39,
+            `패스키 1개일 때 경고 보임 — "${one.text.slice(0, 60)}…" · 2개가 되면 사라짐. ` +
+                `되살릴 수단을 두지 않기로 한 이상, 그 위험을 잃기 전에 알린다`,
+        );
+    } else {
+        fail(39, `1개일 때 hidden=${one.hidden}(${one.count}) · 2개일 때 hidden=${two.hidden}(${two.count})`);
     }
 });
 

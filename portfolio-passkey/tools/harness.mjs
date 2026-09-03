@@ -96,6 +96,37 @@ window.__flow = {
         const r = await window.__pk.api(path, { method: 'DELETE' });
         return { status: r.status, ok: r.ok, data: r.data };
     },
+    /** 되돌릴 수 없는 동작 앞의 재확인 한 번. */
+    async reauth() {
+        const start = await window.__pk.api('/api/reauth/options', { method: 'POST' });
+        if (!start.ok) return { ok: false, stage: 'options', status: start.status, error: start.data.error };
+        let credential;
+        try {
+            credential = await navigator.credentials.get({ publicKey: window.__pk.toRequestOptions(start.data.options) });
+        } catch (e) {
+            return { ok: false, stage: 'authenticator', error: e.name + ': ' + e.message };
+        }
+        const done = await window.__pk.api('/api/reauth/verify', {
+            method: 'POST',
+            body: { challengeId: start.data.challengeId, response: window.__pk.serializeAuthentication(credential) },
+        });
+        return { ok: done.ok, status: done.status, data: done.data };
+    },
+    /** 재확인까지 거쳐 패스키를 지운다 (화면의 버튼이 하는 것과 같은 순서). */
+    async deleteCredential(id) {
+        const path = '/api/credentials/' + id;
+        const firstTry = await window.__pk.api(path, { method: 'DELETE' });
+        if (firstTry.ok) return { reauthAsked: false, first: { status: firstTry.status, data: firstTry.data }, final: { status: firstTry.status, ok: true, data: firstTry.data } };
+        if (!firstTry.data.needsReauth) return { reauthAsked: false, first: { status: firstTry.status, data: firstTry.data }, final: { status: firstTry.status, ok: false, data: firstTry.data } };
+        const confirmed = await window.__flow.reauth();
+        const retry = await window.__pk.api(path, { method: 'DELETE' });
+        return {
+            reauthAsked: true,
+            first: { status: firstTry.status, data: firstTry.data },
+            reauth: confirmed,
+            final: { status: retry.status, ok: retry.ok, data: retry.data },
+        };
+    },
 };
 `;
 

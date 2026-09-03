@@ -1,19 +1,14 @@
 /**
- * 로그인 2단계 — 저장해 둔 공개키로 서명을 확인한다 (카드 3, T08-C29~C33).
+ * 재확인 2단계 — 서명이 맞으면 세션의 reauth_at을 지금으로 찍는다.
  *
- * 통과하면 세션 행을 하나 만들고 그 id를 HttpOnly 쿠키로 내려준다.
- * 이 쿠키 값 안에는 아무 정보도 들어 있지 않다(JWT가 아니다) — 서버가 테이블에 들고 있다.
+ * 로그인과 다른 점: **새 세션을 만들지 않는다.** 이미 있는 세션에 "방금 확인받았다"는
+ * 표시만 남긴다. 그 표시가 5분 안쪽일 때만 패스키 삭제가 허용된다.
  */
 
 import { verifyAuthenticationResponse } from "@simplewebauthn/server";
-import {
-    methodNotAllowed,
-    readJson,
-    sendError,
-    sendJson,
-    setSessionCookie,
-} from "../../lib/http.js";
+import { methodNotAllowed, readJson, sendError, sendJson } from "../../lib/http.js";
 import { resolveRp } from "../../lib/rp.js";
+import { requireUser } from "../../lib/session.js";
 import { store } from "../../lib/store.js";
 
 export default async function handler(req, res) {
@@ -22,13 +17,15 @@ export default async function handler(req, res) {
     const rp = resolveRp(req);
     if (!rp.ok) return sendError(res, 400, rp.error);
 
+    const found = await requireUser(req, res);
+    if (!found) return;
+
     const body = await readJson(req);
     if (!body.challengeId || !body.response) {
         return sendError(res, 400, "challengeId와 response가 필요합니다.");
     }
 
-    // 이미 쓴 질문으로 다시 들어오려는 시도는 여기서 끊긴다 (T08-C31).
-    const taken = await store.takeChallenge({ id: body.challengeId, type: "authentication" });
+    const taken = await store.takeChallenge({ id: body.challengeId, type: "reauth" });
     if (!taken.ok) {
         const message = {
             already_used: "이미 사용된 확인 질문입니다.",
@@ -38,12 +35,15 @@ export default async function handler(req, res) {
         return sendError(res, 400, message);
     }
 
-    // 어떤 패스키로 답했는지는 응답에 실린 credential id로 찾는다.
-    const credentialId = String(body.response.id || "");
-    const stored = await store.getCredential(credentialId);
-    if (!stored) {
-        // 지워진 패스키로 들어오려 해도 여기서 끊긴다 (T08-C45).
-        return sendError(res, 401, "등록되지 않은 패스키입니다.");
+    // 이 질문이 정말 이 계정에게 발급된 것인지 확인한다.
+    if (taken.row.user_id !== found.user.id) {
+        return sendError(res, 401, "다른 계정에 발급된 확인 질문입니다.");
+    }
+
+    const stored = await store.getCredential(String(body.response.id || ""));
+    // 남의 패스키로는 내 계정을 재확인할 수 없다.
+    if (!stored || stored.user_id !== found.user.id) {
+        return sendError(res, 401, "이 계정의 패스키가 아닙니다.");
     }
 
     let verification;
@@ -53,7 +53,6 @@ export default async function handler(req, res) {
             expectedChallenge: taken.row.challenge,
             expectedOrigin: rp.origin,
             expectedRPID: rp.rpID,
-            // 기기가 실제로 지문·얼굴·PIN을 확인했는지까지 서버가 검사한다.
             requireUserVerification: true,
             credential: {
                 id: stored.id,
@@ -63,18 +62,13 @@ export default async function handler(req, res) {
             },
         });
     } catch (error) {
-        return sendError(res, 401, `서명을 확인하지 못했습니다: ${error.message}`);
+        return sendError(res, 401, `확인하지 못했습니다: ${error.message}`);
     }
 
-    if (!verification.verified) {
-        return sendError(res, 401, "서명을 확인하지 못했습니다.");
-    }
+    if (!verification.verified) return sendError(res, 401, "확인하지 못했습니다.");
 
-    // 서명 횟수를 올려 둔다 — 복제된 기기를 나중에 알아채기 위한 값이다.
     await store.updateCounter(stored.id, verification.authenticationInfo.newCounter);
-
-    const session = await store.createSession(stored.user_id);
-    setSessionCookie(req, res, session.id);
+    await store.touchReauth(found.session.id);
 
     sendJson(res, 200, { ok: true, deviceName: stored.device_name });
 }

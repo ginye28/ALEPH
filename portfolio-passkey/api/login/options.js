@@ -18,7 +18,8 @@ export default async function handler(req, res) {
 
     const options = await generateAuthenticationOptions({
         rpID: rp.rpID,
-        userVerification: "preferred",
+        // 매번 지문·얼굴·PIN을 확인받는다 (등록 때와 같은 이유).
+        userVerification: "required",
     });
 
     const challenge = await store.createChallenge({

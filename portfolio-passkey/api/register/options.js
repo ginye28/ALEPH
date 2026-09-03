@@ -56,8 +56,11 @@ export default async function handler(req, res) {
             // 아이디 없이 로그인하려면(discoverable credential) 기기가 자격증명을 직접 들고 있어야 한다.
             residentKey: "required",
             requireResidentKey: true,
-            // 'required'로 하면 PIN 없는 보안 키가 못 쓰게 되므로 'preferred'.
-            userVerification: "preferred",
+            // 지문·얼굴·PIN 확인을 반드시 거치게 한다. 이걸 'preferred'로 두면 기기가 이미
+            // 잠금 해제돼 있을 때 아무 확인 없이 패스키가 응답할 수 있어서, 남이 내 열린
+            // 노트북 앞에 앉기만 해도 열린다. 그 대가로 PIN을 설정하지 않은 보안 키는
+            // 쓸 수 없다 — 잠금의 세기를 그쪽에 맞추지 않기로 했다.
+            userVerification: "required",
         },
     });
 

@@ -510,6 +510,17 @@
             border-bottom: 1px solid #eeeeee;
         }
 
+        .single-warning {
+            margin-bottom: 16px;
+            padding: 14px 16px;
+            border: 1px solid #e0c98d;
+            background: #fdf6e6;
+            border-radius: 12px;
+            font-size: 13px;
+            line-height: 1.7;
+            color: #7a5713;
+        }
+
         .delete-confirm {
             width: 100%;
             margin-top: 12px;
@@ -1051,6 +1062,12 @@
                     <p class="pk-note">
                         패스키는 기기에 매여 있습니다. 기기를 잃어버렸을 때를 대비해
                         <b>두 개 이상</b> 등록해 두세요 — 하나를 지워도 남은 것으로 들어올 수 있습니다.
+                    </p>
+
+                    <p class="single-warning" data-testid="single-passkey-warning" hidden>
+                        ⚠ <b>패스키가 하나뿐입니다.</b> 이 기기를 잃어버리면 이 계정에 다시 들어올
+                        방법이 없습니다 — 비밀번호도 이메일도 없어서 되살려 드릴 수단이 없습니다.
+                        다른 기기에서 <b>패스키를 하나 더</b> 등록해 두세요.
                     </p>
 
                     <ul class="credentials" data-testid="credentials"></ul>

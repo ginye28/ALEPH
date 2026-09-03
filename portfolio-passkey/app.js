@@ -148,6 +148,34 @@ async function registerPasskey(deviceName) {
     return { ok: true, data: done.data };
 }
 
+/**
+ * 되돌릴 수 없는 동작 직전에 패스키를 한 번 더 확인받는다.
+ * 로그인과 달리 새 세션을 만들지 않고, 지금 세션에 "방금 확인했다"는 표시만 남긴다.
+ */
+async function reauthenticate() {
+    const start = await api("/api/reauth/options", { method: "POST" });
+    if (!start.ok) return { ok: false, message: start.data.error || "확인을 시작하지 못했습니다." };
+
+    let credential;
+    try {
+        credential = await navigator.credentials.get({
+            publicKey: toRequestOptions(start.data.options),
+        });
+    } catch {
+        return { ok: false, message: "확인을 취소했습니다. 아무것도 지우지 않았습니다." };
+    }
+
+    const done = await api("/api/reauth/verify", {
+        method: "POST",
+        body: {
+            challengeId: start.data.challengeId,
+            response: serializeAuthentication(credential),
+        },
+    });
+    if (!done.ok) return { ok: false, message: done.data.error || "확인하지 못했습니다." };
+    return { ok: true };
+}
+
 async function loginWithPasskey() {
     const start = await api("/api/login/options", { method: "POST" });
     if (!start.ok) return { ok: false, message: start.data.error || "로그인을 시작하지 못했습니다." };
@@ -286,6 +314,10 @@ function render() {
         .join("");
 
     $("[data-testid='credential-count']").textContent = String(state.credentials.length);
+
+    // 패스키가 하나뿐이면 그 기기를 잃는 순간 계정도 잃는다. 되살릴 수단을 두지 않았으므로
+    // 미리 하나 더 등록하라고 눈에 띄게 알린다 (설명서 ⑥의 "복구 수단 없음"에 대한 대비).
+    $("[data-testid='single-passkey-warning']").hidden = state.credentials.length !== 1;
 }
 
 function escapeHtml(value) {
@@ -397,9 +429,20 @@ function wire() {
         }
         if (!data.confirmDelete) return;
 
-        const result = await api(`/api/credentials/${data.confirmDelete}`, { method: "DELETE" });
+        const target = `/api/credentials/${data.confirmDelete}`;
+        let result = await api(target, { method: "DELETE" });
+
+        // 서버가 "다시 확인해 달라"고 하면 패스키를 한 번 더 대고 나서 재시도한다.
+        if (!result.ok && result.data.needsReauth) {
+            setAccountMessage("지우기 전에 패스키로 한 번 더 확인합니다…");
+            const confirmed = await reauthenticate();
+            if (!confirmed.ok) return setAccountMessage(confirmed.message, "bad");
+            result = await api(target, { method: "DELETE" });
+        }
+
         if (!result.ok) return setAccountMessage(result.data.error || "지우지 못했습니다.", "bad");
 
+        setAccountMessage("");
         await refresh();
         if (result.data.accountUnreachable) {
             setMessage(
