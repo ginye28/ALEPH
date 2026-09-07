@@ -209,7 +209,7 @@ const KIND_LABEL = {
     retro: "회고",
 };
 
-let state = { status: "unknown", account: null, credentials: [], notes: [], pendingDelete: null };
+let state = { status: "unknown", account: null, credentials: [], notes: [], pendingDelete: null, pendingDeleteWarnedLast: false, deleting: null };
 
 function setMessage(text, tone = "info") {
     setNodeMessage($("[data-testid='auth-message']"), text, tone);
@@ -228,7 +228,7 @@ function setNodeMessage(node, text, tone) {
 async function refresh() {
     const me = await api("/api/me");
     if (!me.ok) {
-        state = { status: "locked", account: null, credentials: [], notes: [] };
+        state = { status: "locked", account: null, credentials: [], notes: [], pendingDelete: null, pendingDeleteWarnedLast: false, deleting: null };
         render();
         return;
     }
@@ -239,6 +239,8 @@ async function refresh() {
         credentials: me.data.credentials,
         notes: notes.ok ? notes.data.notes : [],
         pendingDelete: null,
+        pendingDeleteWarnedLast: false,
+        deleting: null,
     };
     render();
 }
@@ -267,18 +269,23 @@ function render() {
         .join("");
 
     const isLastOne = state.credentials.length === 1;
+    // 삭제 한 번은 재확인 왕복 때문에 몇 초가 걸린다. 그동안 다른 줄의 지우기가 그대로
+    // 눌리면 두 개가 연달아 지워져 계정이 통째로 사라진다 — 진행 중에는 전부 잠근다.
+    const busy = state.deleting !== null;
 
     $("[data-testid='credentials']").innerHTML = state.credentials
         .map((credential) => {
             const confirming = state.pendingDelete === credential.id;
+            const deletingThis = state.deleting === credential.id;
             const warning = isLastOne
                 ? "⚠ 마지막 패스키입니다. 지우면 이 계정에 다시 들어올 방법이 없습니다 — 비밀번호도 이메일도 없어서 되돌릴 수 없습니다."
                 : "지운 패스키로는 더 이상 들어올 수 없습니다. 남은 패스키로는 그대로 들어올 수 있습니다.";
 
             return `
-            <li class="credential" data-credential-id="${credential.id}">
+            <li class="credential${deletingThis ? " credential-deleting" : ""}" data-credential-id="${credential.id}">
                 <div>
                     <strong>${escapeHtml(credential.deviceName)}</strong>
+                    ${credential.isCurrentSession ? `<span class="credential-current" data-testid="current-device">지금 이 기기</span>` : ""}
                     <span class="credential-meta">${formatDate(credential.createdAt)} 등록 · ${credential.shortId}…</span>
                     <details class="credential-key">
                         <summary>서버가 가진 값 보기</summary>
@@ -294,17 +301,17 @@ function render() {
                 ${
                     confirming
                         ? ""
-                        : `<button type="button" class="link-danger" data-delete-credential="${credential.id}">지우기</button>`
+                        : `<button type="button" class="link-danger" data-delete-credential="${credential.id}"${busy ? " disabled" : ""}>${deletingThis ? "지우는 중…" : "지우기"}</button>`
                 }
                 ${
                     confirming
                         ? `<div class="delete-confirm" data-testid="delete-confirm">
                                 <p class="delete-warning">${warning}</p>
                                 <div class="pk-actions">
-                                    <button type="button" class="link-danger" data-confirm-delete="${credential.id}">
-                                        네, 지웁니다 — 되돌릴 수 없습니다
+                                    <button type="button" class="link-danger" data-confirm-delete="${credential.id}"${busy ? " disabled" : ""}>
+                                        ${deletingThis ? "지우는 중… 패스키를 확인해 주세요" : "네, 지웁니다 — 되돌릴 수 없습니다"}
                                     </button>
-                                    <button type="button" class="pk-button" data-cancel-delete="1">취소</button>
+                                    <button type="button" class="pk-button" data-cancel-delete="1"${busy ? " disabled" : ""}>취소</button>
                                 </div>
                            </div>`
                         : ""
@@ -416,39 +423,85 @@ function wire() {
     });
 
     // 삭제는 두 단계다 — 누르면 경고가 화면에 펼쳐지고, 한 번 더 눌러야 지워진다 (T08-C46).
+    //
+    // 삭제 한 번은 재확인 왕복(첫 DELETE → 403 → 패스키 확인 → 재시도) 때문에 몇 초가
+    // 걸린다. 그동안 버튼이 그대로 살아 있으면 "안 눌렸나?" 하고 다른 줄을 누르게 되고,
+    // 두 요청이 나란히 나가 **패스키 두 개가 다 지워진다** — 되살릴 수단이 없는 계정에서
+    // 이건 계정 소멸이다. 그래서 진행 중에는 화면을 잠그고, 처리기에서도 재진입을 막는다.
     $("[data-testid='credentials']").addEventListener("click", async (event) => {
         const data = event.target.dataset ?? {};
 
+        // 이미 하나가 지워지는 중이면 어떤 클릭도 받지 않는다 (버튼 disabled의 이중 잠금).
+        if (state.deleting !== null) return;
+
         if (data.deleteCredential) {
-            state = { ...state, pendingDelete: data.deleteCredential };
+            state = {
+                ...state,
+                pendingDelete: data.deleteCredential,
+                // 지금 펼치는 경고문이 "마지막 한 개" 버전인지 기억해 둔다.
+                pendingDeleteWarnedLast:
+                    state.credentials.length === 1 && state.credentials[0].id === data.deleteCredential,
+            };
             return render();
         }
         if (data.cancelDelete) {
-            state = { ...state, pendingDelete: null };
+            state = { ...state, pendingDelete: null, pendingDeleteWarnedLast: false };
             return render();
         }
         if (!data.confirmDelete) return;
 
-        const target = `/api/credentials/${data.confirmDelete}`;
-        let result = await api(target, { method: "DELETE" });
+        const id = data.confirmDelete;
 
-        // 서버가 "다시 확인해 달라"고 하면 패스키를 한 번 더 대고 나서 재시도한다.
-        if (!result.ok && result.data.needsReauth) {
-            setAccountMessage("지우기 전에 패스키로 한 번 더 확인합니다…");
-            const confirmed = await reauthenticate();
-            if (!confirmed.ok) return setAccountMessage(confirmed.message, "bad");
-            result = await api(target, { method: "DELETE" });
-        }
-
-        if (!result.ok) return setAccountMessage(result.data.error || "지우지 못했습니다.", "bad");
-
-        setAccountMessage("");
-        await refresh();
-        if (result.data.accountUnreachable) {
-            setMessage(
-                "마지막 패스키를 지웠습니다. 이 계정에는 이제 들어올 방법이 없습니다 — 되살릴 수단을 두지 않았습니다.",
+        // 경고문은 확인창을 **그릴 때** 정해졌다. 그 사이에 개수가 줄어 마지막 한 개가
+        // 됐을 수 있는데, 그러면 "남은 패스키로 들어올 수 있다"는 낡은 안내를 보면서
+        // 계정을 잃게 된다. 실제 상황이 그때와 달라졌으면 지우지 않고 다시 그린다 —
+        // 새로 그려진 경고문(마지막 한 개)을 읽고 한 번 더 눌러야 지워진다.
+        const isLastNow = state.credentials.length === 1 && state.credentials[0].id === id;
+        if (isLastNow !== state.pendingDeleteWarnedLast) {
+            state = { ...state, pendingDeleteWarnedLast: isLastNow };
+            render();
+            return setAccountMessage(
+                "그 사이 패스키 개수가 바뀌었습니다. 바뀐 안내를 읽고 다시 눌러 주세요.",
                 "bad",
             );
+        }
+
+        // 여기서부터 잠근다. 첫 요청이 돌아오기 전에도 화면이 반응하게 한다.
+        state = { ...state, deleting: id };
+        render();
+        setAccountMessage("지우는 중입니다… 이 사이에 다른 패스키를 누르지 마세요.");
+
+        try {
+            const target = `/api/credentials/${id}`;
+            let result = await api(target, { method: "DELETE" });
+
+            // 서버가 "다시 확인해 달라"고 하면 패스키를 한 번 더 대고 나서 재시도한다.
+            if (!result.ok && result.data.needsReauth) {
+                setAccountMessage("지우기 전에 패스키로 한 번 더 확인합니다…");
+                const confirmed = await reauthenticate();
+                if (!confirmed.ok) return setAccountMessage(confirmed.message, "bad");
+                result = await api(target, { method: "DELETE" });
+            }
+
+            if (!result.ok) {
+                return setAccountMessage(result.data.error || "지우지 못했습니다.", "bad");
+            }
+
+            setAccountMessage("");
+            await refresh();
+            if (result.data.accountUnreachable) {
+                setMessage(
+                    "마지막 패스키를 지웠습니다. 이 계정에는 이제 들어올 방법이 없습니다 — 되살릴 수단을 두지 않았습니다.",
+                    "bad",
+                );
+            }
+        } finally {
+            // 성공하면 refresh()가 deleting을 null로 되돌려 놓지만, 실패하거나 재확인을
+            // 취소한 길에서도 화면이 잠긴 채로 남지 않게 여기서 반드시 푼다.
+            if (state.deleting === id) {
+                state = { ...state, deleting: null };
+                render();
+            }
         }
     });
 

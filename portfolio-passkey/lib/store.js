@@ -100,6 +100,11 @@ function fileStore() {
                 const index = d.credentials.findIndex((c) => c.id === id && c.user_id === userId);
                 if (index < 0) return false;
                 d.credentials.splice(index, 1);
+                // 이 패스키로 들어온 세션은 이제 "지금 이 기기"를 가리킬 수 없다.
+                // (Postgres 쪽은 on delete set null이 같은 일을 한다.)
+                for (const session of d.sessions) {
+                    if (session.credential_id === id) session.credential_id = null;
+                }
                 return true;
             });
         },
@@ -146,11 +151,13 @@ function fileStore() {
             });
         },
 
-        async createSession(userId) {
+        async createSession(userId, credentialId = null) {
             return mutate((d) => {
                 const row = {
                     id: randomUUID(),
                     user_id: userId,
+                    // 어느 패스키로 들어왔는지 — 화면의 "지금 이 기기" 표시에 쓴다.
+                    credential_id: credentialId,
                     expires_at: plusMinutes(SESSION_MINUTES),
                     // 로그인은 재확인으로 치지 않는다 — null로 둔다. 로그인 직후에도
                     // 패스키를 지우려면 패스키를 한 번 더 대야 한다.
@@ -308,11 +315,11 @@ function postgresStore() {
             return { ok: false, reason: "expired" };
         },
 
-        async createSession(userId) {
+        async createSession(userId, credentialId = null) {
             return first(
                 // reauth_at은 비워 둔다 — 로그인은 재확인으로 치지 않는다.
-                await sql`insert into pk_sessions (user_id, expires_at)
-                          values (${userId}, ${plusMinutes(SESSION_MINUTES)})
+                await sql`insert into pk_sessions (user_id, credential_id, expires_at)
+                          values (${userId}, ${credentialId}, ${plusMinutes(SESSION_MINUTES)})
                           returning *`,
             );
         },

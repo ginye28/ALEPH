@@ -541,6 +541,30 @@
             border-bottom: none;
         }
 
+        /* 지금 이 세션이 어느 패스키로 들어왔는지 — 지울 때 줄을 헷갈리지 않게 한다. */
+        .credential-current {
+            display: inline-block;
+            margin-left: 8px;
+            padding: 2px 8px;
+            border: 1px solid #b7d3c0;
+            background: #eef7f1;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #2f6b48;
+            vertical-align: middle;
+        }
+
+        /* 삭제가 도는 몇 초 동안 그 줄이 처리 중임을 눈에 보이게 한다. */
+        .credential-deleting {
+            opacity: 0.65;
+        }
+
+        .credential button[disabled] {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
         .credential-meta {
             display: block;
             font-size: 12px;

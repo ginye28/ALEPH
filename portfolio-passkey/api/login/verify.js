@@ -73,7 +73,9 @@ export default async function handler(req, res) {
     // 서명 횟수를 올려 둔다 — 복제된 기기를 나중에 알아채기 위한 값이다.
     await store.updateCounter(stored.id, verification.authenticationInfo.newCounter);
 
-    const session = await store.createSession(stored.user_id);
+    // 어느 패스키로 들어왔는지 세션에 남긴다 — 화면이 목록에서 "지금 이 기기"를
+    // 표시해 주면, 지울 때 어느 줄이 지금 쓰는 것인지 헷갈리지 않는다.
+    const session = await store.createSession(stored.user_id, stored.id);
     setSessionCookie(req, res, session.id);
 
     sendJson(res, 200, { ok: true, deviceName: stored.device_name });

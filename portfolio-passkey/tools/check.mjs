@@ -81,6 +81,13 @@ const CHECKS = [
     { n: 37, code: "⑥-2", kind: "보강", title: "로그인만 되어 있다고 패스키를 지울 수는 없다 (재확인 요구)" },
     { n: 38, code: "⑥-2", kind: "보강", title: "패스키로 다시 확인하면 그때 지워진다" },
     { n: 39, code: "⑥-4", kind: "보강", title: "패스키가 하나뿐이면 화면이 그 위험을 먼저 알린다" },
+    // ── 실기기에서 발견한 삭제 경합 (2026-09-07) ──
+    // 삭제 한 번은 재확인 왕복 때문에 몇 초가 걸린다. 그 사이 다른 줄의 "지우기"가 그대로
+    // 눌려서 패스키 두 개가 연달아 지워지면, 되살릴 수단이 없는 이 계정은 그대로 사라진다.
+    // 위 검사들은 삭제를 순차로 한 번씩만 해서 이 구간을 통과해 버렸다.
+    { n: 40, code: "⑥-2", kind: "보강", title: "삭제가 도는 동안 다른 패스키의 지우기 버튼이 잠긴다" },
+    { n: 41, code: "⑥-2", kind: "보강", title: "삭제 중 버튼을 마구 눌러도 패스키가 하나만 지워진다 (계정이 사라지지 않는다)" },
+    { n: 42, code: "보강", kind: "보강", title: "목록에서 지금 로그인에 쓴 패스키가 어느 것인지 보인다" },
 ];
 
 const results = new Map();
@@ -815,6 +822,91 @@ await guard(39, async () => {
         );
     } else {
         fail(39, `1개일 때 hidden=${one.hidden}(${one.count}) · 2개일 때 hidden=${two.hidden}(${two.count})`);
+    }
+});
+
+/* ── 7단계 · 삭제 경합 (실기기에서 발견, 2026-09-07) ────────────────────────
+ *
+ * 삭제 한 번은 "첫 DELETE → 403 → 패스키 재확인 → 재시도"로 몇 초가 걸린다. 그 사이에
+ * 화면이 그대로 살아 있으면, 사용자는 "안 눌렸나?" 하고 다른 줄의 지우기를 누르게 되고
+ * 두 요청이 나란히 나가 **패스키가 둘 다 지워진다.** 이메일도 비밀번호도 없는 계정이라
+ * 그건 곧 계정 소멸이다. 검사 28·29·35는 삭제를 한 번씩 순차로만 해서 이 구간을 보지
+ * 못했다 — 여기서 사람이 조급하게 누르는 상황을 그대로 재현한다.
+ */
+
+// 검사 39가 남긴 상태: 기기6으로 로그인, 패스키 2개(기기5·기기6).
+await guard(42, async () => {
+    await evaluate(`window.__flow.post('/api/logout')`);
+    await evaluate(`window.__flow.login()`); // 지금 붙어 있는 기기6으로 들어간다
+    await evaluate(`window.__pk.refresh()`);
+    await sleep(500);
+
+    const view = await evaluate(`(() => {
+        const rows = [...document.querySelectorAll("[data-testid='credentials'] .credential")];
+        return {
+            표시된줄: rows.filter(li => li.querySelector("[data-testid='current-device']"))
+                          .map(li => li.querySelector('strong').textContent.trim()),
+            전체: rows.map(li => li.querySelector('strong').textContent.trim()),
+        };
+    })()`);
+
+    if (view.표시된줄.length === 1 && view.표시된줄[0] === `${TAG} 기기6`) {
+        pass(
+            42,
+            `목록 ${view.전체.length}개 중 "지금 이 기기" 표시가 붙은 것은 "${view.표시된줄[0]}" 하나뿐 — ` +
+                `로그인에 실제로 쓴 그 패스키다(세션의 credential_id). 어느 줄을 지우는지 눈으로 구분된다`,
+        );
+    } else {
+        fail(42, `표시된 줄 ${JSON.stringify(view.표시된줄)} / 전체 ${JSON.stringify(view.전체)}`);
+    }
+});
+
+await guard(40, async () => {
+    // 2번째 줄의 지우기 → 확인을 누른 **바로 그 순간** 다른 줄이 잠기는지 본다.
+    await evaluate(`document.querySelectorAll("[data-testid='credentials'] .credential")[1]
+        .querySelector('[data-delete-credential]').click()`);
+    await sleep(200);
+
+    const locked = await evaluate(`(() => {
+        document.querySelector('[data-confirm-delete]').click();
+        const rows = [...document.querySelectorAll("[data-testid='credentials'] .credential")];
+        const other = rows[0].querySelector('[data-delete-credential]');
+        const confirmBtn = document.querySelector('[data-confirm-delete]');
+        return {
+            다른줄: other ? other.disabled : '(없음)',
+            확인버튼: confirmBtn ? confirmBtn.disabled : '(없음)',
+        };
+    })()`);
+
+    if (locked.다른줄 === true && locked.확인버튼 === true) {
+        pass(
+            40,
+            `"네, 지웁니다"를 누른 즉시 다른 패스키의 지우기 버튼 disabled=true, 확인 버튼도 disabled=true — ` +
+                `재확인 왕복이 도는 몇 초 동안 두 번째 삭제가 나갈 통로 자체가 닫힌다`,
+        );
+    } else {
+        fail(40, `다른줄 disabled=${locked.다른줄} · 확인버튼 disabled=${locked.확인버튼}`);
+    }
+});
+
+await guard(41, async () => {
+    // 조급한 사용자를 흉내낸다 — 삭제가 도는 동안 보이는 버튼을 전부 눌러 버린다.
+    await evaluate(`for (const b of document.querySelectorAll("[data-testid='credentials'] button")) b.click();`);
+    await sleep(1000);
+    await evaluate(`for (const b of document.querySelectorAll("[data-testid='credentials'] button")) b.click();`);
+    await sleep(12000);
+
+    const me = await evaluate(`window.__flow.get('/api/me')`);
+    const names = (me.data.credentials ?? []).map((c) => c.deviceName);
+
+    if (me.status === 200 && names.length === 1) {
+        pass(
+            41,
+            `삭제 중 버튼을 전부 두 차례 눌렀지만 지워진 것은 하나뿐 — 남은 패스키 ${names.length}개("${names[0]}"), ` +
+                `/api/me 200으로 계정이 그대로 열린다. 고치기 전에는 같은 조작으로 둘 다 지워져 401·0개가 됐다`,
+        );
+    } else {
+        fail(41, `/api/me ${me.status} · 남은 패스키 ${names.length}개 ${JSON.stringify(names)}`);
     }
 });
 

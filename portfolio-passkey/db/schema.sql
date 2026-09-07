@@ -52,9 +52,14 @@ create index if not exists pk_challenges_expiry_idx on pk_challenges (expires_at
 -- 되돌릴 수 없는 동작은 이 시각이 최근(5분 이내)일 때만 허용합니다.
 -- **로그인은 재확인으로 치지 않습니다** — 로그인 때는 null로 둡니다. 그래야 로그인한 채
 -- 자리를 비운 사이에 남이 와서 패스키를 지워 버리는 일이 생기지 않습니다.
+--
+-- credential_id — 이 세션이 **어느 패스키로** 들어왔는지. 화면에서 "지금 이 기기"를
+-- 표시해 목록의 어느 줄이 지금 쓰고 있는 것인지 눈으로 구분하게 하려는 값입니다.
+-- 그 패스키가 지워지면 null이 됩니다(on delete set null) — 세션 자체는 살아 있습니다.
 create table if not exists pk_sessions (
     id uuid primary key default gen_random_uuid(),
     user_id uuid not null references pk_users (id) on delete cascade,
+    credential_id text null references pk_credentials (id) on delete set null,
     expires_at timestamptz not null,
     reauth_at timestamptz null,
     created_at timestamptz not null default now()
@@ -74,3 +79,5 @@ create index if not exists pk_private_notes_user_idx on pk_private_notes (user_i
 
 -- 이미 만들어 둔 스키마를 고치는 경우를 위해 (있으면 넘어갑니다).
 alter table pk_sessions add column if not exists reauth_at timestamptz null;
+alter table pk_sessions add column if not exists credential_id text null
+    references pk_credentials (id) on delete set null;

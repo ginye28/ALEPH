@@ -25,6 +25,9 @@ export default async function handler(req, res) {
         },
         credentials: credentials.map((c) => ({
             id: c.id,
+            // 지금 이 세션이 어느 패스키로 들어왔는지. 목록에서 "지금 이 기기"를 표시해
+            // 어느 줄을 지우는 것인지 눈으로 구분하게 한다.
+            isCurrentSession: c.id === found.session.credential_id,
             // 전체 id는 화면에 필요 없다 — 앞 12자만 보여준다.
             shortId: c.id.slice(0, 12),
             deviceName: c.device_name,
