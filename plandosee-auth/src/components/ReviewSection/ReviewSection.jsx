@@ -73,26 +73,28 @@ function ReviewSection({ sectionRef, plan, stats, onFilterClick, activeFilter, o
                 ))}
             </div>
 
-            <table css={f.table} aria-label="돌아보기 시간 집계">
-                <tbody>
-                    <tr>
-                        <th>예상 시간 합계</th>
-                        <td data-testid="review-estimated-total">{formatMinutes(stats.estimatedTotal)}</td>
-                    </tr>
-                    <tr>
-                        <th>실제 시간 합계</th>
-                        <td data-testid="review-actual-total">{formatMinutes(stats.actualTotal)}</td>
-                    </tr>
-                    <tr>
-                        <th>차이 (실제 − 예상)</th>
-                        <td data-testid="review-diff">
-                            {stats.diff > 0 ? "+" : ""}
-                            {formatMinutes(Math.abs(stats.diff))}
-                            {stats.diff > 0 ? " 초과" : stats.diff < 0 ? " 절약" : ""}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+            <div css={f.tableWrap}>
+                <table css={f.table} aria-label="돌아보기 시간 집계">
+                    <tbody>
+                        <tr>
+                            <th>예상 시간 합계</th>
+                            <td data-testid="review-estimated-total">{formatMinutes(stats.estimatedTotal)}</td>
+                        </tr>
+                        <tr>
+                            <th>실제 시간 합계</th>
+                            <td data-testid="review-actual-total">{formatMinutes(stats.actualTotal)}</td>
+                        </tr>
+                        <tr>
+                            <th>차이 (실제 − 예상)</th>
+                            <td data-testid="review-diff">
+                                {stats.diff > 0 ? "+" : ""}
+                                {formatMinutes(Math.abs(stats.diff))}
+                                {stats.diff > 0 ? " 초과" : stats.diff < 0 ? " 절약" : ""}
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
 
             <form css={f.form} onSubmit={submitNote} noValidate>
                 <div css={[f.field, f.wide]}>

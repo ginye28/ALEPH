@@ -134,69 +134,71 @@ function TaskSection({
                 </div>
             </div>
 
-            <table css={f.table} aria-label="할 일 목록">
-                <thead>
-                    <tr>
-                        <th>제목</th>
-                        <th>마감일</th>
-                        <th>우선순위</th>
-                        <th>태그</th>
-                        <th>예상 시간</th>
-                        <th>상태</th>
-                        <th></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {tasks.length === 0 && (
+            <div css={f.tableWrap}>
+                <table css={f.table} aria-label="할 일 목록">
+                    <thead>
                         <tr>
-                            <td colSpan={7} css={c.panelHint}>
-                                조건에 맞는 할 일이 없습니다.
-                            </td>
+                            <th>제목</th>
+                            <th>마감일</th>
+                            <th>우선순위</th>
+                            <th>태그</th>
+                            <th>예상 시간</th>
+                            <th>상태</th>
+                            <th></th>
                         </tr>
-                    )}
-                    {tasks.map((task) => {
-                        const done = task.status === "done";
-                        return (
-                        <tr key={task.id} data-testid="task-row" data-task-id={task.id} css={done ? f.doneRow : undefined}>
-                            <td css={done ? f.doneTitle : undefined}>{task.title}</td>
-                            <td>{task.dueDate ?? "-"}</td>
-                            <td>{PRIORITY_LABEL[task.priority]}</td>
-                            <td>
-                                {task.tags.map((t) => (
-                                    <span key={t} css={f.tag}>
-                                        {t}
+                    </thead>
+                    <tbody>
+                        {tasks.length === 0 && (
+                            <tr>
+                                <td colSpan={7} css={c.panelHint}>
+                                    조건에 맞는 할 일이 없습니다.
+                                </td>
+                            </tr>
+                        )}
+                        {tasks.map((task) => {
+                            const done = task.status === "done";
+                            return (
+                            <tr key={task.id} data-testid="task-row" data-task-id={task.id} css={done ? f.doneRow : undefined}>
+                                <td css={done ? f.doneTitle : undefined}>{task.title}</td>
+                                <td>{task.dueDate ?? "-"}</td>
+                                <td>{PRIORITY_LABEL[task.priority]}</td>
+                                <td>
+                                    {task.tags.map((t) => (
+                                        <span key={t} css={f.tag}>
+                                            {t}
+                                        </span>
+                                    ))}
+                                </td>
+                                <td>{task.estimatedMinutes}분</td>
+                                <td data-testid="task-status" css={done ? f.statusDone : undefined}>{done ? "완료" : "진행 중"}</td>
+                                <td>
+                                    <span css={f.rowActions}>
+                                        <button type="button" css={f.smallButton} onClick={() => onSelectTask(task.id)}>
+                                            {selectedTaskId === task.id ? "실행기록 선택됨" : "실행기록"}
+                                        </button>
+                                        <button type="button" css={f.smallButton} onClick={() => setEditingId(task.id)}>
+                                            수정
+                                        </button>
+                                        {task.status === "done" ? (
+                                            <button type="button" css={f.smallButton} onClick={() => onReopen(task.id)}>
+                                                되돌리기
+                                            </button>
+                                        ) : (
+                                            <button type="button" css={f.smallButton} onClick={() => onComplete(task.id)}>
+                                                완료
+                                            </button>
+                                        )}
+                                        <button type="button" css={f.smallButton} onClick={() => onDelete(task.id)}>
+                                            삭제
+                                        </button>
                                     </span>
-                                ))}
-                            </td>
-                            <td>{task.estimatedMinutes}분</td>
-                            <td data-testid="task-status" css={done ? f.statusDone : undefined}>{done ? "완료" : "진행 중"}</td>
-                            <td>
-                                <span css={f.rowActions}>
-                                    <button type="button" css={f.smallButton} onClick={() => onSelectTask(task.id)}>
-                                        {selectedTaskId === task.id ? "실행기록 선택됨" : "실행기록"}
-                                    </button>
-                                    <button type="button" css={f.smallButton} onClick={() => setEditingId(task.id)}>
-                                        수정
-                                    </button>
-                                    {task.status === "done" ? (
-                                        <button type="button" css={f.smallButton} onClick={() => onReopen(task.id)}>
-                                            되돌리기
-                                        </button>
-                                    ) : (
-                                        <button type="button" css={f.smallButton} onClick={() => onComplete(task.id)}>
-                                            완료
-                                        </button>
-                                    )}
-                                    <button type="button" css={f.smallButton} onClick={() => onDelete(task.id)}>
-                                        삭제
-                                    </button>
-                                </span>
-                            </td>
-                        </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
+                                </td>
+                            </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
 
             {editing && (
                 <p css={c.note}>

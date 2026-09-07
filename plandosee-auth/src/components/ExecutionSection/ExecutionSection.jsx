@@ -41,33 +41,35 @@ function ExecutionSection({ sectionRef, task, records, onCreate }) {
 
             {task && (
                 <>
-                    <table css={f.table} aria-label="실행 기록 목록">
-                        <thead>
-                            <tr>
-                                <th>시작</th>
-                                <th>끝</th>
-                                <th>실제 걸린 시간</th>
-                                <th>막힌 이유</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {records.length === 0 && (
+                    <div css={f.tableWrap}>
+                        <table css={f.table} aria-label="실행 기록 목록">
+                            <thead>
                                 <tr>
-                                    <td colSpan={4} css={c.panelHint}>
-                                        아직 실행 기록이 없습니다.
-                                    </td>
+                                    <th>시작</th>
+                                    <th>끝</th>
+                                    <th>실제 걸린 시간</th>
+                                    <th>막힌 이유</th>
                                 </tr>
-                            )}
-                            {records.map((record) => (
-                                <tr key={record.id} data-testid="execution-row">
-                                    <td css={c.mono}>{formatKstDateTime(record.startedAt)}</td>
-                                    <td css={c.mono}>{record.endedAt ? formatKstDateTime(record.endedAt) : "-"}</td>
-                                    <td>{record.actualMinutes}분</td>
-                                    <td>{record.blockedReason ?? "-"}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {records.length === 0 && (
+                                    <tr>
+                                        <td colSpan={4} css={c.panelHint}>
+                                            아직 실행 기록이 없습니다.
+                                        </td>
+                                    </tr>
+                                )}
+                                {records.map((record) => (
+                                    <tr key={record.id} data-testid="execution-row">
+                                        <td css={c.mono}>{formatKstDateTime(record.startedAt)}</td>
+                                        <td css={c.mono}>{record.endedAt ? formatKstDateTime(record.endedAt) : "-"}</td>
+                                        <td>{record.actualMinutes}분</td>
+                                        <td>{record.blockedReason ?? "-"}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
 
                     <form css={f.form} onSubmit={submit} noValidate>
                         <div css={f.field}>

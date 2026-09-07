@@ -6,6 +6,11 @@ export const form = css`
     grid-template-columns: 1fr 1fr;
     gap: 14px;
     align-items: start;
+
+    /* 좁은 화면에서 두 칸을 유지하면 입력칸이 반씩 눌려 글자가 안 보인다. 한 줄로 편다. */
+    @media (max-width: 560px) {
+        grid-template-columns: 1fr;
+    }
 `;
 
 export const field = css`
@@ -73,6 +78,21 @@ export const actions = css`
     padding-top: 4px;
     border-top: 1px solid var(--line-soft);
     margin-top: 2px;
+`;
+
+/**
+ * 표를 가로로 감싸는 자리.
+ *
+ * 표는 열이 여럿이고 머리글에 `white-space: nowrap`이 걸려 있어, 좁은 화면에서는 어떻게든
+ * 부모보다 넓어진다. 감싸개가 없으면 그 넓이가 그대로 **문서 전체의 가로 스크롤**이 되어
+ * 페이지가 통째로 옆으로 밀린다(375px에서 문서 폭 406px). 넘치는 것은 표 안에서만
+ * 넘치게 하고, 페이지 자체는 밀리지 않게 한다.
+ */
+export const tableWrap = css`
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
 `;
 
 export const table = css`
