@@ -316,12 +316,26 @@ function postgresStore() {
         },
 
         async createSession(userId, credentialId = null) {
-            return first(
-                // reauth_at은 비워 둔다 — 로그인은 재확인으로 치지 않는다.
-                await sql`insert into pk_sessions (user_id, credential_id, expires_at)
-                          values (${userId}, ${credentialId}, ${plusMinutes(SESSION_MINUTES)})
-                          returning *`,
-            );
+            const expiresAt = plusMinutes(SESSION_MINUTES);
+            try {
+                return first(
+                    // reauth_at은 비워 둔다 — 로그인은 재확인으로 치지 않는다.
+                    await sql`insert into pk_sessions (user_id, credential_id, expires_at)
+                              values (${userId}, ${credentialId}, ${expiresAt})
+                              returning *`,
+                );
+            } catch (error) {
+                // credential_id는 나중에 추가한 칸이다(schema.sql의 add column if not exists).
+                // 마이그레이션(npm run db:init)보다 코드가 먼저 배포되면 이 칸이 아직 없어서
+                // 42703(undefined_column)이 난다. 그때 로그인 전체가 막히는 것보다는
+                // "지금 이 기기" 표시 하나를 포기하는 편이 낫다 — 그 칸 없이 다시 넣는다.
+                if (error?.code !== "42703") throw error;
+                return first(
+                    await sql`insert into pk_sessions (user_id, expires_at)
+                              values (${userId}, ${expiresAt})
+                              returning *`,
+                );
+            }
         },
 
         async getSession(id) {
