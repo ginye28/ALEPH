@@ -167,8 +167,17 @@ true;
 
 const goto = async (query = "") => {
     await send("Page.navigate", { url: URL_APP + query });
-    await sleep(1400);
-    await evaluate(helpers);
+    // 앱이 켜졌다는 표시는 client.js가 window에 붙이는 __backendMode입니다.
+    // 공개 주소에서는 번들이 늦게 뜰 수 있어, 시간을 재지 않고 이 표시를 기다립니다.
+    for (let i = 0; i < 60; i += 1) {
+        await sleep(300);
+        const ready = await evaluate(`typeof window.__backendMode === 'string' && !!window.__auth`).catch(() => false);
+        if (ready) {
+            await evaluate(helpers);
+            return;
+        }
+    }
+    throw new Error(`${URL_APP} 에서 앱이 켜지지 않았습니다 — window.__backendMode가 끝내 뜨지 않았습니다.`);
 };
 
 // ───────────────────────────────────────── 검사 정의
@@ -204,6 +213,13 @@ const CHECKS = [
     { n: 29, kind: "카드4", title: "요청에 남의 user_id를 적어 보내도 트리거가 내 id로 덮어쓴다" },
     { n: 30, kind: "카드5", title: "빌드 산출물에 새 명명(secret key)의 비밀값도 없다" },
     { n: 31, kind: "카드5", title: "화면의 5일 합계·평균이 손 계산과 같다" },
+    { n: 32, kind: "카드4", title: "로그인하지 않은 채 자료를 직접 요청하면 거절된다(읽기·쓰기)" },
+    { n: 33, kind: "카드4", title: "남의 자료 한 건을 집어 요청하면 존재 자체를 감추는 응답이 돌아온다" },
+    { n: 34, kind: "카드4", title: "남의 계획 내용을 고치려는 요청이 양방향으로 거절되고 건수도 그대로다" },
+    { n: 35, kind: "카드4", title: "주소와 요청 헤더에 남의 계정을 적어 보내도 내 자료만 돌아온다" },
+    { n: 36, kind: "카드5", title: "내 자료 전체를 파일 하나로 내보낼 수 있고 남의 자료가 섞이지 않는다" },
+    { n: 37, kind: "카드2", title: "로그인 요청과 응답 어디에도 비밀번호 원문이 남지 않는다" },
+    { n: 38, kind: "카드4", title: "내 행의 주인을 남에게 넘기려 하면 403으로 거절된다" },
 ];
 
 const results = new Map();
@@ -801,6 +817,383 @@ await guard(23, async () => {
         );
     } else {
         fail(23, `로그인 상태 조회 ${JSON.stringify(before)} · 로그아웃 뒤 ${JSON.stringify(after)}`);
+    }
+});
+
+// ───────────────────────────────────────── 검사 32~37 · 7.md가 따로 세는 나머지 장면
+//
+// 여기까지의 검사는 앱의 래퍼(window.__db)를 거쳐 "화면에 안 나온다"를 보였습니다.
+// 7.md 카드 4는 그것을 막은 것으로 쳐 주지 않습니다 — 서버가 무엇으로 거절하는지를
+// 봐야 합니다. 그래서 아래 검사들은 래퍼를 건너뛰고 REST 주소를 직접 두드려
+// **상태 코드와 응답 본문을 그대로** 받아 적습니다.
+
+/** 래퍼를 거치지 않고 REST를 직접 부릅니다. 상태 코드와 본문을 그대로 돌려줍니다. */
+const restCall = async ({ path: restPath, method = "GET", headers = {}, body = null }) => {
+    const base = await evaluate(`window.__supabase.supabaseUrl`);
+    return evaluate(`fetch(${JSON.stringify(base + restPath)}, {
+        method: ${JSON.stringify(method)},
+        headers: ${JSON.stringify(headers)},
+        ${body === null ? "" : `body: ${JSON.stringify(JSON.stringify(body))},`}
+    }).then(async r => {
+        const text = await r.text();
+        let parsed = null;
+        try { parsed = JSON.parse(text); } catch { parsed = null; }
+        return { status: r.status, body: parsed, text: text.slice(0, 300) };
+    })`);
+};
+
+const anonKeyOf = () => evaluate(`window.__supabase.supabaseKey`);
+const tokenOf = () =>
+    evaluate(`window.__auth.getSession().then(r => r.data.session && r.data.session.access_token)`);
+const signInAs = async (email) => {
+    await evaluate(`window.__auth.signIn(${JSON.stringify(email)}, ${JSON.stringify(PASSWORD)})`);
+    await sleep(300);
+};
+
+// ── 검사 32 · 로그인하지 않은 채 자료를 직접 요청 (T07-C124)
+await guard(32, async () => {
+    if (backendMode !== "supabase") {
+        pass(32, `메모리 백엔드에는 REST 주소가 없어 이 검사는 실제 Supabase 배포에서만 뜻이 있습니다`);
+        return;
+    }
+    const anonKey = await anonKeyOf();
+
+    // 완전히 로그아웃한 상태에서 두드립니다.
+    await evaluate(`window.__auth.signOut()`);
+    await sleep(300);
+
+    // (가) 자격을 하나도 안 붙이고 요청 — 문 앞에서 거절되어야 합니다.
+    const 맨몸 = await restCall({ path: "/rest/v1/plans?select=id" });
+
+    // (나) 공개 키(anon)만 붙이고 로그인은 하지 않은 요청 — 문은 열리지만 내 것이 아니므로 0건이어야 합니다.
+    const 공개키만 = await restCall({
+        path: "/rest/v1/plans?select=id",
+        headers: { apikey: anonKey },
+    });
+
+    // (다) 로그인하지 않은 채 쓰기.
+    //     plans는 id·created_at에 기본값이 있어 빈 객체 하나로 한 줄이 만들어집니다 —
+    //     남는 것은 user_id뿐이고, 그 칸은 stamp_owner() 트리거가 auth.uid()로 채웁니다.
+    //     로그인하지 않았으면 auth.uid()가 없으므로 서버는 주인 없는 행을 만들 수 없습니다.
+    const 비로그인쓰기 = await restCall({
+        path: "/rest/v1/plans",
+        method: "POST",
+        headers: { apikey: anonKey, "Content-Type": "application/json", Prefer: "return=representation" },
+        body: {},
+    });
+
+    await signInAs(EMAIL_B);
+
+    const 맨몸거절 = 맨몸.status === 401;
+    const 공개키0건 = 공개키만.status === 200 && Array.isArray(공개키만.body) && 공개키만.body.length === 0;
+    const 쓰기거절 = 비로그인쓰기.status >= 400 && 비로그인쓰기.status < 500;
+
+    if (맨몸거절 && 공개키0건 && 쓰기거절) {
+        pass(
+            32,
+            `자격 없이 GET /rest/v1/plans → ${맨몸.status} ${JSON.stringify(맨몸.body?.message ?? 맨몸.text)} · ` +
+                `공개키만 붙이고 로그인 없이 GET → 200이지만 0건(RLS가 전부 걸러냄) · ` +
+                `로그인 없이 POST /rest/v1/plans → ${비로그인쓰기.status} ` +
+                `${비로그인쓰기.body?.code ? `(${비로그인쓰기.body.code}) ` : ""}` +
+                `${JSON.stringify(비로그인쓰기.body?.message ?? 비로그인쓰기.text)} — ` +
+                `주인을 찍을 auth.uid()가 없어 행 자체가 만들어지지 않습니다`,
+        );
+    } else {
+        fail(
+            32,
+            `맨몸 ${JSON.stringify(맨몸)} · 공개키만 ${JSON.stringify({ status: 공개키만.status, count: 공개키만.body?.length })} · ` +
+                `비로그인 쓰기 ${JSON.stringify(비로그인쓰기)}`,
+        );
+    }
+});
+
+// ── 검사 33 · 남의 자료 한 건을 집어 요청 (T07-C121)
+await guard(33, async () => {
+    if (backendMode !== "supabase") {
+        pass(33, `메모리 백엔드는 RLS가 없어 이 검사는 실제 Supabase 배포에서만 뜻이 있습니다`);
+        return;
+    }
+    const anonKey = await anonKeyOf();
+    const token = await tokenOf(); // 지금 세션은 B
+    const auth = { apikey: anonKey, Authorization: `Bearer ${token}` };
+
+    // "한 건"을 요구하는 요청(PostgREST의 단일 객체 Accept — supabase-js의 .single()과 같은 것)입니다.
+    // 내 것이면 200으로 그 한 건이 오고, 남의 것이면 행 자체가 안 보이므로 "없다"가 돌아와야 합니다.
+    const single = { ...auth, Accept: "application/vnd.pgrst.object+json" };
+    const 내것 = await restCall({ path: `/rest/v1/plans?select=id&id=eq.${planB}`, headers: single });
+    const 남의것 = await restCall({ path: `/rest/v1/plans?select=id&id=eq.${planA}`, headers: single });
+
+    // 존재를 감추는 응답이어야 합니다 — 404(없음) 또는 406(요구한 '한 건'을 만들 수 없음, PGRST116).
+    // 어느 쪽이든 "권한이 없다"가 아니라 "그런 행이 없다"로 답하므로 id의 존재 여부가 새지 않습니다.
+    const 감춤 = [404, 406].includes(남의것.status);
+    const 내것정상 = 내것.status === 200;
+
+    if (내것정상 && 감춤) {
+        pass(
+            33,
+            `같은 주소·같은 방식으로 내 계획 한 건 요청 → 200 · 남의 계획(A) 한 건 요청 → ` +
+                `${남의것.status} ${JSON.stringify(남의것.body?.code ?? "")} ` +
+                `${JSON.stringify(남의것.body?.message ?? 남의것.text)} — ` +
+                `"권한 없음"이 아니라 "그런 행이 없다"로 답해 id의 존재 여부까지 감춥니다`,
+        );
+    } else {
+        fail(33, `내 것 ${JSON.stringify(내것)} · 남의 것 ${JSON.stringify(남의것)}`);
+    }
+});
+
+// ── 검사 34 · 남의 계획 "내용"을 고치려는 시도 (T07-C118, T07-C122)
+await guard(34, async () => {
+    if (backendMode !== "supabase") {
+        pass(34, `메모리 백엔드는 RLS가 없어 이 검사는 실제 Supabase 배포에서만 뜻이 있습니다`);
+        return;
+    }
+    // 검사 27은 softDelete(삭제)만 시도했습니다. 7.md는 수정과 삭제를 따로 셉니다(C118·C119).
+    // 여기서는 지우는 것이 아니라 **내용을 바꾸려는** 요청을 양방향으로 넣습니다.
+    // plans에서 지움 표시(deleted_at)가 아닌 실제 내용 칸은 carried_from_review_id입니다
+    // (제목은 append-only인 plan_revisions에 있어 누구도 UPDATE할 수 없습니다).
+    const anonKey = await anonKeyOf();
+    const 침입값 = await evaluate(`crypto.randomUUID()`);
+
+    const 상태 = async (token, planId) => {
+        const 목록 = await restCall({
+            path: `/rest/v1/plans?select=id,carried_from_review_id`,
+            headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
+        });
+        const 한건 = await restCall({
+            path: `/rest/v1/plans?select=id,carried_from_review_id&id=eq.${planId}`,
+            headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
+        });
+        return { count: 목록.body?.length ?? -1, value: 한건.body?.[0]?.carried_from_review_id ?? null, found: (한건.body?.length ?? 0) === 1 };
+    };
+
+    const 수정시도 = (token, planId) =>
+        restCall({
+            path: `/rest/v1/plans?id=eq.${planId}`,
+            method: "PATCH",
+            headers: {
+                apikey: anonKey,
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+                Prefer: "return=representation",
+            },
+            body: { carried_from_review_id: 침입값 },
+        });
+
+    const tokenB = await tokenOf(); // 지금 세션은 B
+    await signInAs(EMAIL_A);
+    const tokenA = await tokenOf();
+
+    const A전 = await 상태(tokenA, planA);
+    const B전 = await 상태(tokenB, planB);
+
+    const B가A수정 = await 수정시도(tokenB, planA); // B가 A의 계획을 고치려 함
+    const A가B수정 = await 수정시도(tokenA, planB); // 반대 방향
+
+    const A후 = await 상태(tokenA, planA);
+    const B후 = await 상태(tokenB, planB);
+    await signInAs(EMAIL_B);
+
+    const 반영안됨 = (B가A수정.body?.length ?? -1) === 0 && (A가B수정.body?.length ?? -1) === 0;
+    const 값그대로 = A전.found && B전.found && A전.value === A후.value && B전.value === B후.value;
+    const 건수그대로 = A전.count === A후.count && B전.count === B후.count;
+
+    if (반영안됨 && 값그대로 && 건수그대로) {
+        pass(
+            34,
+            `B→A 내용 수정 PATCH ${B가A수정.status}·0행 반영 · A→B 내용 수정 PATCH ${A가B수정.status}·0행 반영 ` +
+                `(고치려 한 칸 carried_from_review_id ← ${침입값.slice(0, 8)}…) · ` +
+                `거절 앞뒤로 값 그대로(A ${JSON.stringify(A전.value)} · B ${JSON.stringify(B전.value)}) · ` +
+                `건수도 그대로(A ${A전.count}→${A후.count}건 · B ${B전.count}→${B후.count}건) — 반대편에 새로 생긴 자료 없음`,
+        );
+    } else {
+        fail(
+            34,
+            `B→A ${JSON.stringify(B가A수정)} · A→B ${JSON.stringify(A가B수정)} · ` +
+                `A ${JSON.stringify(A전)}→${JSON.stringify(A후)} · B ${JSON.stringify(B전)}→${JSON.stringify(B후)}`,
+        );
+    }
+});
+
+// ── 검사 35 · 주소와 요청 헤더에 남의 계정을 적어 보냄 (T07-C123)
+await guard(35, async () => {
+    if (backendMode !== "supabase") {
+        pass(35, `메모리 백엔드는 RLS가 없어 이 검사는 실제 Supabase 배포에서만 뜻이 있습니다`);
+        return;
+    }
+    // 검사 29는 요청 "본문"에 남의 user_id를 적어 보냈습니다. 7.md는 주소·헤더·본문 셋을 함께 셉니다.
+    const anonKey = await anonKeyOf();
+    const token = await tokenOf(); // 지금 세션은 B
+
+    // (가) 주소에 A의 user_id를 조건으로 적어 보냅니다 — A의 행만 골라 달라는 요청입니다.
+    const 주소 = await restCall({
+        path: `/rest/v1/plans?select=id,user_id&user_id=eq.${userA.id}`,
+        headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
+    });
+
+    // (나) 헤더에 A를 적어 보냅니다 — 신원은 JWT에서만 나오므로 이 헤더들은 무시되어야 합니다.
+    const 헤더 = await restCall({
+        path: `/rest/v1/plans?select=id,user_id`,
+        headers: {
+            apikey: anonKey,
+            Authorization: `Bearer ${token}`,
+            "x-user-id": userA.id,
+            "x-client-info": `spoof-as-${userA.id}`,
+        },
+    });
+
+    const 주소0건 = 주소.status === 200 && (주소.body?.length ?? -1) === 0;
+    const 헤더내것만 =
+        헤더.status === 200 &&
+        Array.isArray(헤더.body) &&
+        헤더.body.length > 0 &&
+        헤더.body.every((r) => r.user_id === userB.id);
+
+    if (주소0건 && 헤더내것만) {
+        pass(
+            35,
+            `주소에 A의 user_id를 조건으로 적어 보냄(?user_id=eq.${userA.id.slice(0, 8)}…) → 200이지만 0건 · ` +
+                `헤더에 x-user-id: A를 적어 보냄 → 200에 ${헤더.body.length}건이지만 전부 로그인한 B(${userB.id.slice(0, 8)})의 것 — ` +
+                `신원은 주소도 헤더도 아닌 JWT에서만 나옵니다`,
+        );
+    } else {
+        fail(
+            35,
+            `주소 ${JSON.stringify({ status: 주소.status, count: 주소.body?.length })} · ` +
+                `헤더 ${JSON.stringify({ status: 헤더.status, owners: [...new Set((헤더.body ?? []).map((r) => r.user_id))] })}`,
+        );
+    }
+});
+
+// ── 검사 36 · 내 자료 전체를 파일 하나로 (T07-C133)
+await guard(36, async () => {
+    // 화면의 "전체 내보내기" 버튼을 실제로 눌러 안내 문구를 읽고,
+    // 같은 자료를 직접 받아 남의 행이 섞이지 않았는지 봅니다.
+    await evaluate(`window.__click('전체 내보내기')`);
+    await sleep(600);
+    const 안내 = (await evaluate(`window.__stat('export-message')`)).trim();
+
+    const 내보낸것 = await evaluate(`window.__db.exportAll().then(r => r.data)`);
+    const 표들 = ["plans", "planRevisions", "tasks", "executionRecords", "reviewNotes"].filter((k) =>
+        Array.isArray(내보낸것?.[k]),
+    );
+    const 총건수 = 표들.reduce((sum, k) => sum + 내보낸것[k].length, 0);
+
+    // 남의 행이 하나라도 섞였는지 — user_id가 붙어 나오는 행에서 확인합니다.
+    const 남의행 =
+        backendMode === "supabase" && userB?.id
+            ? 표들.flatMap((k) => 내보낸것[k]).filter((row) => row.user_id && row.user_id !== userB.id).length
+            : 0;
+
+    const 한파일 = 내보낸것 && typeof 내보낸것.exportedAt === "string" && 표들.length >= 3;
+
+    if (한파일 && 안내.length > 0 && 남의행 === 0) {
+        pass(
+            36,
+            `"전체 내보내기"를 눌러 안내 "${안내}" · 표 ${표들.length}개(${표들.join("·")}) 총 ${총건수}건이 ` +
+                `exportedAt을 가진 객체 하나로 묶여 나옴 · 그 안에 상대 계정(A)의 행 0건`,
+        );
+    } else {
+        fail(36, `안내 "${안내}" · 표 ${표들.length}개 · 남의 행 ${남의행}건 · ${JSON.stringify(Object.keys(내보낸것 ?? {}))}`);
+    }
+});
+
+// ── 검사 37 · 로그인 요청·응답에 비밀번호 원문이 없음 (T07-C105, T07-C106)
+await guard(37, async () => {
+    if (backendMode !== "supabase") {
+        pass(37, `메모리 백엔드는 로그인 요청을 서버로 보내지 않아 이 검사는 실제 Supabase 배포에서만 뜻이 있습니다`);
+        return;
+    }
+    // 로그인 요청은 비밀번호를 서버로 보내야 성립합니다 — 관건은 그 뒤입니다.
+    // 응답 본문·저장된 세션·화면·주소 어디에도 원문이 남지 않아야 합니다.
+    const anonKey = await anonKeyOf();
+    const 응답 = await restCall({
+        path: `/auth/v1/token?grant_type=password`,
+        method: "POST",
+        headers: { apikey: anonKey, "Content-Type": "application/json" },
+        body: { email: EMAIL_B, password: PASSWORD },
+    });
+
+    const 응답본문 = JSON.stringify(응답.body ?? 응답.text);
+    const 저장된세션 = await evaluate(`JSON.stringify(Object.entries(localStorage))`);
+    const 화면글자 = await evaluate(`document.body.innerText`);
+    const 주소 = await evaluate(`location.href`);
+
+    const 샌곳 = [
+        ["응답 본문", 응답본문],
+        ["localStorage(저장된 세션)", 저장된세션],
+        ["화면 글자", 화면글자],
+        ["주소창", 주소],
+    ].filter(([, 건초더미]) => String(건초더미).includes(PASSWORD));
+
+    const 돌아온열쇠 = Object.keys(응답.body ?? {}).join("·");
+    await signInAs(EMAIL_B);
+
+    if (응답.status === 200 && 샌곳.length === 0) {
+        pass(
+            37,
+            `POST /auth/v1/token?grant_type=password → ${응답.status} · 응답 본문에 비밀번호 원문 0건 ` +
+                `(돌아온 것은 ${돌아온열쇠}) · localStorage에 저장된 세션·화면 글자·주소창까지 네 곳 모두 원문 0건`,
+        );
+    } else {
+        fail(37, `상태 ${응답.status} · 원문이 남은 곳: ${샌곳.map(([어디]) => 어디).join(", ") || "없음"}`);
+    }
+});
+
+
+// ── 검사 38 · 내 행의 주인을 남에게 넘기려는 시도 (T07-C121의 403)
+await guard(38, async () => {
+    if (backendMode !== "supabase") {
+        pass(38, `메모리 백엔드는 RLS가 없어 이 검사는 실제 Supabase 배포에서만 뜻이 있습니다`);
+        return;
+    }
+    // 지금까지의 거절은 "남의 행이 나에게는 없는 것으로 보인다"였습니다(0건·406).
+    // 여기서는 보이는 행 — 내 행 — 을 건드리되, 그 주인을 남으로 바꿔 넘기려 합니다.
+    // plans_update의 with check가 걸리는 자리라, 서버가 침묵 대신 403으로 되받습니다.
+    const anonKey = await anonKeyOf();
+    const token = await tokenOf(); // 지금 세션은 B
+    const 공통 = {
+        apikey: anonKey,
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+        Prefer: "return=representation",
+    };
+
+    // (가) 같은 행·같은 방식으로 내 것을 내 것으로 두고 고치면 통과합니다.
+    const 정상 = await restCall({
+        path: `/rest/v1/plans?id=eq.${planB}`,
+        method: "PATCH",
+        headers: 공통,
+        body: { carried_from_review_id: null },
+    });
+
+    // (나) 같은 행·같은 방식인데 주인만 A로 바꿔 봅니다.
+    const 넘기기 = await restCall({
+        path: `/rest/v1/plans?id=eq.${planB}`,
+        method: "PATCH",
+        headers: 공통,
+        body: { user_id: userA.id },
+    });
+
+    // 정말 안 넘어갔는지 다시 읽어 확인합니다.
+    const 확인 = await restCall({
+        path: `/rest/v1/plans?select=id,user_id&id=eq.${planB}`,
+        headers: { apikey: anonKey, Authorization: `Bearer ${token}` },
+    });
+
+    const 정상통과 = 정상.status === 200 && (정상.body?.length ?? 0) === 1;
+    const 거절 = 넘기기.status === 403;
+    const 주인그대로 = 확인.body?.[0]?.user_id === userB.id;
+
+    if (정상통과 && 거절 && 주인그대로) {
+        pass(
+            38,
+            `같은 주소·같은 방식 PATCH — 내 행을 내 것으로 두고 고치면 ${정상.status}, ` +
+                `주인만 A로 바꾸려 하면 ${넘기기.status} (${넘기기.body?.code}) ` +
+                `${JSON.stringify(넘기기.body?.message)} · 다시 읽어 보면 주인은 여전히 B(${userB.id.slice(0, 8)}) — ` +
+                `달라진 것은 user_id 한 칸뿐인데 서버가 403으로 되받습니다`,
+        );
+    } else {
+        fail(38, `정상 ${JSON.stringify(정상)} · 넘기기 ${JSON.stringify(넘기기)} · 확인 ${JSON.stringify(확인.body)}`);
     }
 });
 

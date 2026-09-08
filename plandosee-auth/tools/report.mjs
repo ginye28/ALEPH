@@ -118,6 +118,7 @@ const html = `<!doctype html>
   h3 { font-size:10.6pt; margin:12pt 0 4pt; break-after:avoid; }
   h3.cardhead { font-size:11.6pt; margin:16pt 0 6pt; padding-bottom:3pt;
                 border-bottom:0.8pt solid var(--rule); color:var(--accent); }
+  h4 { font-size:9.9pt; margin:13pt 0 4pt; break-after:avoid; color:var(--ink); }
   p { margin:0 0 5pt; }
   ul, ol { margin:0 0 6pt; padding-left:15pt; }
   li { margin-bottom:2pt; }
@@ -266,9 +267,9 @@ ${table(["흐름", "소스 위치"], [
 <b>같은 자리에서 잘못된 요청이 거절된 장면</b>입니다. 아래 카드 2·3·4가 각각의 자세한 기록입니다.</p>
 
 ${table(["확인", "성공한 요청", "거절된 요청"], [
-    ["1 · 로그인 없이 자료 화면 열기",
+    ["1 · 로그인 없이 자료를 열기",
      "로그인한 계정에서는 자료 화면이 열리고 내 계획이 보임 (08_계정A_자료화면)",
-     `로그인하지 않으면 로그인 폼만 있고 계획 목록·내보내기 등 자료 화면 요소가 DOM에 아예 없음 ${passBadge(21)}<br><span class="muted">이 검사가 보인 것은 <b>화면에 안 나온다</b>까지입니다 — 토큰 없이 REST 주소를 직접 두드렸을 때 서버가 무엇으로 거절하는지는 아직 검사에 없습니다(⑥ 참고).</span>`],
+     `화면에서는 로그인 폼만 있고 자료 화면 요소가 DOM에 아예 없음 ${passBadge(21)}<br>화면을 건너뛰고 REST 주소를 직접 두드려도 <b>401</b>로 막힘 ${passBadge(32)}`],
     ["2 · 저장된 비밀번호 읽기",
      "정상 비밀번호로 로그인 성공 (검사 18)",
      `<code>auth.users.encrypted_password</code>는 <code>$2a$10$…</code> 해시뿐 — 입력한 글자가 보이지 않고, 같은 비밀번호로 만든 두 계정의 값도 서로 다름 ${passBadge(22)}`],
@@ -305,6 +306,21 @@ ${table(["확인", "성공한 요청", "거절된 요청"], [
   둘 다 <code>$2a$10$…</code>(bcrypt, cost 10) 포맷이고, <b>같은 비밀번호인데도 해시가 완전히 다릅니다</b> —
   계정마다 무작위 salt가 자동으로 붙었다는 뜻입니다. ${passBadge(22)}
 </div>
+
+<h4>비밀번호 원문이 어디에 남는지 네 곳을 열어 봤습니다 (T07-C105, T07-C106)</h4>
+
+<p>로그인은 비밀번호를 서버로 보내야 성립합니다 — 관건은 그 뒤입니다.
+실제 로그인 요청 <code>POST /auth/v1/token?grant_type=password</code>를 직접 보내고,
+원문이 남았을 만한 네 곳을 문자열로 뒤졌습니다.</p>
+
+${table(["열어 본 곳", "결과"], [
+    ["로그인 응답 본문", "원문 0건 — 돌아온 것은 access_token·token_type·expires_in·expires_at·refresh_token·user·weak_password뿐"],
+    ["<code>localStorage</code>에 저장된 세션", "원문 0건 — 토큰만 들어 있음"],
+    ["화면에 그려진 글자(<code>document.body.innerText</code>)", "원문 0건"],
+    ["주소창(<code>location.href</code>)", "원문 0건"],
+])}
+
+<p class="muted">${passBadge(37)} 판정 근거: <code>${esc(checkOf(37)?.detail ?? "")}</code></p>
 
 <h3 class="cardhead breakbefore">카드 3 — 들어온 사람을 어떻게 기억하는지 보이기</h3>
 
@@ -357,14 +373,44 @@ ${table(["시도", "결과"], [
     ["요청 본문에 남의 user_id를 적어 보냄(스푸핑)", checkOf(29)?.pass ? `<span class="pass">트리거가 덮어씀</span> — ${esc(checkOf(29)?.detail ?? "")}` : "확인 필요"],
 ])}
 
-<p class="muted">RLS 정책 정의는 <code>supabase/schema.sql</code>의 <code>plans_select</code>·
+<p class="muted"><h4>화면을 건너뛰고 서버가 무엇으로 거절하는지 (T07-C121, T07-C123, T07-C124)</h4>
+
+<p>위 표는 앱의 래퍼(<code>window.__db</code>)를 거친 결과라 "화면에 안 나온다"까지만 보입니다.
+7.md는 그것을 막은 것으로 쳐 주지 않으므로, 아래 여덟 가지는 래퍼를 건너뛰고 REST 주소를 직접 두드려
+<b>상태 코드와 응답 본문을 그대로</b> 받아 적었습니다.</p>
+
+${table(["보낸 요청", "돌아온 응답"], [
+    ["자격을 하나도 안 붙이고 <code>GET /rest/v1/plans</code>", `<b>401</b> <code>No API key found in request</code> ${passBadge(32)}`],
+    ["공개 키만 붙이고 <b>로그인 없이</b> <code>GET /rest/v1/plans</code>", "<b>200</b>이지만 <b>0건</b> — 문은 열리지만 내 것이 하나도 없습니다"],
+    ["<b>로그인 없이</b> <code>POST /rest/v1/plans</code>", `<b>401</b> <code>42501 new row violates row-level security policy</code> — 주인을 찍을 <code>auth.uid()</code>가 없어 행 자체가 만들어지지 않습니다 ${passBadge(32)}`],
+    ["남의 계획 <b>한 건</b>을 집어 요청 (<code>Accept: application/vnd.pgrst.object+json</code>)", `<b>406</b> <code>PGRST116 Cannot coerce the result to a single JSON object</code> — "권한이 없다"가 아니라 <b>"그런 행이 없다"</b>로 답해 id의 존재 여부까지 감춥니다 ${passBadge(33)}`],
+    ["내 행의 <b>주인만</b> 남으로 바꾸는 <code>PATCH</code>", `<b>403</b> <code>42501 new row violates row-level security policy</code> — 같은 행·같은 방식인데 <code>user_id</code> 한 칸이 달라지자 서버가 되받습니다 ${passBadge(38)}`],
+    ["주소에 남의 계정을 조건으로 적어 보냄 (<code>?user_id=eq.&lt;A&gt;</code>)", `<b>200</b>이지만 <b>0건</b> ${passBadge(35)}`],
+    ["헤더에 남의 계정을 적어 보냄 (<code>x-user-id: &lt;A&gt;</code>)", `<b>200</b>에 여러 건이지만 <b>전부 로그인한 내 것</b> — 신원은 주소도 헤더도 아닌 JWT에서만 나옵니다 ${passBadge(35)}`],
+    ["남의 계획 <b>내용</b>을 고치는 <code>PATCH</code> (양방향)", `<b>200</b>이지만 <b>0행 반영</b> · 거절 앞뒤로 값도 건수도 그대로 ${passBadge(34)}`],
+])}
+
+<div class="note">
+  <b>거절이 왜 403 하나로 통일되지 않는가.</b> 이 서버는 남의 자료를 "막는" 것이 아니라
+  <b>아예 없는 것으로 만듭니다</b>(RLS). 그래서 남의 행을 겨냥한 조회·수정은 "권한 없음"이 아니라
+  <b>그런 행이 없다</b>로 답합니다 — 한 건을 요구하면 406, 목록이나 수정이면 0건·0행입니다.
+  이 편이 403보다 덜 흘립니다: 403은 "그 id는 있는데 네 것이 아니다"까지 알려 주지만,
+  지금 응답에서는 <b>그 id가 존재하는지조차 알 수 없습니다.</b> 반대로 내게 보이는 행을 건드리되
+  규칙을 어기는 요청 — 내 행의 주인을 남으로 넘기려는 <code>PATCH</code> — 에는 숨길 것이 없으므로
+  또렷하게 <b>403</b>이 돌아옵니다(검사 38).
+</div>
+
+<p>거절 앞뒤로 반대편 자료가 그대로인지도 세었습니다 (T07-C122) —
+<code>${esc(checkOf(34)?.detail ?? "")}</code></p>
+
+RLS 정책 정의는 <code>supabase/schema.sql</code>의 <code>plans_select</code>·
 <code>plans_insert</code>·<code>plans_update</code> 등 각 표마다 반복되는 3줄(정책 5개 표 × 2~3개
 정책)에 있습니다 — 표 하나당 소유자 조건이 딱 한 줄입니다.</p>
 
 <h2 class="breakbefore">⑤ AI와 나</h2>
 
 ${table(["구분", "내용"], [
-    ["AI에게 맡긴 일", "Supabase Auth 연동(auth.js/AuthGate/AuthForm/AccountSection), user_id + stamp_owner 트리거 + RLS 스키마 재작성, 검사 18~31 설계·구현, capture.mjs/report.mjs를 인증 흐름에 맞게 재작성, session_id·auth.sessions 기반 즉시 세션 무효화(session_is_active()) 조사·구현, 계정 삭제 버튼을 로그아웃과 시각적으로 분리(위험 구역 스타일), 새 Supabase·Vercel 프로젝트 생성 과정에서 비밀번호가 필요 없는 모든 단계."],
+    ["AI에게 맡긴 일", "Supabase Auth 연동(auth.js/AuthGate/AuthForm/AccountSection), user_id + stamp_owner 트리거 + RLS 스키마 재작성, 검사 18~38 설계·구현, capture.mjs/report.mjs를 인증 흐름에 맞게 재작성, session_id·auth.sessions 기반 즉시 세션 무효화(session_is_active()) 조사·구현, 계정 삭제 버튼을 로그아웃과 시각적으로 분리(위험 구역 스타일), 새 Supabase·Vercel 프로젝트 생성 과정에서 비밀번호가 필요 없는 모든 단계."],
     ["내가 직접 판단한 일", "인증 방식으로 Supabase Auth(이메일+비밀번호)를 최종 확정, 새 프로젝트 이름(plandosee-auth)과 배포 이름(aleph-pds-auth) 확정, Supabase 새 프로젝트의 데이터베이스 비밀번호 입력과 'Confirm email' 끄기, 로컬/공개 주소에서 실제 계정으로 로그인해 데이터 이전을 직접 확인, 검사 23이 실패로 남은 것을 보고 '아직 못 막은 것'으로 넘기지 않고 실제로 막는 방법을 요구."],
     ["AI 제안을 따르지 않은 일(없다면 왜 없었는지)", "없음 — 제시된 인증 방식·스키마·트리거 설계를 검토 후 그대로 채택했습니다. 다만 검사 19·20을 처음 돌렸을 때 오류 문구가 \"undefined\"로 나오는 버그(Error.message가 CDP 직렬화 경계에서 사라짐)를 발견해, 검사 스크립트 쪽의 직렬화 로직만 고쳤습니다 — 화면 코드는 그대로 두었습니다."],
 ])}
@@ -376,7 +422,6 @@ ${table(["아직 못 막은 것", "왜 위험한가"], [
     ["비밀번호 재설정 이메일 흐름 미구현", "비밀번호를 잊으면 계정을 복구할 방법이 없습니다(시간이 부족해 다음으로 미룸)."],
     ["2단계 인증 없음", "비밀번호 하나만 뚫리면 끝입니다."],
     ["로그인 시도 로그 없음", "누가 언제 실패했는지 남지 않아 이상 징후를 못 봅니다."],
-    ["비로그인 요청을 서버가 어떻게 거절하는지 아직 검사에 없음", "RLS가 있으니 토큰 없는 요청에 내 행이 돌아가지는 않지만, 그 거절을 <b>기록으로 보인 적이 없습니다</b>. 화면에서 안 보이는 것과 서버가 막는 것은 다르고, 지금 제출물에는 앞의 것만 있습니다."],
     ["비밀번호 변경 기능 없음", "토큰이 새어 나갔다고 의심될 때 비밀번호를 바꿔 이전 토큰을 한꺼번에 끊는 길이 없습니다. 지금 그 끊는 수단은 로그아웃뿐이고(카드 3), 로그아웃은 그 브라우저에서 직접 눌러야 합니다. 소스에 <code>updateUser</code>를 부르는 자리가 아예 없습니다."],
 ])}
 
@@ -384,6 +429,18 @@ ${table(["아직 못 막은 것", "왜 위험한가"], [
 실제로 막았습니다 — 이 표에는 남기지 않습니다.</p>
 
 <h2 class="breakbefore">카드 5 — 설명서로 묶고, 5일 써 보기</h2>
+
+<h4>내 자료 전체를 파일 하나로 (T07-C133)</h4>
+
+<p>자료 화면의 <b>"전체 내보내기"</b> 버튼은 계획·개정 이력·할일·실행기록·고칠 점 다섯 표를
+<code>exportedAt</code>이 붙은 객체 하나로 묶어 <code>plandosee-auth-내보내기-YYYY-MM-DD.json</code>
+파일로 내려받습니다(<code>src/components/ExportSection/ExportSection.jsx</code>,
+<code>src/api/exportAll.js</code>). 검사가 이 버튼을 실제로 눌러 안내 문구를 읽고,
+받은 자료에 상대 계정의 행이 섞이지 않았는지까지 확인합니다.</p>
+
+<p class="muted">${passBadge(36)} 판정 근거: <code>${esc(checkOf(36)?.detail ?? "")}</code></p>
+
+<h4>계정 삭제 (T07-C134)</h4>
 
 ${figure("11_계정관리", `${st("11_계정관리")} — ${nt("11_계정관리")}`)}
 
@@ -466,8 +523,9 @@ ${table(["", "날짜", "날짜별 값", "합계", "하루 평균", "기록이 �
 
 <p class="muted">
   <code>node tools/check.mjs --json</code> 실행 결과. 사람 눈이 아니라 이 명령 하나가 판정합니다.
-  1~17은 과제 6과 같은 계획·할일·실행기록·돌아보기 검사이고, 18~31이 이번 과제(인증·소유권)에서
-  새로 추가됐습니다.
+  1~17은 과제 6과 같은 계획·할일·실행기록·돌아보기 검사이고, 18~38이 이번 과제(인증·소유권)에서
+  새로 추가됐습니다. 그중 32~38은 앱의 래퍼를 건너뛰고 REST 주소를 직접 두드려
+  상태 코드와 응답 본문을 그대로 받아 적는 검사입니다.
 </p>
 
 ${lastCheck ? table(["#", "카드", "검사", "결과", "판정 근거"], lastCheck.results.map((r) => [
