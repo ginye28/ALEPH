@@ -73,7 +73,7 @@
     <dt>붙인 방식</dt><dd>WebAuthn (FIDO2 패스키) · 비밀번호 없음</dd>
     <dt>검사</dt><dd>39개 통과 / 0개 미통과 (총 39개)</dd>
     <dt>증빙 촬영</dt><dd>사진 10장 · 기록 16건</dd>
-    <dt>작성일</dt><dd>4 september 2026</dd>
+    <dt>작성일</dt><dd>8 september 2026</dd>
   </dl>
 </section>
 
@@ -104,14 +104,16 @@
 <div class="note">브라우저 쪽 40줄을 직접 쓴 이유 — 하는 일이 <b>자료 형식 변환뿐</b>이라 라이브러리를 하나 더 끌어올 만큼의
 일이 아니었습니다. 반대로 <b>서명이 맞는지 판단하는 쪽</b>은 실수가 곧 구멍이 되는 자리라 검증된 표준 라이브러리에 그대로 맡겼습니다.</div>
 
-<h2>② 검토했지만 고르지 않은 것</h2>
+<h2 class="section">② 왜 그걸 골랐나</h2>
+<p>고른 이유는 ①에 적었습니다. 여기에는 <b>검토했지만 고르지 않은 것</b>과 그 이유를 나란히 둡니다 — 무엇을 골랐는지보다 무엇을 버렸는지가 이유를 더 분명히 보여 주기 때문입니다.</p>
 
 <table class="">
   <thead><tr><th>후보</th><th>고르지 않은 이유</th></tr></thead>
   <tbody><tr><td>CBOR·COSE 파싱을 손으로 구현</td><td>WebAuthn 규격이 이미 재생 공격 방지·origin 묶기·서명 확인을 다 정의해 두었습니다. 이 과제의 배점은 표준을 이해하고 잘 고르는 것이지 바이트 파서를 다시 만드는 것이 아닙니다.</td></tr><tr><td>Firebase Auth · Auth0 등 SaaS의 패스키 기능</td><td>질문 생성과 검증이 통째로 남의 상자 안으로 들어가, 카드 2·3이 요구하는 “서버가 질문을 어떻게 만들고 어떻게 확인하는지”를 설명할 수 없게 됩니다.</td></tr><tr><td>아이디·비밀번호를 예비 수단으로 남기기</td><td>비밀번호를 하나라도 남기면 “비밀번호를 쓰지 않는다”가 사실이 아니게 됩니다. 잠금이 가장 약한 곳의 세기로 정해지기 때문입니다.</td></tr><tr><td>JWT 같은 서명된 토큰으로 세션 만들기</td><td>서명만으로 판단하면 로그아웃해도 만료 전까지 그 토큰이 살아 있습니다. 서버가 세션 행을 직접 들고 있으면 로그아웃이 곧 삭제라 그 즉시 끊깁니다.</td></tr></tbody>
 </table>
 
-<h2 class="section">③ 비밀번호를 어떻게 맡아 두나</h2>
+<h2 class="section">③ 어디를 어떻게 고쳤나</h2>
+<h3>비밀번호를 어떻게 맡아 두나</h3>
 <p><b>맡아 두지 않습니다. 비밀번호가 처음부터 없습니다.</b>
    화면 어디에도 비밀번호를 입력하는 칸이 없고, 소스 전체에도 <code>type="password"</code>가 없습니다. <span class="pass">PASS · 검사 8 (T08-C35)</span></p>
 <p>대신 서버가 갖고 있는 것은 <b>공개키</b> 하나입니다. 등록할 때 기기가 열쇠 한 쌍을 만들어
@@ -143,7 +145,7 @@ authenticator로 만든 것이고, 실제 사람이 실제 기기로 등록하�
 거절했는데, iCloud 키체인이 기기가 달라도 같은 패스키를 동기화해 쓰기 때문이다.
 </div>
 
-<h2>④ 들어온 사람을 어떻게 기억하나</h2>
+<h3>들어온 사람을 어떻게 기억하나</h3>
 
 <table class="record">
   <thead><tr><th></th><th>기록된 값</th></tr></thead>
@@ -160,14 +162,15 @@ authenticator로 만든 것이고, 실제 사람이 실제 기기로 등록하�
 </table>
 <p><span class="pass">PASS · 검사 25 (T08-C33)</span></p>
 
-<h2 class="section">⑤ 등록·로그인·응답·비공개 조회가 소스 어디를 지나는가</h2>
+<h3>등록·로그인·로그아웃·비공개 자료 조회가 소스 어디를 지나는가 (T08-C49)</h3>
 
 <table class="">
   <thead><tr><th>흐름</th><th>지나는 자리</th><th>하는 일</th></tr></thead>
   <tbody><tr><td><b>등록</b></td><td><code>app.js</code> registerPasskey<br>→ <code>api/register/options.js</code><br>→ 기기<br>→ <code>api/register/verify.js</code><br>→ <code>lib/store.js</code></td><td>질문 발급·보관 → 기기가 키 쌍 생성 → 서명·origin 검증 → 공개키 저장 → 세션 발급</td></tr><tr><td><b>로그인</b></td><td><code>app.js</code> loginWithPasskey<br>→ <code>api/login/options.js</code><br>→ 기기<br>→ <code>api/login/verify.js</code></td><td>새 질문 발급 → 기기가 개인키로 서명 → 저장된 공개키로 확인 → 질문 소진 → 세션 발급</td></tr><tr><td><b>응답(누구인지)</b></td><td><code>lib/session.js</code> currentUser / requireUser<br>← <code>api/me.js</code></td><td>쿠키의 세션 id로 <code>pk_sessions</code> 조회. 없으면 401</td></tr><tr><td><b>비공개 조회</b></td><td><code>api/private-notes/index.js</code><br><code>api/private-notes/[id].js</code></td><td>requireUser 통과 뒤, <b>세션이 가리키는 계정의 자료만</b> 읽고 씀. 남의 것이면 404</td></tr></tbody>
 </table>
 
-<h3>확인 네 가지 — 성공한 요청과 거절된 요청을 나란히</h3>
+<h2 class="section">④ 안 열리는 것을 확인한 기록</h2>
+<p>확인 네 가지를 <b>성공한 요청과 거절된 요청을 나란히</b> 둡니다. "막았습니다"라는 문장이 아니라 막히는 장면이 근거입니다.</p>
 
 <h3>확인 1. 로그인하지 않고 비공개 자료를 열어 본다</h3>
 
@@ -233,28 +236,72 @@ authenticator로 만든 것이고, 실제 사람이 실제 기기로 등록하�
 <p><span class="pass">PASS · 검사 35 (T08-C46)</span></p>
 <figure><img src="08_마지막패스키_경고.png" alt="마지막 패스키를 지우기 전, 화면이 되돌릴 수 없음을 먼저 말한다"><figcaption>마지막 패스키를 지우기 전, 화면이 되돌릴 수 없음을 먼저 말한다</figcaption></figure>
 
+<h2 class="section">⑤ AI와 나</h2>
+<p>AI에게 맡긴 일, 내가 직접 판단한 일, AI 제안을 따르지 않은 일을 나눠 적습니다 (T08-C53).</p>
+<h3>AI에게 맡긴 일</h3>
+<p>WebAuthn 등록·로그인 흐름의 구현(서버 API와 브라우저 연결 코드), 저장소 스키마, 그리고 가상 authenticator를 쓰는
+   검사·촬영 도구 작성을 맡겼습니다. 표준 규격을 정확히 옮기는 일과, 손으로는 재현하기 번거로운
+   “기기를 바꿔 끼우는” 시나리오를 자동화하는 일이었습니다.</p>
+<h3>내가 직접 판단한 일</h3>
+<p>어떤 인증 수단을 쓸지 — 지문·Face ID 같은 기기 내장 방식을 기본으로 하고, 기기 분실 대비 두 번째 패스키는
+   다른 기기나 USB 보안 키로 두기로 정했습니다. 무엇을 공개하고 무엇을 비공개로 둘지(프로젝트 메모·지원 목록·회고),
+   그리고 비공개 자리에 <b>실제 개인정보를 넣지 않고 전부 지어낸 내용만 쓰기로</b> 한 것도 제 판단입니다.</p>
+<h3>AI 제안을 따르지 않은 일</h3>
+<p>처음 설계안은 브라우저 쪽도 <code>@simplewebauthn/browser</code>를 외부 CDN에서 불러다 쓰자는 것이었습니다.
+   따르지 않았습니다 — 브라우저 쪽이 하는 일은 자료 형식 변환 40줄이 전부인데, 그것 때문에 페이지가 외부 CDN에
+   의존하게 되는 것이 맞지 않다고 봤습니다. 정작 중요한 <b>서명 검증</b>은 그대로 표준 라이브러리에 맡겼습니다.</p>
+
 <h2 class="section">⑥ 아직 못 막은 것</h2>
-<p>확인 네 가지를 모두 통과했지만, <b>다 막았다고 적지 않겠습니다.</b> 만들면서 실제로 확인한 한계는 아래와 같습니다.</p>
+
+<p><b>먼저, 이 항목에 적었다가 실제로 막은 것들입니다.</b> ⑥은 비워 두지 않는 자리이지만,
+   적어 놓고 그대로 두는 자리도 아닙니다. 앞선 제출 뒤에 아래 셋을 코드로 고쳤고, 고친 것을
+   말이 아니라 검사로 남겼습니다.</p>
+<ul>
+  <li><b>잠금이 풀린 기기</b> — 등록·로그인 모두 <code>userVerification: "required"</code>로 올렸고,
+      서버도 응답의 UV 플래그를 <code>requireUserVerification: true</code>로 다시 봅니다. <span class="pass">PASS · 검사 36 (⑥-1)</span></li>
+  <li><b>로그인만으로 패스키 삭제</b> — 되돌릴 수 없는 동작에는 5분 이내의 패스키 재확인을 요구합니다. <span class="pass">PASS · 검사 37 (⑥-2)</span> <span class="pass">PASS · 검사 38 (⑥-2)</span></li>
+  <li><b>다 쓴 질문이 쌓이는 것</b> — 질문을 새로 만들 때 만료된 지 한 시간이 지난 줄을 함께 지웁니다.</li>
+</ul>
+
+<p><b>그리고 제출 뒤에 실제 사용 중 발견해서 고친 것이 하나 더 있습니다 — 이게 가장 중요합니다.</b></p>
 <div class="warn">
-  <p><b>1. 잠금이 풀린 기기를 그대로 쓰는 사람은 막지 못합니다.</b>
-     이 사이트는 <code>userVerification: "preferred"</code>로 두었습니다. PIN이 없는 보안 키도 쓸 수 있게 하려는 선택인데,
-     그 대가로 <b>기기가 이미 잠금 해제되어 있으면 지문 확인 없이도 패스키가 응답할 수 있습니다.</b>
-     남이 내 잠금 해제된 노트북 앞에 앉으면 그대로 열립니다. <code>"required"</code>로 바꾸면 막히지만, 그러면 일부 보안 키를 쓸 수 없습니다.</p>
+  <p><b>패스키를 지우는 사이에 다른 패스키까지 지워져 계정이 통째로 사라졌습니다.</b>
+     삭제 한 번은 <code>첫 DELETE → 403 → 패스키 재확인 → 재시도</code>로 <b>몇 초가 걸립니다.</b>
+     그동안 화면이 그대로 살아 있어서, "안 눌렸나?" 하고 다른 줄의 지우기를 누르면 두 요청이
+     나란히 나가 <b>패스키가 둘 다 지워졌습니다.</b> 이메일도 비밀번호도 없는 계정이라 그건 곧 계정 소멸입니다.
+     실제로 재현했을 때 <code>/api/me</code>가 401, 남은 패스키 0개가 됐습니다.</p>
+  <p>통과 기준 검사(28·29·35)는 이걸 잡지 못했습니다 — <b>삭제를 순차로 한 번씩만 시험했기 때문입니다.</b>
+     사람이 조급하게 두 번 누르는 상황이 검사에 없었습니다.</p>
+  <p><b>고친 방법</b> — 확인을 누르는 즉시 목록 전체를 잠그고(버튼 <code>disabled</code> + 처리기 재진입 차단),
+     무엇이 도는 중인지 화면에 바로 적습니다. 그리고 그 상황을 재현하는 검사를 새로 넣었습니다. <span class="todo">검사 40 기록 없음</span> <span class="todo">검사 41 기록 없음</span></p>
+  <p><b>같이 넣은 것</b> — 목록의 각 줄에 <b>"지금 이 기기"</b> 표시를 붙여, 지금 로그인에 쓰고 있는 패스키가
+     어느 것인지 눈으로 구분되게 했습니다(세션에 <code>credential_id</code>를 남깁니다). <span class="todo">검사 42 기록 없음</span></p>
+</div>
 
-  <p><b>2. 세션이 12시간 살아 있고, 그동안 다시 확인하지 않습니다.</b>
-     로그인한 뒤에는 비공개 자료를 보거나 지울 때 패스키를 다시 요구하지 않습니다.
-     로그아웃하지 않은 채 자리를 뜨면 그 시간 동안은 열려 있습니다. 민감한 동작(패스키 삭제)에는 재확인을 넣는 게 맞지만 아직 넣지 못했습니다.</p>
+<p><b>이제 남은 것들입니다. 다 막았다고 적지 않겠습니다.</b></p>
+<div class="warn">
+  <p><b>1. 아무나 계정을 얼마든지 만들 수 있습니다.</b>
+     <code>/api/register/options</code>에 <b>요청 수 제한이 없습니다.</b> 비밀번호가 없으니 "비밀번호 무차별 대입"은
+     애초에 성립하지 않지만, 등록 자체를 자동으로 반복해 DB를 부풀리는 것은 지금 막지 못합니다.</p>
 
-  <p><b>3. 비공개 자료는 서버에 그냥 저장됩니다.</b>
-     자료 자체를 암호화하지 않았기 때문에, <b>서버의 <code>SUPABASE_SERVICE_ROLE_KEY</code>가 새면 전부 읽힙니다.</b>
-     패스키가 막는 것은 “바깥에서 들어오는 길”이지 “서버 안에서 보는 눈”이 아닙니다.</p>
+  <p><b>2. 비공개 자료는 서버에 그냥 저장됩니다.</b>
+     자료 자체를 암호화하지 않았기 때문에, <b>서버의 <code>DATABASE_URL</code>이 새면 전부 읽힙니다.</b>
+     패스키가 막는 것은 "바깥에서 들어오는 길"이지 "서버 안에서 보는 눈"이 아닙니다.</p>
 
-  <p><b>4. 계정을 되살릴 방법이 전혀 없습니다.</b>
+  <p><b>3. 계정을 되살릴 방법이 전혀 없습니다.</b>
      기기를 전부 잃거나 마지막 패스키를 지우면 그 계정은 영원히 닫힙니다(검사 35). 일부러 그렇게 두었고 화면에서 경고도 하지만,
      실제 서비스라면 복구 코드 같은 예비 수단이 필요합니다.</p>
 
-  <p><b>5. 다 쓴 질문 기록을 청소하지 않습니다.</b>
-     <code>pk_challenges</code>는 만료돼도 지워지지 않고 계속 쌓입니다. 동작에는 문제가 없지만(만료·사용 여부를 매번 확인합니다) 관리 작업이 빠져 있습니다.</p>
+  <p><b>4. 실제 기기 두 대로 카드 4를 시연하지 못했습니다.</b>
+     아이폰 Face ID로 직접 등록해 저장 위치(iCloud 키체인)까지는 확인했지만, 두 번째로 쓰려던 윈도우 PC가 공용 PC라
+     Windows Hello PIN을 새로 만들 수 없었고 블루투스도 켜지지 않아 QR 로그인도 안 됐습니다. 공용 PC에 새 자격 증명을
+     만드는 것은 부적절해 시도를 접었습니다. <b>보안 구멍이 아니라 이번 확인의 환경 제약</b>이고, 메커니즘 자체는 가상
+     authenticator 검사(26~29·35)가 공개 주소에서 그대로 확인했습니다.</p>
+
+  <p><b>5. 동시 조작 경로를 전부 훑지는 못했습니다.</b>
+     위의 삭제 경합은 찾아서 막았지만, 그건 <b>실제로 써 보다가 걸린 하나</b>입니다. 같은 종류(느린 요청이 도는 동안
+     화면이 살아 있는 곳)의 다른 경로 — 등록과 삭제를 겹쳐 누르는 경우 같은 것 — 은 검사로 훑지 않았습니다.
+     하나를 찾았다는 것은 같은 자리가 더 있을 수 있다는 뜻이라, 없다고 적지 않겠습니다.</p>
 </div>
 
 <h2 class="section">카드 1 — 무엇을 잠갔는가</h2>
@@ -326,19 +373,6 @@ authenticator 검사로만 확인됐다 — 그 검사는 공개 배포 주소(<
   <tbody><tr><td>1</td><td><code>T08-C10</code></td><td>카드5</td><td>첫 화면이 공개 소개 페이지이고, 아무것도 등록하지 않아도 열린다</td><td><span class="pass">PASS</span></td></tr><tr><td>2</td><td><code>T08-C11</code></td><td>카드5</td><td>과제 1의 공개 내용이 한 줄도 빠짐없이 그대로 남아 있다</td><td><span class="pass">PASS</span></td></tr><tr><td>3</td><td><code>T08-C13</code></td><td>카드1</td><td>공개 영역과 비공개 영역이 화면에서 구분되어 보인다</td><td><span class="pass">PASS</span></td></tr><tr><td>4</td><td><code>T08-C15</code></td><td>카드1</td><td>패스키로 들어가지 않은 상태에서는 비공개 내용이 화면에 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>5</td><td><code>T08-C18</code></td><td>카드1</td><td>로그인하지 않은 채 받은 페이지 소스 어디에도 비공개 내용이 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>6</td><td><code>T08-C16</code></td><td>카드1</td><td>비공개 자료를 서버에 직접 요청하면 거절된다</td><td><span class="pass">PASS</span></td></tr><tr><td>7</td><td><code>T08-C17</code></td><td>카드1</td><td>그 거절이 401 또는 403으로 이루어진다</td><td><span class="pass">PASS</span></td></tr><tr><td>8</td><td><code>T08-C35</code></td><td>카드3</td><td>제출물 어디에도 비밀번호를 입력하는 칸이 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>9</td><td><code>T08-C12</code></td><td>카드5</td><td>제출물에 실제 연락처·신분증 번호 같은 개인정보가 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>10</td><td><code>T08-C19</code></td><td>카드2</td><td>서버가 등록용 질문을 만들어 보내고, 확인할 때까지 보관한다</td><td><span class="pass">PASS</span></td></tr><tr><td>11</td><td><code>T08-C20</code></td><td>카드2</td><td>등록 요청마다 질문 값이 서로 다르다</td><td><span class="pass">PASS</span></td></tr><tr><td>12</td><td><code>T08-C25</code></td><td>카드2</td><td>등록을 중간에 취소하면 계정도 패스키도 만들어지지 않는다</td><td><span class="pass">PASS</span></td></tr><tr><td>13</td><td><code>T08-C21</code></td><td>카드2</td><td>등록이 끝나면 서버에 공개키가 저장된다</td><td><span class="pass">PASS</span></td></tr><tr><td>14</td><td><code>T08-C22</code></td><td>카드2</td><td>저장된 값이 공개키다 — 비밀번호가 아니다</td><td><span class="pass">PASS</span></td></tr><tr><td>15</td><td><code>T08-C23</code></td><td>카드2</td><td>등록 요청 본문에 개인키가 실려 있지 않다</td><td><span class="pass">PASS</span></td></tr><tr><td>16</td><td><code>T08-C24</code></td><td>카드2</td><td>등록한 패스키에 사람이 알아볼 수 있는 이름이 붙는다</td><td><span class="pass">PASS</span></td></tr><tr><td>17</td><td><code>T08-C14</code></td><td>카드1</td><td>비공개 영역에 들어간 항목이 세 개 이상이다</td><td><span class="pass">PASS</span></td></tr><tr><td>18</td><td><code>T08-C27</code></td><td>카드3</td><td>로그인할 때도 서버가 매번 새 질문을 만들어 보낸다</td><td><span class="pass">PASS</span></td></tr><tr><td>19</td><td><code>T08-C28</code></td><td>카드3</td><td>로그인 요청마다 질문 값이 서로 다르다</td><td><span class="pass">PASS</span></td></tr><tr><td>20</td><td><code>T08-C29</code></td><td>카드3</td><td>서버가 저장해 둔 공개키로 서명을 확인한 뒤에만 통과시킨다</td><td><span class="pass">PASS</span></td></tr><tr><td>21</td><td><code>T08-C30</code></td><td>카드3</td><td>서명이 한 글자만 달라도 거절된다 (성공 요청과 나란히)</td><td><span class="pass">PASS</span></td></tr><tr><td>22</td><td><code>T08-C31</code></td><td>카드3</td><td>이미 한 번 쓴 질문으로 다시 로그인하려 하면 거절된다</td><td><span class="pass">PASS</span></td></tr><tr><td>23</td><td><code>T08-C32</code></td><td>카드3</td><td>로그인 뒤 사람을 알아보는 것은 세션이다 (서버가 들고 있는 값)</td><td><span class="pass">PASS</span></td></tr><tr><td>24</td><td><code>T08-C34</code></td><td>카드3</td><td>세션 값이 페이지의 자바스크립트에 노출되지 않는다</td><td><span class="pass">PASS</span></td></tr><tr><td>25</td><td><code>T08-C33</code></td><td>카드3</td><td>로그아웃한 뒤 같은 세션 값으로 다시 요청하면 거절된다</td><td><span class="pass">PASS</span></td></tr><tr><td>26</td><td><code>T08-C42</code></td><td>카드4</td><td>한 계정에 패스키가 두 개 등록되어 있다</td><td><span class="pass">PASS</span></td></tr><tr><td>27</td><td><code>T08-C43</code></td><td>카드4</td><td>패스키 목록에 각각의 이름과 등록한 날짜가 보인다</td><td><span class="pass">PASS</span></td></tr><tr><td>28</td><td><code>T08-C44</code></td><td>카드4</td><td>패스키 하나를 지운 뒤 남은 하나로 들어갈 수 있다</td><td><span class="pass">PASS</span></td></tr><tr><td>29</td><td><code>T08-C45</code></td><td>카드4</td><td>지운 패스키로는 더 이상 들어갈 수 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>30</td><td><code>T08-C36</code></td><td>카드5</td><td>패스키를 등록한 계정이 두 개이고, 각각 서로 다른 비공개 내용이 있다</td><td><span class="pass">PASS</span></td></tr><tr><td>31</td><td><code>T08-C37</code></td><td>카드5</td><td>한쪽 패스키로 다른 쪽 비공개 자료를 읽으려는 요청이 거절된다</td><td><span class="pass">PASS</span></td></tr><tr><td>32</td><td><code>T08-C38</code></td><td>카드5</td><td>반대 방향(다른 쪽에서 첫 쪽으로)의 요청도 똑같이 거절된다</td><td><span class="pass">PASS</span></td></tr><tr><td>33</td><td><code>T08-C39</code></td><td>카드5</td><td>거절 앞뒤로 반대편의 자료 건수가 같다</td><td><span class="pass">PASS</span></td></tr><tr><td>34</td><td><code>T08-C40</code></td><td>카드5</td><td>요청 본문에 남의 계정 id를 적어 보내도 내 자료로만 저장된다</td><td><span class="pass">PASS</span></td></tr><tr><td>35</td><td><code>T08-C46</code></td><td>카드4</td><td>마지막 패스키를 지우면 그 계정은 더 이상 열 수 없다</td><td><span class="pass">PASS</span></td></tr><tr><td>36</td><td><code>⑥-1</code></td><td>보강</td><td>등록·로그인 모두 지문·얼굴·PIN 확인을 반드시 거치게 되어 있다</td><td><span class="pass">PASS</span></td></tr><tr><td>37</td><td><code>⑥-2</code></td><td>보강</td><td>로그인만 되어 있다고 패스키를 지울 수는 없다 (재확인 요구)</td><td><span class="pass">PASS</span></td></tr><tr><td>38</td><td><code>⑥-2</code></td><td>보강</td><td>패스키로 다시 확인하면 그때 지워진다</td><td><span class="pass">PASS</span></td></tr><tr><td>39</td><td><code>⑥-4</code></td><td>보강</td><td>패스키가 하나뿐이면 화면이 그 위험을 먼저 알린다</td><td><span class="pass">PASS</span></td></tr></tbody>
 </table>
 
-<h2>AI와 내 판단</h2>
-<h3>AI에게 맡긴 일</h3>
-<p>WebAuthn 등록·로그인 흐름의 구현(서버 API와 브라우저 연결 코드), 저장소 스키마, 그리고 가상 authenticator를 쓰는
-   검사·촬영 도구 작성을 맡겼습니다. 표준 규격을 정확히 옮기는 일과, 손으로는 재현하기 번거로운
-   “기기를 바꿔 끼우는” 시나리오를 자동화하는 일이었습니다.</p>
-<h3>내가 직접 판단한 일</h3>
-<p>어떤 인증 수단을 쓸지 — 지문·Face ID 같은 기기 내장 방식을 기본으로 하고, 기기 분실 대비 두 번째 패스키는
-   다른 기기나 USB 보안 키로 두기로 정했습니다. 무엇을 공개하고 무엇을 비공개로 둘지(프로젝트 메모·지원 목록·회고),
-   그리고 비공개 자리에 <b>실제 개인정보를 넣지 않고 전부 지어낸 내용만 쓰기로</b> 한 것도 제 판단입니다.</p>
-<h3>AI 제안을 따르지 않은 일</h3>
-<p>처음 설계안은 브라우저 쪽도 <code>@simplewebauthn/browser</code>를 외부 CDN에서 불러다 쓰자는 것이었습니다.
-   따르지 않았습니다 — 브라우저 쪽이 하는 일은 자료 형식 변환 40줄이 전부인데, 그것 때문에 페이지가 외부 CDN에
-   의존하게 되는 것이 맞지 않다고 봤습니다. 정작 중요한 <b>서명 검증</b>은 그대로 표준 라이브러리에 맡겼습니다.</p>
 
 </body>
 </html>

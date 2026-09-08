@@ -209,6 +209,12 @@ const CHECKS = [
 const results = new Map();
 const pass = (n, detail) => results.set(n, { pass: true, detail });
 const fail = (n, detail) => results.set(n, { pass: false, detail });
+/**
+ * 보류 — 아직 판정할 수 없는 검사. **PASS로 세지 않는다.**
+ * 예전에는 여기에 pass()를 불러 두어 표지가 "PASS 31 / FAIL 0"으로 나왔는데,
+ * 본문에는 "보류"라고 적혀 있어 같은 문서가 서로 다른 말을 했다. 따로 센다.
+ */
+const hold = (n, detail) => results.set(n, { pass: false, hold: true, detail });
 
 const guard = async (n, body) => {
     try {
@@ -799,8 +805,53 @@ await guard(23, async () => {
 });
 
 // ───────────────────────────────────────── 검사 31 · 5일 사용 지표
+//
+// 이 검사만은 스크래치 계정으로 판정할 수 없다. 카드 5가 요구하는 것은 **내 계정의**
+// 서로 다른 실제 날짜 5일이고(T07-C07), 검사가 방금 만든 계정에는 그런 날짜가 없다.
+// 그래서 내보내기 파일(화면의 "전체 내보내기")을 옆에 두면 그것으로 판정하고,
+// 없으면 **보류**로 남긴다 — PASS로 세지 않는다.
 await guard(31, async () => {
-    pass(31, `보류 — 실제 5일 사용 자료를 채운 뒤 손 계산 대조표를 설명서에 첨부하고 이 검사를 다시 채웁니다`);
+    const 내보내기 = fs
+        .readdirSync(ROOT)
+        .filter((f) => /^plandosee-내보내기-.*\.json$/.test(f))
+        .sort()
+        .at(-1);
+
+    if (!내보내기) {
+        return hold(
+            31,
+            `보류 — 판정할 자료가 없습니다. 화면의 "전체 내보내기"로 받은 파일을 ` +
+                `저장소 맨 위에 두고 다시 돌리면 5일 지표를 여기서 직접 계산해 대조합니다`,
+        );
+    }
+
+    const data = JSON.parse(fs.readFileSync(path.join(ROOT, 내보내기), "utf-8"));
+    const KSTDate = (iso) =>
+        new Date(iso).toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" });
+
+    // 1일차에 고정한 지표: "그날 실행기록 실제시간 합계", 단위 분, KST 기준.
+    const 날짜별 = new Map();
+    for (const r of data.executionRecords ?? []) {
+        const d = KSTDate(r.startedAt);
+        날짜별.set(d, (날짜별.get(d) ?? 0) + Number(r.actualMinutes ?? 0));
+    }
+    const 날짜들 = [...날짜별.keys()].sort();
+    const 합계 = [...날짜별.values()].reduce((a, b) => a + b, 0);
+
+    if (날짜들.length !== 5) {
+        return hold(
+            31,
+            `보류 — ${내보내기} 기준 서로 다른 날짜가 ${날짜들.length}일입니다(정확히 5일이어야 합니다, T07-C07). ` +
+                `지금: ${날짜들.map((d) => `${d} ${날짜별.get(d)}분`).join(" · ")}`,
+        );
+    }
+
+    pass(
+        31,
+        `${내보내기} 기준 서로 다른 실제 날짜 정확히 5일 — ` +
+            `${날짜들.map((d) => `${d} ${날짜별.get(d)}분`).join(" · ")} · ` +
+            `합계 ${합계}분 · 평균 ${(합계 / 5).toFixed(1)}분 (지표: 그날 실행기록 실제시간 합계, 단위 분, KST)`,
+    );
 });
 
 // ───────────────────────────────────────── 출력
@@ -816,11 +867,17 @@ const rows = CHECKS.map((check) => {
 });
 
 const passed = rows.filter((r) => r.pass);
-const failed = rows.filter((r) => !r.pass);
+const held = rows.filter((r) => !r.pass && r.hold);
+const failed = rows.filter((r) => !r.pass && !r.hold);
 
 console.log("\n─────────────────────────────");
-console.log(`PASS ${passed.length} / FAIL ${failed.length}   (${stamp} KST)`);
+console.log(
+    `PASS ${passed.length} / FAIL ${failed.length}` +
+        (held.length > 0 ? ` / 보류 ${held.length}` : "") +
+        `   (${stamp} KST)`,
+);
 if (failed.length > 0) console.log(`남은 검사: ${failed.map((r) => r.n).join(", ")}`);
+if (held.length > 0) console.log(`보류 중인 검사: ${held.map((r) => r.n).join(", ")}`);
 
 if (WRITE_JSON) {
     fs.mkdirSync(LOG_DIR, { recursive: true });
@@ -828,7 +885,7 @@ if (WRITE_JSON) {
     fs.writeFileSync(
         file,
         JSON.stringify(
-            { checkedAt: new Date().toISOString(), url: URL_APP, backendMode, passed: passed.map((r) => r.n), failed: failed.map((r) => r.n), results: rows },
+            { checkedAt: new Date().toISOString(), url: URL_APP, backendMode, passed: passed.map((r) => r.n), failed: failed.map((r) => r.n), held: held.map((r) => r.n), results: rows },
             null,
             2,
         ),
