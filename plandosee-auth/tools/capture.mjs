@@ -246,6 +246,50 @@ record("08_계정A_자료화면", "계정 A가 만든 계획이 A의 화면에 �
 
 const planAId = await evaluate(`window.__db.plans.listWithCurrent().then(r => r.data.find(p => p.current?.title === '[검사] A의 계획')?.id)`);
 
+
+console.log("F-2. 카드5 · 날짜별 실제 시간 (합계·평균)");
+// 카드 5는 "화면에 보이는 합계·평균"을 요구합니다(T07-C132). 방금 만든 스크래치 계정에는
+// 아직 아무 기록이 없으므로, 서로 다른 KST 날짜 5일을 심어 이 표가 실제로 무엇을 그리는지
+// 보입니다. 심는 값은 증빙용 합성 자료이고, 제 실제 5일 기록은 보고서 본문의 표에 있습니다.
+{
+    const seedTaskId = await evaluate(`window.__db.tasks.create({
+        id: crypto.randomUUID(), planId: ${JSON.stringify(planAId)},
+        title: ${JSON.stringify("[검사] 날짜별 집계용 할일")}, detail: null,
+        dueDate: null, priority: "medium", tags: [], estimatedMinutes: 60,
+    }).then(r => r.data.id)`);
+
+    // UTC 03:00 = KST 12:00 — 날짜 경계에 걸리지 않습니다.
+    const seed = [
+        ["2026-09-01T03:00:00.000Z", 45],
+        ["2026-09-02T03:00:00.000Z", 30],
+        ["2026-09-03T03:00:00.000Z", 120],
+        ["2026-09-04T03:00:00.000Z", 25],
+        ["2026-09-05T03:00:00.000Z", 50],
+    ];
+    for (const [startedAt, minutes] of seed) {
+        await evaluate(`window.__db.executionRecords.create({
+            id: crypto.randomUUID(), taskId: ${JSON.stringify(seedTaskId)},
+            startedAt: ${JSON.stringify(startedAt)}, endedAt: null,
+            actualMinutes: ${minutes}, blockedReason: "",
+        }).then(r => r.data)`);
+    }
+
+    await evaluate(`window.__reloadDaily()`);
+    await sleep(700);
+
+    const 화면 = await evaluate(`(() => {
+        const num = (id) => (document.querySelector('[data-testid="' + id + '"]')||{}).textContent || '';
+        return { total: num('daily-total'), average: num('daily-average'), days: num('daily-day-count') };
+    })()`);
+
+    await shotSectionByHeading("14_날짜별_합계평균", "날짜별 실제 시간");
+    record(
+        "14_날짜별_합계평균",
+        `화면이 그린 값 — 기록이 있는 날 ${화면.days} · 합계 ${화면.total} · 하루 평균 ${화면.average}`,
+        "화면이 날짜별 값과 합계·하루 평균을 직접 보여 줌 — 손으로 더한 값과 같은지는 검사 40이 대조(T07-C132)",
+    );
+}
+
 console.log("G. 카드4 · 계정 B 가입 — A의 계획이 안 보임");
 await evaluate(`window.__click('로그아웃')`);
 await sleep(400);

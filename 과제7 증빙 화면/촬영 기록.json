@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-09-08T02:29:54.115Z",
+  "capturedAt": "2026-09-08T07:26:28.824Z",
   "url": "https://aleph-pds-auth.vercel.app",
   "backendMode": "supabase",
   "externalRequests": [
@@ -25,17 +25,20 @@
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.102.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.113.woff2",
     "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plans?select=*&deleted_at=is.null&order=created_at.desc",
-    "https://ehtrcvrswaerpnzilnhk.supabase.co/auth/v1/logout?scope=global",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/execution_records?select=*&order=started_at.asc",
     "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plan_current?select=*",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/auth/v1/logout?scope=global",
     "https://ehtrcvrswaerpnzilnhk.supabase.co/auth/v1/token?grant_type=password",
     "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plans?on_conflict=id&select=*",
     "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plan_revisions?on_conflict=id&select=*",
-    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plan_revisions?select=*&plan_id=eq.bbf711d3-56fb-4d7d-b31b-a9ec6bbd8f19&order=revision_no.asc",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plan_revisions?select=*&plan_id=eq.684b5034-baca-4664-81fd-b3084993c864&order=revision_no.asc",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.111.woff2",
     "https://fonts.gstatic.com/s/notosanskr/v39/PbykFmXiEBPT4ITbgNA5Cgm20xz64px_1hVWr0wuPNGmlQNMEfD4.106.woff2",
-    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/tasks?select=*&deleted_at=is.null&plan_id=eq.bbf711d3-56fb-4d7d-b31b-a9ec6bbd8f19&order=created_at.desc.nullslast%2Cid.asc",
-    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/tasks?select=*&plan_id=eq.bbf711d3-56fb-4d7d-b31b-a9ec6bbd8f19&deleted_at=is.null",
-    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plans?select=*&id=eq.bbf711d3-56fb-4d7d-b31b-a9ec6bbd8f19"
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/tasks?select=*&deleted_at=is.null&plan_id=eq.684b5034-baca-4664-81fd-b3084993c864&order=created_at.desc.nullslast%2Cid.asc",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/tasks?select=*&plan_id=eq.684b5034-baca-4664-81fd-b3084993c864&deleted_at=is.null",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/tasks?on_conflict=id&select=*",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/execution_records?on_conflict=id&select=*",
+    "https://ehtrcvrswaerpnzilnhk.supabase.co/rest/v1/plans?select=*&id=eq.684b5034-baca-4664-81fd-b3084993c864"
   ],
   "log": [
     {
@@ -45,7 +48,7 @@
     },
     {
       "name": "03_가입_직후_메인화면",
-      "status": "계정 A(pds-auth-shot-a-1788834575739@example.com) 가입 직후 자동 로그인, 자료 화면(계획 없음) 표시",
+      "status": "계정 A(pds-auth-shot-a-1788852367767@example.com) 가입 직후 자동 로그인, 자료 화면(계획 없음) 표시",
       "note": "가입 → 로그인이 이어짐(검사 18)"
     },
     {
@@ -69,13 +72,18 @@
       "note": "정상적으로 로그인한 계정에는 자기 자료가 보임"
     },
     {
+      "name": "14_날짜별_합계평균",
+      "status": "화면이 그린 값 — 기록이 있는 날 5일 · 합계 270분 · 하루 평균 54.0분",
+      "note": "화면이 날짜별 값과 합계·하루 평균을 직접 보여 줌 — 손으로 더한 값과 같은지는 검사 40이 대조(T07-C132)"
+    },
+    {
       "name": "09_계정B_빈화면",
       "status": "계정 B로 가입 직후 — 계획 목록이 비어 있음(A의 계획이 안 보임)",
       "note": "목록 조회에 상대 계정 행이 0건(검사 28)"
     },
     {
       "name": "10_직접조회_거절",
-      "status": "B가 A의 계획 id(bbf711d3)를 window.__db.plans.get()으로 직접 조회 → 응답: null",
+      "status": "B가 A의 계획 id(684b5034)를 window.__db.plans.get()으로 직접 조회 → 응답: null",
       "note": "RLS가 남의 행을 null로 돌려줌 — 서버가 거절함(검사 26)"
     },
     {
