@@ -813,8 +813,13 @@ await guard(23, async () => {
 await guard(31, async () => {
     const 내보내기 = fs
         .readdirSync(ROOT)
-        .filter((f) => /^plandosee-내보내기-.*\.json$/.test(f))
-        .sort()
+        // 과제 7 계정의 내보내기는 plandosee-auth-내보내기-*.json 이다.
+        // plandosee-내보내기-*.json 은 과제 6 시절 파일이라 뒤로 밀어 둔다.
+        .filter((f) => /^plandosee(-auth)?-내보내기-.*\.json$/.test(f))
+        .sort((a, b) => {
+            const auth = (f) => (f.startsWith("plandosee-auth-") ? 1 : 0);
+            return auth(a) - auth(b) || a.localeCompare(b);
+        })
         .at(-1);
 
     if (!내보내기) {
