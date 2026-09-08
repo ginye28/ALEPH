@@ -1,5 +1,5 @@
 {
-  "capturedAt": "2026-09-08T02:27:17.164Z",
+  "capturedAt": "2026-09-08T07:55:06.986Z",
   "url": "https://aleph-passkey.vercel.app",
   "shots": [
     "01_공개_소개페이지",
@@ -31,8 +31,8 @@
     {
       "title": "등록용 질문은 요청마다 새로 만들어진다 (T08-C19·C20)",
       "첫 번째 요청": "POST /api/register/options",
-      "첫 번째 challenge": "7MkzjVY7pHcXjCxb1IaAL9VMEcw27T7KL2KDUrB0hJo",
-      "두 번째 challenge": "W61nnspQ_qFexQmpAgNCYQvTR8Aq3F3QPwWgl4iRNno",
+      "첫 번째 challenge": "JAk1SnLsNpQhxDGZqlds719417VjVf2FIuSAWBlI16A",
+      "두 번째 challenge": "Rh_4uFRgSWyUeZAfFI6KXppVoSrZXlICAbdBKmeLdLA",
       "같은가": "다르다",
       "보관": "서버가 pk_challenges에 넣어 두고, 확인 단계에서 딱 한 번만 쓴 뒤 used_at을 찍는다"
     },
@@ -46,8 +46,8 @@
     {
       "title": "등록이 끝난 뒤 서버가 갖고 있는 값 (T08-C21·C22·C24)",
       "패스키 이름": "[촬영] 노트북 지문",
-      "credential id": "Z3ju2XipeHBc…",
-      "공개키": "pAEBAycgBiFYIPpwDAdz_IptvZTpqCW8ACw8H4GCLfNRAnLAl6Eorhaz",
+      "credential id": "YAb89YWejdWm…",
+      "공개키": "pAEBAycgBiFYID8nodpB6jC6Oq-p5FA-ZPhqunsw3MwFCPWFMU71hwvq",
       "이 값의 정체": "COSE 형식의 공개키. 서명을 확인할 수는 있지만 만들어 낼 수는 없다 — 비밀번호도, 비밀번호의 해시도 아니다.",
       "패스키가 저장된 곳": "이 촬영은 크롬의 가상 authenticator(소프트웨어 기기)를 썼다. 실제 사용에서는 기기 자체(윈도우 Hello·터치 ID) 또는 구글 비밀번호 관리자·보안 키에 저장된다 (T08-C26)."
     },
@@ -59,8 +59,8 @@
     },
     {
       "title": "로그인 질문도 매번 새로 만들어진다 (T08-C27·C28)",
-      "첫 번째 challenge": "1ARdw5q2fvfu213YE3YCHnKZg3e1Yd3Lt0Kur7ypo2k",
-      "두 번째 challenge": "-pseCLDqNEk2ZCklWfSSXqSXeUkDi3oXkI_wC5hJiYg",
+      "첫 번째 challenge": "38Wd60_3qKXH_dbfKkG479JPSpeXOWR_J351EmyqBfY",
+      "두 번째 challenge": "EVBY3O38ZJAB4msskFPwWvTowzxOE8sjsDi4_sNNmyc",
       "같은가": "다르다"
     },
     {
@@ -73,7 +73,7 @@
     },
     {
       "title": "이미 쓴 질문을 다시 보냈을 때 (T08-C31)",
-      "첫 번째 요청": "POST /api/login/verify (challengeId 0915c394-294b-4990-9f1c-435676087280) → 200",
+      "첫 번째 요청": "POST /api/login/verify (challengeId 5ff001a5-7ab2-4233-9ad2-9abfc66a2bc9) → 200",
       "두 번째 요청": "POST /api/login/verify (같은 challengeId, 같은 서명) → 400 \"이미 사용된 확인 질문입니다.\"",
       "설명": "질문이 쓰이는 순간 used_at이 찍혀, 같은 서명을 재전송해도 통하지 않는다."
     },
@@ -93,24 +93,24 @@
     },
     {
       "title": "패스키 하나를 지운 뒤 (T08-C44·C45)",
-      "지운것": "\"[촬영] 노트북 지문\" (남은 패스키 undefined개)",
-      "지운 기기로 로그인": "200 undefined",
+      "지운것": "\"[촬영] 노트북 지문\" (재확인 요구됨: true · 삭제 후 남은 패스키 1개)",
+      "지운 기기로 로그인": "401 \"등록되지 않은 패스키입니다.\"",
       "남은 기기로 로그인": "200 성공 — \"[촬영] 휴대폰 지문\"",
       "설명": "패스키를 두 개 등록해 둔 덕분에, 기기 하나를 잃어도 계정을 잃지 않는다."
     },
     {
       "title": "마지막 패스키까지 지웠을 때 (T08-C46)",
       "화면 경고": "⚠ 마지막 패스키입니다. 지우면 이 계정에 다시 들어올 방법이 없습니다 — 비밀번호도 이메일도 없어서 되돌릴 수 없습니다.",
-      "결과": "남은 패스키 undefined개, 계정 접근 불가 = undefined",
-      "다시 들어가려는 시도": "200 undefined",
+      "결과": "남은 패스키 0개, 계정 접근 불가 = true",
+      "다시 들어가려는 시도": "401 \"등록되지 않은 패스키입니다.\"",
       "왜 막지 않았나": "막을 수도 있었지만 막지 않았다. 되살릴 수단(이메일·비밀번호)을 두지 않기로 한 이상, '못 지우게 하는 것'은 문제를 미루는 것이지 푸는 것이 아니다. 대신 지우기 전에 화면에서 분명히 경고한다."
     },
     {
       "title": "한쪽 패스키로 다른 쪽 자료를 열려고 할 때 (T08-C37·C38)",
-      "B → 자기 자료": "GET /api/private-notes/c8057484-5f5b-48f8-b8c1-9d04cc58b7b3 → 200 \"[촬영] B만의 메모\"",
-      "B → A의 자료": "GET /api/private-notes/31d45de9-d774-449f-be8b-ba9352e3723c → 404 \"그런 자료가 없습니다.\"",
-      "A → 자기 자료": "GET /api/private-notes/31d45de9-d774-449f-be8b-ba9352e3723c → 200 \"[촬영] A만의 메모\"",
-      "A → B의 자료": "GET /api/private-notes/c8057484-5f5b-48f8-b8c1-9d04cc58b7b3 → 404 \"그런 자료가 없습니다.\"",
+      "B → 자기 자료": "GET /api/private-notes/b053e627-77b4-4e88-bc6c-7f4d12f3e1cd → 200 \"[촬영] B만의 메모\"",
+      "B → A의 자료": "GET /api/private-notes/fac49231-a3ec-4851-a50d-42befba9124e → 404 \"그런 자료가 없습니다.\"",
+      "A → 자기 자료": "GET /api/private-notes/fac49231-a3ec-4851-a50d-42befba9124e → 200 \"[촬영] A만의 메모\"",
+      "A → B의 자료": "GET /api/private-notes/b053e627-77b4-4e88-bc6c-7f4d12f3e1cd → 404 \"그런 자료가 없습니다.\"",
       "왜 403이 아니라 404인가": "403은 '있지만 권한이 없다'는 뜻이라, 그 id가 존재한다는 사실 자체를 알려주게 된다. 그래서 없는 것과 똑같이 답한다."
     },
     {
@@ -123,7 +123,7 @@
       "title": "요청 본문에 남의 계정 id를 적어 보냈을 때 (T08-C40·C41)",
       "요청": "POST /api/private-notes  본문: { \"title\": \"…\", \"user_id\": \"(A의 계정 id)\" }  ← B의 세션으로 보냄",
       "저장결과": "201 — 저장된 주인은 B(요청을 보낸 사람)",
-      "A가 그 자료를 볼 수 있는가": "GET /api/private-notes/6dc02562-927f-46f9-ac47-66363cc37d95 → 404 (못 본다)",
+      "A가 그 자료를 볼 수 있는가": "GET /api/private-notes/ca122779-044c-4666-b133-0523411a9d23 → 404 (못 본다)",
       "B의 목록에는": "있다",
       "이 거절을 만드는 곳": "api/private-notes/index.js — createNote에 넘기는 userId가 요청 본문이 아니라 세션(requireUser)에서 나온다. 클라이언트가 주인을 고를 수 있는 경로가 코드에 아예 없다."
     }

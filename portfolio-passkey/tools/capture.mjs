@@ -238,7 +238,10 @@ await shot("07_패스키_지우기_확인", "#private");
 {
     const me = await evaluate(`window.__flow.get('/api/me')`);
     const first = me.data.credentials[0];
-    const deleted = await evaluate(`window.__flow.del('/api/credentials/${first.id}')`);
+    // 삭제는 재확인이 필요한 동작이라(T08-C46 근처의 ⑥-2 방어), 재확인까지 거치는
+    // deleteCredential()을 써야 한다 — del()만 부르면 첫 시도가 403(needsReauth)에서
+    // 끝나 아래 값들이 전부 undefined가 된다.
+    const deleted = await evaluate(`window.__flow.deleteCredential('${first.id}')`);
     await evaluate(`window.__flow.post('/api/logout')`);
 
     await useDevice("기기1");
@@ -248,7 +251,7 @@ await shot("07_패스키_지우기_확인", "#private");
     const withRemaining = await evaluate(`window.__flow.login()`);
 
     record("패스키 하나를 지운 뒤 (T08-C44·C45)", {
-        지운것: `"${first.deviceName}" (남은 패스키 ${deleted.data.remaining}개)`,
+        지운것: `"${first.deviceName}" (재확인 요구됨: ${deleted.reauthAsked} · 삭제 후 남은 패스키 ${deleted.final.data.remaining}개)`,
         "지운 기기로 로그인": `${withDeleted.status} ${JSON.stringify(withDeleted.data?.error ?? withDeleted.error)}`,
         "남은 기기로 로그인": `${withRemaining.status} 성공 — "${withRemaining.data.deviceName}"`,
         설명: "패스키를 두 개 등록해 둔 덕분에, 기기 하나를 잃어도 계정을 잃지 않는다.",
@@ -264,13 +267,13 @@ await shot("08_마지막패스키_경고", "#private");
 {
     const me = await evaluate(`window.__flow.get('/api/me')`);
     const last = me.data.credentials[0];
-    const deleted = await evaluate(`window.__flow.del('/api/credentials/${last.id}')`);
+    const deleted = await evaluate(`window.__flow.deleteCredential('${last.id}')`);
     const attempt = await evaluate(`window.__flow.login()`);
 
     record("마지막 패스키까지 지웠을 때 (T08-C46)", {
         "화면 경고":
             "⚠ 마지막 패스키입니다. 지우면 이 계정에 다시 들어올 방법이 없습니다 — 비밀번호도 이메일도 없어서 되돌릴 수 없습니다.",
-        결과: `남은 패스키 ${deleted.data.remaining}개, 계정 접근 불가 = ${deleted.data.accountUnreachable}`,
+        결과: `남은 패스키 ${deleted.final.data.remaining}개, 계정 접근 불가 = ${deleted.final.data.accountUnreachable}`,
         "다시 들어가려는 시도": `${attempt.status} ${JSON.stringify(attempt.data?.error ?? attempt.error)}`,
         "왜 막지 않았나":
             "막을 수도 있었지만 막지 않았다. 되살릴 수단(이메일·비밀번호)을 두지 않기로 한 이상, " +
