@@ -11,6 +11,8 @@ import { db } from "./client";
 
 export const listExecutionsByTask = (taskId) => db.executionRecords.listByTask(taskId);
 export const listExecutionsByPlan = (planId) => db.executionRecords.listByPlan(planId);
+/** 날짜별 집계(카드 5)용 — 내 실행기록 전체. */
+export const listAllExecutions = () => db.executionRecords.listAll();
 
 export const createExecution = async (taskId, form) => {
     const checked = checkExecutionForm(form);

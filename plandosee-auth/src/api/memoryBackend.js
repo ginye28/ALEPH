@@ -188,6 +188,10 @@ export const createMemoryBackend = () => {
             const rows = state.executionRecords.filter((r) => taskIds.has(r.taskId));
             return { data: clone(rows), error: null };
         },
+        async listAll() {
+            const rows = [...state.executionRecords].sort((a, b) => (a.startedAt < b.startedAt ? -1 : 1));
+            return { data: clone(rows), error: null };
+        },
     };
 
     const reviewNotes = {

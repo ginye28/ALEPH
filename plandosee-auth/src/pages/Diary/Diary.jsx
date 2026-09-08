@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { exportAllData } from "../../api/exportAll";
-import { createExecution, listExecutionsByTask } from "../../api/executionRecords";
+import { createExecution, listAllExecutions, listExecutionsByTask } from "../../api/executionRecords";
 import { addReviewNote, getReview } from "../../api/reviews";
 import { createPlan, deletePlan, listPlans, planHistory, revisePlan } from "../../api/plans";
 import { completeTask, createTask, deleteTask, listTasks, reopenTask, updateTask } from "../../api/tasks";
@@ -8,6 +8,7 @@ import { backendMode } from "../../api/client";
 import { filterTasks } from "../../api/reviewFilters";
 import { useSession } from "../../hooks/useSession";
 import AccountSection from "../../components/AccountSection/AccountSection";
+import DailySection from "../../components/DailySection/DailySection";
 import ExecutionSection from "../../components/ExecutionSection/ExecutionSection";
 import ExportSection from "../../components/ExportSection/ExportSection";
 import PlanSection from "../../components/PlanSection/PlanSection";
@@ -38,6 +39,8 @@ function Diary() {
 
     const [selectedTaskId, setSelectedTaskId] = useState(null);
     const [executionRecords, setExecutionRecords] = useState([]);
+    // 날짜별 집계(카드 5)는 계획·할일 경계를 넘어 내 실행기록 전체를 봅니다.
+    const [allExecutions, setAllExecutions] = useState([]);
 
     const [reviewStats, setReviewStats] = useState(null);
     const [carryNote, setCarryNote] = useState(null);
@@ -75,11 +78,17 @@ function Diary() {
     }, []);
 
     // 첫 로드
+    const refreshAllExecutions = useCallback(async () => {
+        const { data } = await listAllExecutions();
+        setAllExecutions(data ?? []);
+    }, []);
+
     useEffect(() => {
         refreshPlans().then((rows) => {
             if (rows.length > 0) setSelectedPlanId(rows[0].id);
         });
-    }, [refreshPlans]);
+        refreshAllExecutions();
+    }, [refreshPlans, refreshAllExecutions]);
 
     // check.mjs가 window.__db로 직접 만든 계획을 화면(React 상태)에도 반영시키는 용도입니다.
     // 새로고침 없이 다시 읽어야 메모리 백엔드의 상태가 그대로 유지됩니다.
@@ -88,7 +97,10 @@ function Diary() {
             const rows = await refreshPlans();
             if (rows.length > 0 && !selectedPlanId) setSelectedPlanId(rows[0].id);
         };
-    }, [refreshPlans, selectedPlanId]);
+        // 날짜별 집계도 같은 이유로 다시 읽을 수 있게 열어 둡니다 — check.mjs가 window.__db로
+        // 직접 심은 실행기록을 화면이 서버에서 다시 읽어 그리는지 보려면 필요합니다(검사 40).
+        window.__reloadDaily = refreshAllExecutions;
+    }, [refreshPlans, refreshAllExecutions, selectedPlanId]);
 
     // 선택한 계획·필터가 바뀌면 할일·돌아보기를 다시 읽습니다.
     useEffect(() => {
@@ -175,6 +187,7 @@ function Diary() {
             const { data } = await listExecutionsByTask(taskId);
             setExecutionRecords(data ?? []);
             await refreshReview(selectedPlanId);
+            await refreshAllExecutions();
         }
         return result;
     };
@@ -259,6 +272,8 @@ function Diary() {
                     onAddNote={handleAddNote}
                     onCarryToNewPlan={handleCarryToNewPlan}
                 />
+
+                <DailySection records={allExecutions} />
 
                 <ExportSection onExportAll={exportAllData} />
 

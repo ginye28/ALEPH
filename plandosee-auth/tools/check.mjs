@@ -221,6 +221,7 @@ const CHECKS = [
     { n: 37, kind: "카드2", title: "로그인 요청과 응답 어디에도 비밀번호 원문이 남지 않는다" },
     { n: 38, kind: "카드4", title: "내 행의 주인을 남에게 넘기려 하면 403으로 거절된다" },
     { n: 39, kind: "카드1", title: "과제 6에 넣어 둔 내 자료가 과제 7 계정으로 그대로 옮겨져 있다" },
+    { n: 40, kind: "카드5", title: "화면이 그린 날짜별 합계·평균이 손으로 더한 값과 같다" },
 ];
 
 const results = new Map();
@@ -1195,6 +1196,79 @@ await guard(38, async () => {
         );
     } else {
         fail(38, `정상 ${JSON.stringify(정상)} · 넘기기 ${JSON.stringify(넘기기)} · 확인 ${JSON.stringify(확인.body)}`);
+    }
+});
+
+
+// ── 검사 40 · 화면에 보이는 합계·평균이 손 계산과 같다 (T07-C132)
+//
+// 검사 31은 내보내기 파일을 손으로 더해 내 실제 5일을 셉니다 — 그것은 "내 기록"의 증거이지
+// "화면이 맞다"의 증거가 아닙니다. 여기서는 스크래치 계정에 서로 다른 KST 날짜 5일을 심고,
+// **화면이 실제로 그린 숫자**를 읽어 같은 자료를 손으로 더한 값과 맞대어 봅니다.
+await guard(40, async () => {
+    await signInAs(EMAIL_A); // 실행기록은 A의 할일(scratchTaskId)에 달립니다.
+
+    // 검사 8이 이미 2026-08-30(KST)에 한 건 남겼습니다. 서로 다른 날짜가 5일이 되도록 넷을 더 심습니다.
+    // 시각은 UTC 03:00 = KST 12:00이라 날짜 경계에 걸리지 않습니다.
+    const 심을것 = [
+        ["2026-08-26T03:00:00.000Z", 25],
+        ["2026-08-27T03:00:00.000Z", 40],
+        ["2026-08-28T03:00:00.000Z", 15],
+        ["2026-08-29T03:00:00.000Z", 60],
+    ];
+    for (const [startedAt, minutes] of 심을것) {
+        await evaluate(`window.__db.executionRecords.create({
+            id: crypto.randomUUID(), taskId: ${JSON.stringify(scratchTaskId)},
+            startedAt: ${JSON.stringify(startedAt)}, endedAt: null,
+            actualMinutes: ${minutes}, blockedReason: "",
+        }).then(r => r.data)`);
+    }
+
+    // 화면이 검사가 건네준 값이 아니라 **서버에서 다시 읽은** 자료로 집계하게 합니다.
+    await evaluate(`window.__reloadDaily()`);
+    await sleep(600);
+
+    const 화면 = await evaluate(`(() => {
+        const rows = [...document.querySelectorAll('[data-testid="daily-row"]')].map(tr => ({
+            date: tr.getAttribute('data-date'),
+            minutes: Number(tr.getAttribute('data-minutes')),
+        }));
+        const num = (id) => Number((document.querySelector('[data-testid="' + id + '"]')||{}).textContent.replace(/[^0-9.]/g, ''));
+        return { rows, total: num('daily-total'), average: num('daily-average'), dayCount: num('daily-day-count') };
+    })()`);
+
+    // 같은 자료를 검사 쪽에서 손으로 다시 더합니다 — 화면 코드를 한 줄도 빌리지 않습니다.
+    const 원자료 = await evaluate(`window.__db.executionRecords.listAll().then(r => r.data)`);
+    const KST = (iso) => new Date(iso).toLocaleDateString("sv-SE", { timeZone: "Asia/Seoul" });
+    const 손계산 = new Map();
+    for (const r of 원자료 ?? []) {
+        const d = KST(r.startedAt);
+        손계산.set(d, (손계산.get(d) ?? 0) + Number(r.actualMinutes ?? 0));
+    }
+    const 손날짜 = [...손계산.keys()].sort();
+    const 손합계 = [...손계산.values()].reduce((a, b) => a + b, 0);
+    const 손평균 = 손날짜.length === 0 ? 0 : Math.round((손합계 / 손날짜.length) * 10) / 10;
+
+    const 날짜같음 =
+        화면.rows.length === 손날짜.length &&
+        화면.rows.every((row, i) => row.date === 손날짜[i] && row.minutes === 손계산.get(손날짜[i]));
+    const 합계같음 = 화면.total === 손합계;
+    const 평균같음 = Math.abs(화면.average - 손평균) < 0.05;
+    const 닷새이상 = 손날짜.length >= 5;
+
+    if (날짜같음 && 합계같음 && 평균같음 && 닷새이상) {
+        pass(
+            40,
+            `화면이 그린 날짜별 값 ${화면.rows.map((r) => `${r.date} ${r.minutes}분`).join(" · ")} · ` +
+                `화면 합계 ${화면.total}분 · 화면 평균 ${화면.average}분 — ` +
+                `같은 자료를 검사가 따로 더한 값(합계 ${손합계}분 · 평균 ${손평균}분 · ${손날짜.length}일)과 전부 일치`,
+        );
+    } else {
+        fail(
+            40,
+            `화면 ${JSON.stringify(화면)} · 손 계산 합계 ${손합계}분 · 평균 ${손평균}분 · ` +
+                `날짜 ${손날짜.join(",")} (날짜같음 ${날짜같음} · 합계같음 ${합계같음} · 평균같음 ${평균같음})`,
+        );
     }
 });
 

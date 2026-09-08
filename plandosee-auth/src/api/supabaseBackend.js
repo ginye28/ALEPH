@@ -342,6 +342,17 @@ export const createSupabaseBackend = (supabase) => {
             if (error) return { data: null, error };
             return { data: data.map(executionFromDb), error: null };
         },
+
+        // 날짜별 집계(카드 5)는 계획·할일 경계를 넘어 내 실행기록 전체를 봅니다.
+        // 조건을 따로 걸지 않아도 RLS가 내 행만 돌려줍니다.
+        async listAll() {
+            const { data, error } = await supabase
+                .from("execution_records")
+                .select("*")
+                .order("started_at", { ascending: true });
+            if (error) return { data: null, error };
+            return { data: data.map(executionFromDb), error: null };
+        },
     };
 
     const reviewNotes = {
