@@ -27,6 +27,16 @@ const SOURCE_URL = "https://github.com/ginye28/ALEPH/tree/main/plandosee-auth";
 
 const cap = JSON.parse(fs.readFileSync(path.join(SHOT_DIR, "촬영 기록.json"), "utf-8"));
 
+// 7.md T07-C92는 "라이브러리나 서비스를 썼다면 그 이름과 버전"을 요구합니다.
+// 버전을 본문에 손으로 적으면 package.json과 어긋나므로 잠긴 버전을 그대로 읽어옵니다.
+const PKG = JSON.parse(fs.readFileSync(path.join(import.meta.dirname, "..", "package.json"), "utf-8"));
+const LOCK = fs.existsSync(path.join(import.meta.dirname, "..", "package-lock.json"))
+    ? JSON.parse(fs.readFileSync(path.join(import.meta.dirname, "..", "package-lock.json"), "utf-8"))
+    : null;
+const SUPABASE_RANGE = PKG.dependencies?.["@supabase/supabase-js"] ?? "(미기재)";
+const SUPABASE_VERSION =
+    LOCK?.packages?.["node_modules/@supabase/supabase-js"]?.version ?? SUPABASE_RANGE.replace(/^[\^~]/, "");
+
 // 가장 최근 검사 결과를 읽습니다. 숫자를 손으로 적지 않습니다.
 const CHECK_DIR = path.join(ROOT, "검사 기록");
 const checkFiles = fs.existsSync(CHECK_DIR)
@@ -62,7 +72,6 @@ const externalHosts = [...new Set((cap.externalRequests ?? []).map((u) => new UR
 
 const esc = (text) => String(text).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 
-const hasImg = (name) => fs.existsSync(path.join(SHOT_DIR, `${name}.png`));
 const img = (name) => {
     const file = path.join(SHOT_DIR, `${name}.png`);
     if (!fs.existsSync(file)) return `<div class="missing">증빙 화면 없음: ${name}.png</div>`;
@@ -87,9 +96,6 @@ const table = (head, body, cls = "") => `
 
 const passBadge = (n) => (checkOf(n)?.pass ? `<span class="pass">PASS (검사 ${n})</span>` : `<span class="todo">확인 필요 (검사 ${n})</span>`);
 
-const REAL_SHOT = "14_실사용_카드5";
-const hasRealShot = hasImg(REAL_SHOT);
-
 const html = `<!doctype html>
 <html lang="ko">
 <head>
@@ -110,6 +116,8 @@ const html = `<!doctype html>
   h2 { font-size:13pt; margin:20pt 0 7pt; padding-bottom:4pt;
        border-bottom:1.6pt solid var(--accent); letter-spacing:-0.01em; break-after:avoid; }
   h3 { font-size:10.6pt; margin:12pt 0 4pt; break-after:avoid; }
+  h3.cardhead { font-size:11.6pt; margin:16pt 0 6pt; padding-bottom:3pt;
+                border-bottom:0.8pt solid var(--rule); color:var(--accent); }
   p { margin:0 0 5pt; }
   ul, ol { margin:0 0 6pt; padding-left:15pt; }
   li { margin-bottom:2pt; }
@@ -143,6 +151,8 @@ const html = `<!doctype html>
   figure img { width:100%; border:0.6pt solid var(--rule); border-radius:3pt; display:block; }
   figcaption { font-size:8.2pt; color:var(--soft); margin-top:3.5pt; }
   figure.half img { width:70%; }
+  figure.banner img { width:auto; max-width:100%; }
+  figure.banner { margin:5pt 0 7pt; }
   .pairgrid { display:grid; grid-template-columns:1fr 1fr; gap:8pt; break-inside:avoid; }
   .pairgrid figure { margin:0; }
   .paircap { font-size:8.6pt; color:var(--soft); margin:2pt 0 9pt; }
@@ -204,13 +214,33 @@ ${backendMode !== "supabase" ? `
 
 <h2 class="breakbefore">① 무엇으로 붙였나</h2>
 
-<p><b>Supabase Auth(GoTrue), 이메일+비밀번호</b> — <code>@supabase/supabase-js</code>로 가입·로그인·
-로그아웃·세션 유지를 전부 처리합니다. 이미 과제 6에서 Supabase Postgres + RLS를 쓰고 있어,
-인증과 데이터 접근 제어가 같은 플랫폼의 <code>auth.uid()</code>로 묶입니다.</p>
+<p>직접 구현·라이브러리·인증 서비스 셋 중 <b>인증 서비스</b>를 골랐습니다.
+<b>Supabase Auth(GoTrue), 이메일+비밀번호</b> 방식이고, 브라우저에서는
+<code>@supabase/supabase-js</code>로 가입·로그인·로그아웃·세션 유지를 전부 처리합니다.
+이미 과제 6에서 Supabase Postgres + RLS를 쓰고 있어, 인증과 데이터 접근 제어가
+같은 플랫폼의 <code>auth.uid()</code>로 묶입니다.</p>
+
+${table(["항목", "내용"], [
+    ["고른 갈래", "인증 서비스 (직접 구현 아님)"],
+    ["서비스", "Supabase Auth (GoTrue) — 이메일+비밀번호"],
+    ["클라이언트 라이브러리와 버전", `<code>@supabase/supabase-js</code> <b>${SUPABASE_VERSION}</b> (package.json 범위 <code>${esc(SUPABASE_RANGE)}</code>, package-lock.json에 잠긴 실제 버전)`],
+])}
 
 ${figure("01_비로그인_로그인화면", `${st("01_비로그인_로그인화면")} — ${nt("01_비로그인_로그인화면")}`)}
 ${pair("02_가입_입력", "03_가입_직후_메인화면", `${st("03_가입_직후_메인화면")} — ${nt("03_가입_직후_메인화면")}`)}
 ${figure("04_로그아웃_후_로그인화면", `${st("04_로그아웃_후_로그인화면")} — ${nt("04_로그아웃_후_로그인화면")}`)}
+
+<h3>계정이 있는지 없는지를 흘리지 않습니다 (T07-C99)</h3>
+
+${figure("05_오류_비밀번호틀림", "있는 계정에 <b>비밀번호만 틀린</b> 경우", "banner")}
+${figure("06_오류_계정없음", "<b>아예 없는 계정</b>인 경우", "banner")}
+
+<p>두 화면의 문구가 글자까지 같습니다 — <code>${st("05_06_오류문구_대조")}</code> —
+그래서 오류 문구만 보고 "이 이메일은 가입돼 있다"를 알아낼 수 없습니다. ${passBadge(20)}</p>
+
+<h3>같은 이메일로 두 번 가입되지 않습니다 (T07-C98)</h3>
+
+${figure("07_중복가입_거절", `${st("07_중복가입_거절")} — ${nt("07_중복가입_거절")} ${passBadge(19)}`, "banner")}
 
 <h2>② 왜 그걸 골랐나</h2>
 
@@ -230,11 +260,40 @@ ${table(["흐름", "소스 위치"], [
     ["과제 6 실 데이터 이전", "<code>src/api/migrateFromT06.js</code>"],
 ])}
 
-<h2 class="breakbefore">카드 2 — 비밀번호를 어떻게 맡아 두는지 보이기</h2>
+<h2 class="breakbefore">④ 안 열리는 것을 확인한 기록</h2>
+
+<p>확인 다섯 가지입니다. 각 줄의 왼쪽이 <b>제대로 된 요청이 성공한 장면</b>, 오른쪽이
+<b>같은 자리에서 잘못된 요청이 거절된 장면</b>입니다. 아래 카드 2·3·4가 각각의 자세한 기록입니다.</p>
+
+${table(["확인", "성공한 요청", "거절된 요청"], [
+    ["1 · 로그인 없이 자료 화면 열기",
+     "로그인한 계정에서는 자료 화면이 열리고 내 계획이 보임 (08_계정A_자료화면)",
+     `로그인하지 않으면 로그인 폼만 있고 계획 목록·내보내기 등 자료 화면 요소가 DOM에 아예 없음 ${passBadge(21)}<br><span class="muted">이 검사가 보인 것은 <b>화면에 안 나온다</b>까지입니다 — 토큰 없이 REST 주소를 직접 두드렸을 때 서버가 무엇으로 거절하는지는 아직 검사에 없습니다(⑥ 참고).</span>`],
+    ["2 · 저장된 비밀번호 읽기",
+     "정상 비밀번호로 로그인 성공 (검사 18)",
+     `<code>auth.users.encrypted_password</code>는 <code>$2a$10$…</code> 해시뿐 — 입력한 글자가 보이지 않고, 같은 비밀번호로 만든 두 계정의 값도 서로 다름 ${passBadge(22)}`],
+    ["3 · 로그아웃 뒤 같은 토큰 재사용",
+     "로그인 상태의 같은 요청은 200으로 내 계획 2건 반환",
+     `로그아웃 뒤 <b>같은 주소·같은 방식·같은 토큰</b>으로 다시 요청 — 달라진 것은 로그아웃 여부뿐인데 자료 0건 ${passBadge(23)}`],
+    ["4 · 남의 자료 읽기·수정·삭제 (양방향)",
+     "각 계정은 자기 계획을 id로 읽고 고치고 지울 수 있음 (검사 1·2·17)",
+     `A↔B 양방향 모두 읽기 거절(null)·삭제 미반영(deleted_at 그대로 null) ${passBadge(26)} ${passBadge(27)}`],
+    ["5 · 남의 계정을 적어 보내기 / 목록 섞임",
+     "내 목록에는 내 계획이 전부 나옴 (A 2건 · B 1건)",
+     `요청 본문에 A의 user_id를 적어 보내도 저장된 행은 로그인한 B로 찍히고, 목록 응답에 상대 계정 행 0건 ${passBadge(29)} ${passBadge(28)}`],
+])}
+
+<h3 class="cardhead">카드 2 — 비밀번호를 어떻게 맡아 두는지 보이기</h3>
 
 <p>GoTrue는 비밀번호를 <b>bcrypt</b>로 해시해 <code>auth.users.encrypted_password</code>에 저장합니다.
-이 코드베이스 어디에도 비밀번호를 직접 저장·비교하는 로직이 없습니다 — 저장 방식을 직접 고른
-것이 아니라 인증 서비스가 이미 그렇게 하고 있다는 사실 자체가 이 카드의 답입니다.</p>
+이 코드베이스 어디에도 비밀번호를 직접 저장·비교하는 로직이 없습니다 — 해시 함수를 손으로 부르는
+자리가 아예 없다는 것이 이 카드의 답입니다.</p>
+
+<p><b>bcrypt로 남겨 둔 이유</b> — argon2가 더 최근 방식이지만, 그것을 쓰려면 인증을 직접 구현하는
+쪽으로 돌아가야 합니다. bcrypt는 계정마다 무작위 salt를 자동으로 붙이고 반복 횟수(cost)를 두어
+대입 속도를 늦추는, 오래 검증된 방식입니다. 검증된 기본값을 그대로 쓰는 편이 방식을 한 단계
+올리려다 직접 구현으로 되돌아가는 것보다 안전하다고 보고 GoTrue의 bcrypt(cost 10)를 그대로
+받아들였습니다. 아래는 실제로 그렇게 저장돼 있는지 눈으로 확인한 기록입니다.</p>
 
 <div class="note">
   <b>실제로 확인한 해시값 (2026-09-02, Supabase SQL 편집기)</b><br>
@@ -247,7 +306,7 @@ ${table(["흐름", "소스 위치"], [
   계정마다 무작위 salt가 자동으로 붙었다는 뜻입니다. ${passBadge(22)}
 </div>
 
-<h2 class="breakbefore">카드 3 — 들어온 사람을 어떻게 기억하는지 보이기</h2>
+<h3 class="cardhead breakbefore">카드 3 — 들어온 사람을 어떻게 기억하는지 보이기</h3>
 
 <p>로그인 성공 시 <b>JWT 액세스 토큰</b>(만료 1시간) + <b>리프레시 토큰</b>을 받아 브라우저
 <code>localStorage</code>에 저장합니다. 이메일+비밀번호 흐름은 리다이렉트가 없어 URL 쿼리에
@@ -278,7 +337,7 @@ ${checkOf(23)?.pass ? `
   발급 후 최대 1시간(exp)까지는 로그아웃과 무관하게 계속 유효합니다.
 </div>`}
 
-<h2 class="breakbefore">카드 4 — 남의 자료가 안 열리는 것을 보이기</h2>
+<h3 class="cardhead breakbefore">카드 4 — 남의 자료가 안 열리는 것을 보이기</h3>
 
 <p>모든 표에 <code>user_id</code>를 직접 두고, <code>stamp_owner()</code> 트리거가 INSERT마다
 클라이언트가 보낸 값과 무관하게 항상 <code>auth.uid()</code>로 덮어씁니다. RLS는
@@ -317,6 +376,8 @@ ${table(["아직 못 막은 것", "왜 위험한가"], [
     ["비밀번호 재설정 이메일 흐름 미구현", "비밀번호를 잊으면 계정을 복구할 방법이 없습니다(시간이 부족해 다음으로 미룸)."],
     ["2단계 인증 없음", "비밀번호 하나만 뚫리면 끝입니다."],
     ["로그인 시도 로그 없음", "누가 언제 실패했는지 남지 않아 이상 징후를 못 봅니다."],
+    ["비로그인 요청을 서버가 어떻게 거절하는지 아직 검사에 없음", "RLS가 있으니 토큰 없는 요청에 내 행이 돌아가지는 않지만, 그 거절을 <b>기록으로 보인 적이 없습니다</b>. 화면에서 안 보이는 것과 서버가 막는 것은 다르고, 지금 제출물에는 앞의 것만 있습니다."],
+    ["비밀번호 변경 기능 없음", "토큰이 새어 나갔다고 의심될 때 비밀번호를 바꿔 이전 토큰을 한꺼번에 끊는 길이 없습니다. 지금 그 끊는 수단은 로그아웃뿐이고(카드 3), 로그아웃은 그 브라우저에서 직접 눌러야 합니다. 소스에 <code>updateUser</code>를 부르는 자리가 아예 없습니다."],
 ])}
 
 <p class="muted">로그아웃 후 액세스 토큰 재사용 문제는 카드 3(<code>session_is_active()</code>)에서
