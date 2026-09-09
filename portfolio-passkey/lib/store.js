@@ -175,6 +175,60 @@ function fileStore() {
             return row;
         },
 
+        // 아래 "합친" 함수들은 파일 저장소에는 왕복이랄 게 없어(디스크 파일 하나) 성능
+        // 이점이 없지만, postgresStore와 같은 이름·모양을 유지해야 lib/session.js와
+        // api/*.js가 두 백엔드 중 무엇을 쓰는지 몰라도 되게 하는 원칙이 안 깨진다.
+
+        /** currentUser()가 쓰던 getSession+getUser 두 번을 하나로. */
+        async getSessionWithUser(id) {
+            const row = read().sessions.find((s) => s.id === id);
+            if (!row || row.expires_at <= nowIso()) return null;
+            const user = read().users.find((u) => u.id === row.user_id) || null;
+            if (!user) return null;
+            return { session: row, user };
+        },
+
+        /** login/verify·reauth/verify가 쓰던 takeChallenge+getCredential 두 번을 하나로. */
+        async takeChallengeWithCredential({ id, type, credentialId }) {
+            const taken = await this.takeChallenge({ id, type });
+            const credential = await this.getCredential(credentialId);
+            return { taken, credential };
+        },
+
+        /** login/verify가 쓰던 updateCounter+createSession 두 번을 하나로. */
+        async bumpCounterAndCreateSession({ credentialId, counter, userId }) {
+            await this.updateCounter(credentialId, counter);
+            return this.createSession(userId, credentialId);
+        },
+
+        /** reauth/verify가 쓰던 updateCounter+touchReauth 두 번을 하나로. */
+        async bumpCounterAndTouchReauth({ credentialId, counter, sessionId }) {
+            await this.updateCounter(credentialId, counter);
+            return this.touchReauth(sessionId);
+        },
+
+        /** credentials/[id].js DELETE가 쓰던 deleteCredential+listCredentials 두 번을 하나로. */
+        async deleteCredentialAndCount({ id, userId }) {
+            const deleted = await this.deleteCredential({ id, userId });
+            const remaining = await this.listCredentials(userId);
+            return { deleted, remaining: remaining.length };
+        },
+
+        /**
+         * register/verify의 새 계정 분기가 쓰던 createCredential + createNote(반복) +
+         * createSession을 하나로. createUser는 이 앞에서 이미 끝나 있어야 한다
+         * (patch_credentials.user_id가 pk_users를 참조하므로 — Postgres 쪽 순서 안전성과
+         * 맞춘 것이다).
+         */
+        async finishNewAccountCredential({ userId, credential, seedNotes }) {
+            const savedCredential = await this.createCredential({ ...credential, userId });
+            for (const note of seedNotes) {
+                await this.createNote({ userId, ...note });
+            }
+            const session = await this.createSession(userId, credential.id);
+            return { credential: savedCredential, session };
+        },
+
         async touchReauth(id) {
             return mutate((d) => {
                 const row = d.sessions.find((s) => s.id === id && s.expires_at > nowIso());
@@ -282,12 +336,15 @@ function postgresStore() {
             await sql`update pk_credentials set counter = ${counter} where id = ${id}`;
         },
 
+        // register/login/reauth 세 흐름의 1단계가 전부 이 함수를 지난다 — 만료 청소를
+        // 별도 왕복으로 하지 않고 같은 문장의 형제 CTE로 묶어 매번 한 왕복으로 줄인다.
         async createChallenge(input) {
-            // 다 쓴 질문은 여기서 함께 치운다 — 만료된 지 한 시간이 지난 줄은 남겨 둘 이유가 없다.
-            await sql`delete from pk_challenges where expires_at < now() - interval '1 hour'`;
-
             return first(
-                await sql`insert into pk_challenges
+                await sql`with cleaned as (
+                              -- 다 쓴 질문 청소. 만료된 지 한 시간이 지난 줄은 남겨 둘 이유가 없다.
+                              delete from pk_challenges where expires_at < now() - interval '1 hour'
+                          )
+                          insert into pk_challenges
                               (challenge, type, user_id, is_new_account, display_name, device_name, expires_at)
                           values (${input.challenge}, ${input.type}, ${input.userId ?? null},
                                   ${Boolean(input.isNewAccount)}, ${input.displayName ?? null},
@@ -344,12 +401,211 @@ function postgresStore() {
             );
         },
 
-        async touchReauth(id) {
-            return first(
-                await sql`update pk_sessions set reauth_at = now()
-                          where id = ${id} and expires_at > now()
-                          returning *`,
+        /**
+         * currentUser()가 부르던 getSession + getUser 두 번의 왕복을 JOIN 하나로 줄인다.
+         * 인증이 필요한 요청은 전부(비공개 자료 조회, 계정 삭제, 재확인 등) 이 함수를
+         * 지나므로 여기 하나를 줄이는 게 가장 값이 크다.
+         */
+        async getSessionWithUser(id) {
+            const row = first(
+                await sql`select
+                              s.id as s_id, s.user_id as s_user_id, s.credential_id,
+                              s.expires_at as s_expires_at, s.reauth_at,
+                              s.created_at as s_created_at,
+                              u.id as u_id, u.display_name, u.created_at as u_created_at
+                          from pk_sessions s
+                          join pk_users u on u.id = s.user_id
+                          where s.id = ${id} and s.expires_at > now()`,
             );
+            if (!row) return null;
+            return {
+                session: {
+                    id: row.s_id,
+                    user_id: row.s_user_id,
+                    credential_id: row.credential_id,
+                    expires_at: row.s_expires_at,
+                    reauth_at: row.reauth_at,
+                    created_at: row.s_created_at,
+                },
+                user: { id: row.u_id, display_name: row.display_name, created_at: row.u_created_at },
+            };
+        },
+
+        /**
+         * login/verify·reauth/verify가 부르던 takeChallenge + getCredential 두 번의 왕복을
+         * 하나로. credentialId는 요청 본문에서 오는 값이라 challenge를 소진한 결과와
+         * 무관하다 — 그래서 같은 문장 안에 나란히 넣어도 순서 걱정이 없다.
+         *
+         * `taken` CTE에 RETURNING이 있어도 실패(0행)할 수 있다 — 그럴 때는 기존과 똑같이
+         * 별도 질의로 왜 실패했는지 구분한다(성공 경로에서만 왕복이 줄고, 실패는 드물어서
+         * 거기까지 합칠 값이 없다).
+         */
+        async takeChallengeWithCredential({ id, type, credentialId }) {
+            const row = first(
+                await sql`with taken as (
+                              update pk_challenges
+                              set used_at = now()
+                              where id = ${id} and type = ${type}
+                                and used_at is null and expires_at > now()
+                              returning *
+                          )
+                          select
+                              (select row_to_json(taken)::text from taken) as challenge_json,
+                              (select row_to_json(c)::text from pk_credentials c
+                               where c.id = ${credentialId}) as credential_json`,
+            );
+            const credential = row?.credential_json ? JSON.parse(row.credential_json) : null;
+            if (row?.challenge_json) {
+                return { taken: { ok: true, row: JSON.parse(row.challenge_json) }, credential };
+            }
+            // 실패 이유를 구분해 준다(로그·검사용) — 기존과 같은 진단 질의.
+            const existing = first(await sql`select * from pk_challenges where id = ${id}`);
+            let reason = "not_found";
+            if (existing?.used_at) reason = "already_used";
+            else if (existing) reason = "expired";
+            return { taken: { ok: false, reason }, credential };
+        },
+
+        /**
+         * login/verify가 부르던 updateCounter + createSession 두 번의 왕복을 하나로.
+         * 세션이 참조하는 credential 행은 이미 존재하는 행(카운터만 바뀜)이라, 두 CTE의
+         * 실행 순서가 어느 쪽이든 외래키 검사에 문제가 없다.
+         */
+        async bumpCounterAndCreateSession({ credentialId, counter, userId }) {
+            const expiresAt = plusMinutes(SESSION_MINUTES);
+            try {
+                const row = first(
+                    await sql`with updated as (
+                                  update pk_credentials set counter = ${counter} where id = ${credentialId}
+                              ), inserted as (
+                                  insert into pk_sessions (user_id, credential_id, expires_at)
+                                  values (${userId}, ${credentialId}, ${expiresAt})
+                                  returning *
+                              )
+                              select row_to_json(inserted)::text as session_json from inserted`,
+                );
+                return JSON.parse(row.session_json);
+            } catch (error) {
+                // createSession()과 같은 안전망 — credential_id 칸이 아직 없는 배포판 대비.
+                if (error?.code !== "42703") throw error;
+                const row = first(
+                    await sql`with updated as (
+                                  update pk_credentials set counter = ${counter} where id = ${credentialId}
+                              ), inserted as (
+                                  insert into pk_sessions (user_id, expires_at)
+                                  values (${userId}, ${expiresAt})
+                                  returning *
+                              )
+                              select row_to_json(inserted)::text as session_json from inserted`,
+                );
+                return JSON.parse(row.session_json);
+            }
+        },
+
+        /**
+         * reauth/verify가 부르던 updateCounter + touchReauth 두 번의 왕복을 하나로.
+         */
+        async bumpCounterAndTouchReauth({ credentialId, counter, sessionId }) {
+            const row = first(
+                await sql`with updated as (
+                              update pk_credentials set counter = ${counter} where id = ${credentialId}
+                          ), touched as (
+                              update pk_sessions set reauth_at = now()
+                              where id = ${sessionId} and expires_at > now()
+                              returning *
+                          )
+                          select row_to_json(touched)::text as session_json from touched`,
+            );
+            return row?.session_json ? JSON.parse(row.session_json) : null;
+        },
+
+        /**
+         * credentials/[id].js DELETE가 부르던 deleteCredential + listCredentials 두 번의
+         * 왕복을 하나로. 남은 개수가 "지운 뒤"의 값이어야 하므로, remaining을 deleted가
+         * 지운 id를 실제로 제외하는 조건으로 계산한다 — 형제 CTE라 해도 이렇게 명시적으로
+         * 참조를 걸면(deleted를 셀렉트에서 실제로 읽으므로) 스냅샷 순서를 신경 쓸 필요가
+         * 없어진다.
+         */
+        async deleteCredentialAndCount({ id, userId }) {
+            const row = first(
+                await sql`with deleted as (
+                              delete from pk_credentials where id = ${id} and user_id = ${userId}
+                              returning id
+                          )
+                          select
+                              (select count(*) from deleted)::int as deleted_count,
+                              (select count(*) from pk_credentials
+                               where user_id = ${userId}
+                                 and id not in (select id from deleted))::int as remaining_count`,
+            );
+            return { deleted: (row?.deleted_count ?? 0) > 0, remaining: row?.remaining_count ?? 0 };
+        },
+
+        /**
+         * register/verify의 새 계정 분기가 부르던 createCredential + createNote(3번 반복) +
+         * createSession, 총 5번의 왕복을 하나로. createUser는 이 앞에서 이미 끝나 있어야
+         * 한다 — pk_credentials·pk_private_notes가 pk_users를 참조하는데, 이 함수 안의
+         * 형제 CTE들은 서로를 참조하지 않아 Postgres가 실행 순서를 보장하지 않는다.
+         * createUser를 별도 왕복으로 먼저 커밋해 두면(직전 문장이라 이후 문장에서는 항상
+         * 보인다) 이 안전 문제가 아예 생기지 않는다.
+         */
+        async finishNewAccountCredential({ userId, credential, seedNotes }) {
+            const expiresAt = plusMinutes(SESSION_MINUTES);
+            const kinds = seedNotes.map((n) => n.kind);
+            const titles = seedNotes.map((n) => n.title);
+            const bodies = seedNotes.map((n) => n.body);
+            try {
+                const row = first(
+                    await sql`with cred as (
+                                  insert into pk_credentials (id, user_id, public_key, counter, device_name, transports)
+                                  values (${credential.id}, ${userId}, ${credential.publicKey}, ${credential.counter},
+                                          ${credential.deviceName}, ${credential.transports})
+                                  returning *
+                              ), notes as (
+                                  insert into pk_private_notes (user_id, kind, title, body)
+                                  select ${userId}, k, t, b
+                                  from unnest(${kinds}::text[], ${titles}::text[], ${bodies}::text[]) as x(k, t, b)
+                                  returning *
+                              ), sess as (
+                                  insert into pk_sessions (user_id, credential_id, expires_at)
+                                  values (${userId}, ${credential.id}, ${expiresAt})
+                                  returning *
+                              )
+                              select
+                                  (select row_to_json(cred)::text from cred) as credential_json,
+                                  (select row_to_json(sess)::text from sess) as session_json`,
+                );
+                return {
+                    credential: JSON.parse(row.credential_json),
+                    session: JSON.parse(row.session_json),
+                };
+            } catch (error) {
+                if (error?.code !== "42703") throw error;
+                const row = first(
+                    await sql`with cred as (
+                                  insert into pk_credentials (id, user_id, public_key, counter, device_name, transports)
+                                  values (${credential.id}, ${userId}, ${credential.publicKey}, ${credential.counter},
+                                          ${credential.deviceName}, ${credential.transports})
+                                  returning *
+                              ), notes as (
+                                  insert into pk_private_notes (user_id, kind, title, body)
+                                  select ${userId}, k, t, b
+                                  from unnest(${kinds}::text[], ${titles}::text[], ${bodies}::text[]) as x(k, t, b)
+                                  returning *
+                              ), sess as (
+                                  insert into pk_sessions (user_id, expires_at)
+                                  values (${userId}, ${expiresAt})
+                                  returning *
+                              )
+                              select
+                                  (select row_to_json(cred)::text from cred) as credential_json,
+                                  (select row_to_json(sess)::text from sess) as session_json`,
+                );
+                return {
+                    credential: JSON.parse(row.credential_json),
+                    session: JSON.parse(row.session_json),
+                };
+            }
         },
 
         async deleteSession(id) {

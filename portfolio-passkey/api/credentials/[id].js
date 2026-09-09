@@ -32,21 +32,23 @@ export default async function handler(req, res) {
     const id = String(req.query?.id || "");
 
     // user_id 조건이 함께 걸려 있어 남의 패스키는 애초에 지워지지 않는다.
-    const deleted = await store.deleteCredential({ id, userId: found.user.id });
+    // 지우기와 "지운 뒤 몇 개 남았는지" 세기를 한 왕복으로 합친다.
+    const { deleted, remaining } = await store.deleteCredentialAndCount({
+        id,
+        userId: found.user.id,
+    });
     if (!deleted) return sendError(res, 404, "그런 패스키가 없습니다.");
-
-    const remaining = await store.listCredentials(found.user.id);
 
     // 마지막 패스키를 지웠다면 이 계정은 더 이상 열 수 없다. 세션도 함께 끊어
     // "지웠는데 아직 열려 있는" 어정쩡한 상태를 남기지 않는다.
-    if (remaining.length === 0) {
+    if (remaining === 0) {
         await store.deleteSessionsForUser(found.user.id);
         clearSessionCookie(req, res);
     }
 
     sendJson(res, 200, {
         ok: true,
-        remaining: remaining.length,
-        accountUnreachable: remaining.length === 0,
+        remaining,
+        accountUnreachable: remaining === 0,
     });
 }

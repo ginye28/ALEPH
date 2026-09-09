@@ -25,7 +25,13 @@ export default async function handler(req, res) {
         return sendError(res, 400, "challengeId와 response가 필요합니다.");
     }
 
-    const taken = await store.takeChallenge({ id: body.challengeId, type: "reauth" });
+    // challenge 소진과 credential 조회를 한 왕복으로 — credential id는 요청 본문에서
+    // 오는 값이라 challenge를 소진한 결과와 무관하다.
+    const { taken, credential: stored } = await store.takeChallengeWithCredential({
+        id: body.challengeId,
+        type: "reauth",
+        credentialId: String(body.response.id || ""),
+    });
     if (!taken.ok) {
         const message = {
             already_used: "이미 사용된 확인 질문입니다.",
@@ -40,7 +46,6 @@ export default async function handler(req, res) {
         return sendError(res, 401, "다른 계정에 발급된 확인 질문입니다.");
     }
 
-    const stored = await store.getCredential(String(body.response.id || ""));
     // 남의 패스키로는 내 계정을 재확인할 수 없다.
     if (!stored || stored.user_id !== found.user.id) {
         return sendError(res, 401, "이 계정의 패스키가 아닙니다.");
@@ -67,8 +72,11 @@ export default async function handler(req, res) {
 
     if (!verification.verified) return sendError(res, 401, "확인하지 못했습니다.");
 
-    await store.updateCounter(stored.id, verification.authenticationInfo.newCounter);
-    await store.touchReauth(found.session.id);
+    await store.bumpCounterAndTouchReauth({
+        credentialId: stored.id,
+        counter: verification.authenticationInfo.newCounter,
+        sessionId: found.session.id,
+    });
 
     sendJson(res, 200, { ok: true, deviceName: stored.device_name });
 }

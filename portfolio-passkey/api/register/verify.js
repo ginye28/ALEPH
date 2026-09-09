@@ -61,34 +61,35 @@ export default async function handler(req, res) {
     }
 
     const { credential, credentialDeviceType, credentialBackedUp } = verification.registrationInfo;
+    const credentialRow = {
+        id: credential.id,
+        // 공개키를 base64url 문자열로 저장한다. 비밀번호가 아니라 공개키다.
+        publicKey: Buffer.from(credential.publicKey).toString("base64url"),
+        counter: credential.counter,
+        deviceName: pending.device_name,
+        transports: credential.transports || body.response?.response?.transports || null,
+    };
 
     if (pending.is_new_account) {
+        // pk_credentials·pk_private_notes가 pk_users를 참조하므로 계정 생성만은
+        // 앞선 왕복으로 먼저 끝내 둔다(그래야 뒤 문장에서 항상 보인다). 그 뒤
+        // 패스키 저장 + 첫 계정에 까는 비공개 메모 세 줄 + 곧장 로그인 상태로
+        // 만드는 세션 발급을 한 왕복으로 합친다 — 원래 5번의 왕복(계정·메모 3개·
+        // 패스키·세션)이었던 것을 2번으로 줄인다.
         await store.createUser({ id: pending.user_id, displayName: pending.display_name });
-        for (const note of SEED_NOTES) {
-            await store.createNote({ userId: pending.user_id, ...note });
-        }
+        const { session } = await store.finishNewAccountCredential({
+            userId: pending.user_id,
+            credential: credentialRow,
+            seedNotes: SEED_NOTES,
+        });
+        setSessionCookie(req, res, session.id);
     } else {
         // 패스키 추가는 반드시 지금 로그인한 사람이어야 한다.
         const signedIn = await currentUser(req);
         if (!signedIn || signedIn.user.id !== pending.user_id) {
             return sendError(res, 401, "로그인 상태가 아니어서 패스키를 추가할 수 없습니다.");
         }
-    }
-
-    await store.createCredential({
-        id: credential.id,
-        userId: pending.user_id,
-        // 공개키를 base64url 문자열로 저장한다. 비밀번호가 아니라 공개키다.
-        publicKey: Buffer.from(credential.publicKey).toString("base64url"),
-        counter: credential.counter,
-        deviceName: pending.device_name,
-        transports: credential.transports || body.response?.response?.transports || null,
-    });
-
-    // 새로 만든 계정이면 바로 로그인 상태로 만들어 준다.
-    if (pending.is_new_account) {
-        const session = await store.createSession(pending.user_id);
-        setSessionCookie(req, res, session.id);
+        await store.createCredential({ ...credentialRow, userId: pending.user_id });
     }
 
     sendJson(res, 200, {

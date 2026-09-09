@@ -27,8 +27,16 @@ export default async function handler(req, res) {
         return sendError(res, 400, "challengeId와 response가 필요합니다.");
     }
 
+    // 어떤 패스키로 답했는지는 응답에 실린 credential id로 찾는다 — challenge를 소진한
+    // 결과와는 무관해서, 같은 왕복 안에 나란히 물어봐도 순서를 걱정할 필요가 없다.
+    const credentialId = String(body.response.id || "");
+
     // 이미 쓴 질문으로 다시 들어오려는 시도는 여기서 끊긴다 (T08-C31).
-    const taken = await store.takeChallenge({ id: body.challengeId, type: "authentication" });
+    const { taken, credential: stored } = await store.takeChallengeWithCredential({
+        id: body.challengeId,
+        type: "authentication",
+        credentialId,
+    });
     if (!taken.ok) {
         const message = {
             already_used: "이미 사용된 확인 질문입니다.",
@@ -37,10 +45,6 @@ export default async function handler(req, res) {
         }[taken.reason];
         return sendError(res, 400, message);
     }
-
-    // 어떤 패스키로 답했는지는 응답에 실린 credential id로 찾는다.
-    const credentialId = String(body.response.id || "");
-    const stored = await store.getCredential(credentialId);
     if (!stored) {
         // 지워진 패스키로 들어오려 해도 여기서 끊긴다 (T08-C45).
         return sendError(res, 401, "등록되지 않은 패스키입니다.");
@@ -70,12 +74,13 @@ export default async function handler(req, res) {
         return sendError(res, 401, "서명을 확인하지 못했습니다.");
     }
 
-    // 서명 횟수를 올려 둔다 — 복제된 기기를 나중에 알아채기 위한 값이다.
-    await store.updateCounter(stored.id, verification.authenticationInfo.newCounter);
-
-    // 어느 패스키로 들어왔는지 세션에 남긴다 — 화면이 목록에서 "지금 이 기기"를
-    // 표시해 주면, 지울 때 어느 줄이 지금 쓰는 것인지 헷갈리지 않는다.
-    const session = await store.createSession(stored.user_id, stored.id);
+    // 서명 횟수를 올리는 것(복제된 기기를 나중에 알아채기 위한 값)과, 어느 패스키로
+    // 들어왔는지 세션에 남기는 것(화면의 "지금 이 기기" 표시용)을 한 왕복으로 함께 한다.
+    const session = await store.bumpCounterAndCreateSession({
+        credentialId: stored.id,
+        counter: verification.authenticationInfo.newCounter,
+        userId: stored.user_id,
+    });
     setSessionCookie(req, res, session.id);
 
     sendJson(res, 200, { ok: true, deviceName: stored.device_name });

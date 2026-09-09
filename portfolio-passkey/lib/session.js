@@ -14,13 +14,9 @@ export async function currentUser(req) {
     const sessionId = parseCookies(req)[SESSION_COOKIE];
     if (!sessionId) return null;
 
-    const session = await store.getSession(sessionId);
-    if (!session) return null;
-
-    const user = await store.getUser(session.user_id);
-    if (!user) return null;
-
-    return { session, user };
+    // getSession + getUser 두 번의 왕복 대신 JOIN 한 번 — 인증이 필요한 요청은
+    // 전부 여기를 지나므로 이 하나를 줄이는 게 가장 값이 크다.
+    return store.getSessionWithUser(sessionId);
 }
 
 /**
