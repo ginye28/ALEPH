@@ -32,12 +32,22 @@ function base64urlToBytes(value) {
 /* -------------------------------------------------------------------- 서버 */
 
 async function api(path, { method = "GET", body } = {}) {
-    const response = await fetch(path, {
-        method,
-        credentials: "same-origin",
-        headers: body ? { "Content-Type": "application/json" } : undefined,
-        body: body ? JSON.stringify(body) : undefined,
-    });
+    let response;
+    try {
+        response = await fetch(path, {
+            method,
+            credentials: "same-origin",
+            headers: body ? { "Content-Type": "application/json" } : undefined,
+            body: body ? JSON.stringify(body) : undefined,
+        });
+    } catch (error) {
+        // 연결이 끊기면 fetch 자체가 예외를 던진다. 그걸 그대로 흘리면 호출한 쪽의
+        // await가 던져서, 버튼을 다시 누를 수 있게 풀고 메시지를 보여 주는 코드가
+        // 통째로 건너뛰인다 — 화면이 "기다리는 중…"에 멈춘 채로 남고, 새로고침해야만
+        // 풀린다. 다른 실패(401·404 등)와 같은 모양으로 맞춰서 호출한 쪽이 평소처럼
+        // `if (!result.ok) ...`로 처리하게 한다.
+        return { status: 0, ok: false, data: { error: `연결하지 못했습니다: ${error.message}` } };
+    }
     let payload = {};
     try {
         payload = await response.json();
@@ -368,26 +378,40 @@ function wire() {
         button.disabled = true;
         setMessage("기기에서 확인을 기다리는 중…");
 
-        const result = await registerPasskey(deviceName);
-        button.disabled = false;
-
-        if (!result.ok) return setMessage(result.message, "bad");
-        $("#register-form").hidden = true;
-        $("[data-testid='device-name']").value = "";
-        setMessage("");
-        await refresh();
+        // 삭제 흐름과 같은 이유로 try/finally를 쓴다 — 예상 못 한 오류가 나도 버튼이
+        // 영영 잠긴 채로 남지 않게 한다.
+        try {
+            const result = await registerPasskey(deviceName);
+            if (!result.ok) return setMessage(result.message, "bad");
+            $("#register-form").hidden = true;
+            $("[data-testid='device-name']").value = "";
+            setMessage("");
+            await refresh();
+        } catch (error) {
+            setMessage(`문제가 생겼습니다: ${error.message}`, "bad");
+        } finally {
+            button.disabled = false;
+        }
     });
 
     $("[data-testid='login-start']").addEventListener("click", async (event) => {
-        event.currentTarget.disabled = true;
+        const button = event.currentTarget;
+        button.disabled = true;
         setMessage("기기에서 확인을 기다리는 중…");
 
-        const result = await loginWithPasskey();
-        event.currentTarget.disabled = false;
-
-        if (!result.ok) return setMessage(result.message, "bad");
-        setMessage("");
-        await refresh();
+        // 삭제 흐름과 같은 이유로 try/finally를 쓴다 — 연결이 잠깐 끊기는 것 같은 예상
+        // 못 한 오류가 나도, 버튼이 영영 잠긴 채로 남아 새로고침해야만 풀리는 일이
+        // 없게 한다.
+        try {
+            const result = await loginWithPasskey();
+            if (!result.ok) return setMessage(result.message, "bad");
+            setMessage("");
+            await refresh();
+        } catch (error) {
+            setMessage(`문제가 생겼습니다: ${error.message}`, "bad");
+        } finally {
+            button.disabled = false;
+        }
     });
 
     $("[data-testid='logout']").addEventListener("click", async () => {
@@ -412,14 +436,20 @@ function wire() {
         button.disabled = true;
         setAccountMessage("기기에서 확인을 기다리는 중…");
 
-        const result = await registerPasskey(deviceName);
-        button.disabled = false;
-
-        if (!result.ok) return setAccountMessage(result.message, "bad");
-        $("#add-passkey-form").hidden = true;
-        $("[data-testid='add-device-name']").value = "";
-        setAccountMessage("");
-        await refresh();
+        // 다른 흐름들과 같은 이유로 try/finally를 쓴다 — 예상 못 한 오류가 나도 버튼이
+        // 영영 잠긴 채로 남지 않게 한다.
+        try {
+            const result = await registerPasskey(deviceName);
+            if (!result.ok) return setAccountMessage(result.message, "bad");
+            $("#add-passkey-form").hidden = true;
+            $("[data-testid='add-device-name']").value = "";
+            setAccountMessage("");
+            await refresh();
+        } catch (error) {
+            setAccountMessage(`문제가 생겼습니다: ${error.message}`, "bad");
+        } finally {
+            button.disabled = false;
+        }
     });
 
     // 삭제는 두 단계다 — 누르면 경고가 화면에 펼쳐지고, 한 번 더 눌러야 지워진다 (T08-C46).
