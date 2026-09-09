@@ -52,6 +52,18 @@ export async function readJson(req) {
     }
 }
 
+/**
+ * 요청을 보낸 쪽의 주소 — 계정 무한 생성을 막는 속도 제한(register/options.js)에 쓴다.
+ * Vercel은 실제 클라이언트 주소를 x-forwarded-for에 얹어 준다(맨 앞 값이 클라이언트,
+ * 그 뒤는 거쳐 온 프록시들이다). 로컬 개발 서버는 이 헤더를 안 얹으므로 null을
+ * 돌려주고, 그러면 호출한 쪽이 속도 제한 자체를 건너뛴다(로컬 개발에는 필요 없다).
+ */
+export function clientIp(req) {
+    const forwarded = req.headers["x-forwarded-for"];
+    if (forwarded) return String(forwarded).split(",")[0].trim() || null;
+    return null;
+}
+
 export function parseCookies(req) {
     const header = req.headers.cookie;
     if (!header) return {};

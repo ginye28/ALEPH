@@ -88,6 +88,7 @@ const CHECKS = [
     { n: 40, code: "⑥-2", kind: "보강", title: "삭제가 도는 동안 다른 패스키의 지우기 버튼이 잠긴다" },
     { n: 41, code: "⑥-2", kind: "보강", title: "삭제 중 버튼을 마구 눌러도 패스키가 하나만 지워진다 (계정이 사라지지 않는다)" },
     { n: 42, code: "보강", kind: "보강", title: "목록에서 지금 로그인에 쓴 패스키가 어느 것인지 보인다" },
+    { n: 43, code: "⑥-1", kind: "보강", title: "같은 주소에서 새 계정을 계속 시도하면 어느 순간부터 거절된다" },
 ];
 
 const results = new Map();
@@ -907,6 +908,47 @@ await guard(41, async () => {
         );
     } else {
         fail(41, `/api/me ${me.status} · 남은 패스키 ${names.length}개 ${JSON.stringify(names)}`);
+    }
+});
+
+await guard(43, async () => {
+    // 새 계정 시도만 대상이다 — 로그인 상태로는 걸리지 않는다는 것도 함께 확인한다.
+    await evaluate(`window.__flow.post('/api/logout')`);
+
+    // navigator.credentials.create()까지 갈 필요가 없다 — 속도 제한은 options 단계에서
+    // 걸리므로, 그 요청만 빠르게 반복한다(실제 authenticator 왕복이 없어 계정도 안 생긴다).
+    const statuses = await evaluate(`(async () => {
+        const out = [];
+        for (let i = 0; i < 25; i += 1) {
+            const r = await window.__pk.api('/api/register/options', {
+                method: 'POST',
+                body: { deviceName: '${TAG} 속도제한시도' + i },
+            });
+            out.push({ status: r.status, error: r.data.error });
+        }
+        return out;
+    })()`);
+
+    const rejected = statuses.filter((s) => s.status === 429);
+    const firstRejectedAt = statuses.findIndex((s) => s.status === 429);
+    const allBeforeWereOk = firstRejectedAt > 0 && statuses.slice(0, firstRejectedAt).every((s) => s.status === 200);
+    // 한 번 걸리면 그 뒤로도 계속 걸려야 한다 — 몇 번 막혔다 풀렸다 하면 셈이 새고 있다는 뜻이다.
+    const allAfterStayRejected =
+        firstRejectedAt > 0 && statuses.slice(firstRejectedAt).every((s) => s.status === 429);
+
+    if (rejected.length > 0 && allBeforeWereOk && allAfterStayRejected) {
+        pass(
+            43,
+            `같은 주소에서 register/options를 25번 연달아 요청 — ${firstRejectedAt}번째까지 200이다가 ` +
+                `${firstRejectedAt + 1}번째부터 429 "${rejected[0].error}"로 거절되고, 그 뒤로도 계속 거절됨(총 ${rejected.length}번) — ` +
+                `아직 계정을 만들지 않는 단계(challenge만 발급)에서 끊어 헛계정이 쌓이지 않는다`,
+        );
+    } else {
+        fail(
+            43,
+            `25번 중 429 ${rejected.length}번 · 첫 거절 위치 ${firstRejectedAt} · ` +
+                `${JSON.stringify(statuses.map((s) => s.status))}`,
+        );
     }
 });
 

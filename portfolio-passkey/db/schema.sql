@@ -31,6 +31,9 @@ create index if not exists pk_credentials_user_idx on pk_credentials (user_id);
 -- 서버가 만든 일회용 질문(challenge). 한 번 쓰면 used_at이 찍혀 재사용 불가 (T08-C31).
 -- user_id에 FK를 걸지 않습니다: 신규 등록은 "아직 존재하지 않는 계정"을 가리키기 때문입니다.
 -- 등록을 중간에 취소하면 계정도 자격증명도 만들어지지 않고, 이 줄만 2분 뒤 만료됩니다 (T08-C25).
+-- ip — 이 질문을 요청한 쪽의 주소. 새 계정 등록만 이걸로 속도를 제한한다(⑥ 참고) —
+-- 로그인·재확인은 이미 계정 하나에 매인 패스키로만 되므로 무한정 반복해 봐야 새로
+-- 만들어지는 게 없다. 새 계정 등록은 다르다 — 시도할 때마다 계정이 하나씩 늘어난다.
 create table if not exists pk_challenges (
     id uuid primary key default gen_random_uuid(),
     challenge text not null,
@@ -39,10 +42,13 @@ create table if not exists pk_challenges (
     is_new_account boolean not null default false,
     display_name text null,
     device_name text null,
+    ip text null,
     expires_at timestamptz not null,
     used_at timestamptz null,
     created_at timestamptz not null default now()
 );
+-- ip에 걸리는 색인은 파일 아래쪽, "이미 만들어 둔 스키마를 고치는" alter table 뒤에 둔다 —
+-- 기존 배포에서는 ip 칸이 거기서야 생기므로, 여기서 먼저 만들면 그 칸이 아직 없어 실패한다.
 create index if not exists pk_challenges_expiry_idx on pk_challenges (expires_at);
 
 -- 세션. 이 id가 곧 쿠키 값이고, 안에 아무 정보도 담겨 있지 않습니다(JWT가 아닙니다).
@@ -81,3 +87,6 @@ create index if not exists pk_private_notes_user_idx on pk_private_notes (user_i
 alter table pk_sessions add column if not exists reauth_at timestamptz null;
 alter table pk_sessions add column if not exists credential_id text null
     references pk_credentials (id) on delete set null;
+alter table pk_challenges add column if not exists ip text null;
+create index if not exists pk_challenges_new_account_ip_idx
+    on pk_challenges (ip, created_at) where is_new_account;

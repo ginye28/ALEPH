@@ -7,10 +7,10 @@
 
 import { generateRegistrationOptions } from "@simplewebauthn/server";
 import { randomUUID } from "node:crypto";
-import { methodNotAllowed, readJson, sendError, sendJson } from "../../lib/http.js";
+import { clientIp, methodNotAllowed, readJson, sendError, sendJson } from "../../lib/http.js";
 import { resolveRp } from "../../lib/rp.js";
 import { currentUser } from "../../lib/session.js";
-import { store } from "../../lib/store.js";
+import { NEW_ACCOUNT_RATE_LIMIT, NEW_ACCOUNT_RATE_WINDOW_MINUTES, store } from "../../lib/store.js";
 
 export default async function handler(req, res) {
     if (req.method !== "POST") return methodNotAllowed(res, ["POST"]);
@@ -24,6 +24,7 @@ export default async function handler(req, res) {
     // 로그인한 채로 부르면 "이 계정에 패스키 하나 더"(카드 4),
     // 로그인 없이 부르면 "새 계정 만들기"다.
     const signedIn = await currentUser(req);
+    const ip = clientIp(req);
 
     let userId;
     let displayName;
@@ -39,6 +40,21 @@ export default async function handler(req, res) {
             transports: c.transports || undefined,
         }));
     } else {
+        // 계정을 얼마든지 반복해서 만들 수 있는 자리다(⑥) — 같은 주소에서 짧은 시간에
+        // 너무 많이 시도하면 여기서 끊는다. 로그인·재확인은 이미 있는 계정 하나에 매인
+        // 패스키로만 되므로 이 제한이 필요 없다.
+        const recent = await store.countRecentNewAccountAttempts({
+            ip,
+            sinceMinutes: NEW_ACCOUNT_RATE_WINDOW_MINUTES,
+        });
+        if (recent >= NEW_ACCOUNT_RATE_LIMIT) {
+            return sendError(
+                res,
+                429,
+                `짧은 시간에 계정을 너무 많이 만들려는 시도가 있었습니다. ${NEW_ACCOUNT_RATE_WINDOW_MINUTES}분 뒤 다시 시도해 주세요.`,
+            );
+        }
+
         // 아직 계정을 만들지 않는다. 확인 단계를 통과해야 그때 만든다 (T08-C25).
         userId = randomUUID();
         displayName = deviceName;
@@ -71,6 +87,7 @@ export default async function handler(req, res) {
         isNewAccount: !signedIn,
         displayName,
         deviceName,
+        ip,
     });
 
     sendJson(res, 200, { challengeId: challenge.id, options });

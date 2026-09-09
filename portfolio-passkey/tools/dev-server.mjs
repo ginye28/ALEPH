@@ -137,6 +137,13 @@ const server = createServer(async (req, res) => {
 
     // Vercel이 넣어주는 것과 같은 모양으로 맞춘다.
     req.query = { ...Object.fromEntries(url.searchParams), ...route.params };
+    // Vercel은 실제 클라이언트 주소를 x-forwarded-for에 얹어 준다. 이 서버는 프록시가
+    // 아니라 소켓 주소가 곧 클라이언트라, 그 값을 그대로 흉내 낸다 — 안 그러면
+    // register/options.js의 속도 제한(lib/http.js#clientIp)이 로컬에서는 늘 꺼진 채로
+    // 있어서, 로컬 검사로는 그 부분을 확인할 수 없다.
+    if (!req.headers["x-forwarded-for"]) {
+        req.headers["x-forwarded-for"] = req.socket.remoteAddress || "127.0.0.1";
+    }
 
     try {
         // 파일이 바뀌면 다시 읽도록 수정 시각을 쿼리로 붙인다 — 안 그러면 ES 모듈 캐시 때문에

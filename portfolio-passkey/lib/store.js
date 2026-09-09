@@ -24,6 +24,17 @@ export const SESSION_MINUTES = 12 * 60;
 /** 민감한 동작(패스키 삭제) 전에 다시 확인받아야 하는 간격. */
 export const REAUTH_MINUTES = 5;
 
+/**
+ * 새 계정 등록 속도 제한 (⑥ — "누구나 계정을 얼마든지 만들 수 있다"에 대한 대응).
+ * 같은 주소에서 이 시간 안에 이 개수를 넘겨 새 계정을 시도하면 거절한다. 로그인·재확인은
+ * 대상이 아니다 — 이미 있는 계정 하나에 매인 패스키로만 되므로 반복해도 새로 생기는
+ * 계정이 없다. 값은 넉넉히 잡았다 — 이 검사 도구(check.mjs 한 번에 새 계정 4개,
+ * capture.mjs 한 번에 3개)를 정상적으로 여러 번 돌려도 걸리지 않게 하면서, 짧은 시간에
+ * 수십·수백 개를 찍어 내는 스크립트는 확실히 멈추는 지점을 골랐다.
+ */
+export const NEW_ACCOUNT_RATE_LIMIT = 20;
+export const NEW_ACCOUNT_RATE_WINDOW_MINUTES = 10;
+
 const nowIso = () => new Date().toISOString();
 const plusMinutes = (m) => new Date(Date.now() + m * 60 * 1000).toISOString();
 
@@ -130,6 +141,7 @@ function fileStore() {
                     is_new_account: Boolean(input.isNewAccount),
                     display_name: input.displayName ?? null,
                     device_name: input.deviceName ?? null,
+                    ip: input.ip ?? null,
                     expires_at: plusMinutes(2),
                     used_at: null,
                     created_at: nowIso(),
@@ -137,6 +149,15 @@ function fileStore() {
                 d.challenges.push(row);
                 return row;
             });
+        },
+
+        /** register/options.js의 새 계정 속도 제한이 쓴다. */
+        async countRecentNewAccountAttempts({ ip, sinceMinutes }) {
+            if (!ip) return 0;
+            const cutoff = plusMinutes(-sinceMinutes);
+            return read().challenges.filter(
+                (c) => c.is_new_account && c.ip === ip && c.created_at > cutoff,
+            ).length;
         },
 
         /** 한 번만 통과시킨다 — 이미 썼거나 만료됐으면 실패. */
@@ -345,12 +366,26 @@ function postgresStore() {
                               delete from pk_challenges where expires_at < now() - interval '1 hour'
                           )
                           insert into pk_challenges
-                              (challenge, type, user_id, is_new_account, display_name, device_name, expires_at)
+                              (challenge, type, user_id, is_new_account, display_name, device_name, ip, expires_at)
                           values (${input.challenge}, ${input.type}, ${input.userId ?? null},
                                   ${Boolean(input.isNewAccount)}, ${input.displayName ?? null},
-                                  ${input.deviceName ?? null}, ${plusMinutes(2)})
+                                  ${input.deviceName ?? null}, ${input.ip ?? null}, ${plusMinutes(2)})
                           returning *`,
             );
+        },
+
+        /**
+         * register/options.js의 새 계정 속도 제한이 쓴다. 시간 컷오프를 JS에서 미리
+         * 계산해 문자열로 넘긴다 — interval 리터럴에 변수를 직접 끼워 넣지 않기 위해서다.
+         */
+        async countRecentNewAccountAttempts({ ip, sinceMinutes }) {
+            if (!ip) return 0;
+            const cutoff = plusMinutes(-sinceMinutes);
+            const row = first(
+                await sql`select count(*)::int as n from pk_challenges
+                          where is_new_account and ip = ${ip} and created_at > ${cutoff}`,
+            );
+            return row?.n ?? 0;
         },
 
         /**
