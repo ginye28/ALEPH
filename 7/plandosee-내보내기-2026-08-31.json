@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 2,
+  "exportedAt": "2026-08-31T00:53:55.160Z",
+  "records": [
+    {
+      "id": "dd8fbaa5-a302-4c79-b0b8-4d8d4208bb02",
+      "schemaVersion": 2,
+      "date": "2026-08-27",
+      "timezone": "Asia/Seoul",
+      "subject": "보안 수업",
+      "minutes": 120,
+      "unit": "분",
+      "memo": "열심히 보안 수업 ",
+      "tag": "집중",
+      "createdAt": "2026-08-27T05:21:20.581Z"
+    },
+    {
+      "id": "f7ff1c05-bb0b-48c6-bff1-60233d5a6e77",
+      "schemaVersion": 2,
+      "date": "2026-08-28",
+      "timezone": "Asia/Seoul",
+      "subject": "개인 프로젝트 api 대부분 완성",
+      "minutes": 60,
+      "unit": "분",
+      "memo": "이제 디자인 남았다!",
+      "tag": "개인 프로젝트",
+      "createdAt": "2026-08-28T08:46:41.064Z"
+    },
+    {
+      "id": "16ea89f9-afaf-4c53-ae09-a436a5410242",
+      "schemaVersion": 2,
+      "date": "2026-08-29",
+      "timezone": "Asia/Seoul",
+      "subject": "개인 프로젝트",
+      "minutes": 30,
+      "unit": "분",
+      "memo": "열심히 디자인에 관해 찾아보았다.",
+      "tag": "개인 프로젝트",
+      "createdAt": "2026-08-29T00:00:24.618Z"
+    },
+    {
+      "id": "1d54dd88-a993-4582-8e21-91fdbf108996",
+      "schemaVersion": 2,
+      "date": "2026-08-30",
+      "timezone": "Asia/Seoul",
+      "subject": "개인 프로젝트",
+      "minutes": 60,
+      "unit": "분",
+      "memo": "UI,UX를 열심히 구상",
+      "tag": "디자인",
+      "createdAt": "2026-08-30T12:49:47.482Z"
+    },
+    {
+      "id": "161cca7f-d001-43f4-8217-c0ee60358cbc",
+      "schemaVersion": 2,
+      "date": "2026-08-31",
+      "timezone": "Asia/Seoul",
+      "subject": "아침 리추얼",
+      "minutes": 30,
+      "unit": "분",
+      "memo": "팀원의 칭찬을 열심히 작성",
+      "tag": "월요일",
+      "createdAt": "2026-08-31T9:50:00.680Z"
+    }
+  ]
+}
