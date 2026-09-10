@@ -1,0 +1,128 @@
+{
+  "대상": "https://aleph-passkey.vercel.app",
+  "측정시각": "2026-09-10T03:52:38.262Z",
+  "실측": [
+    {
+      "번호": 1,
+      "시나리오": "동기화 패스키 (클라우드에 백업된 상태)",
+      "가상기기설정": {
+        "defaultBackupEligibility": true,
+        "defaultBackupState": true
+      },
+      "등록시_서버가_계산한값": {
+        "credentialDeviceType": "multiDevice",
+        "backedUp": true
+      },
+      "로그인시_기기가_보낸_플래그": {
+        "flagsInt": 29,
+        "flagsHex": "0x1d",
+        "flagsBin": "00011101",
+        "UP": true,
+        "UV": true,
+        "BE": true,
+        "BS": true,
+        "AT": false,
+        "ED": false
+      },
+      "로그인_서버응답": {
+        "ok": true,
+        "deviceName": "[측정] 동기화 패스키"
+      }
+    },
+    {
+      "번호": 2,
+      "시나리오": "하드웨어 바운드 패스키 (기기를 벗어나지 않음)",
+      "가상기기설정": {
+        "defaultBackupEligibility": false,
+        "defaultBackupState": false
+      },
+      "등록시_서버가_계산한값": {
+        "credentialDeviceType": "singleDevice",
+        "backedUp": false
+      },
+      "로그인시_기기가_보낸_플래그": {
+        "flagsInt": 5,
+        "flagsHex": "0x05",
+        "flagsBin": "00000101",
+        "UP": true,
+        "UV": true,
+        "BE": false,
+        "BS": false,
+        "AT": false,
+        "ED": false
+      },
+      "로그인_서버응답": {
+        "ok": true,
+        "deviceName": "[측정] 하드웨어 바운드"
+      }
+    },
+    {
+      "번호": 3,
+      "시나리오": "등록 뒤에 동기화가 켜진 경우 (BS 0 → 1)",
+      "가상기기설정": {
+        "defaultBackupEligibility": true,
+        "defaultBackupState": false
+      },
+      "등록시_서버가_계산한값": {
+        "credentialDeviceType": "multiDevice",
+        "backedUp": false
+      },
+      "동기화_켜기_전_로그인": {
+        "보낸플래그": {
+          "flagsInt": 13,
+          "flagsHex": "0x0d",
+          "flagsBin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false,
+          "AT": false,
+          "ED": false
+        },
+        "서버응답본문": {
+          "ok": true,
+          "deviceName": "[측정] 나중에 동기화 켜짐"
+        }
+      },
+      "BS전환": {
+        "성공": true,
+        "오류": null
+      },
+      "동기화_켜진_뒤_로그인": {
+        "보낸플래그": {
+          "flagsInt": 29,
+          "flagsHex": "0x1d",
+          "flagsBin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true,
+          "AT": false,
+          "ED": false
+        },
+        "서버응답본문": {
+          "ok": true,
+          "deviceName": "[측정] 나중에 동기화 켜짐"
+        }
+      },
+      "서버가_이_자격증명에_대해_들고_있는것": {
+        "account": {
+          "id": "358605a9-fa4a-49a0-aca9-21608513be13",
+          "displayName": "[측정] 나중에 동기화 켜짐",
+          "createdAt": "2026-09-10T03:51:52.302Z"
+        },
+        "credentials": [
+          {
+            "id": "9C49xgSLKjgL23cF6ZQBaj84uyT4eTzCxAuXSkWC0Qk",
+            "isCurrentSession": true,
+            "shortId": "9C49xgSLKjgL",
+            "deviceName": "[측정] 나중에 동기화 켜짐",
+            "createdAt": "2026-09-10T03:51:52.969Z",
+            "publicKey": "pAEBAycgBiFYILh3ylxjFsOTSkoEiQty1p6iz9HfXehTDg63ppK1IDz8",
+            "signCount": 3
+          }
+        ]
+      }
+    }
+  ]
+}
