@@ -1,0 +1,1517 @@
+{
+  "대상": "http://localhost:5179",
+  "측정시각": "2026-09-10T06:19:11.716Z",
+  "반복횟수": 10,
+  "설계": "10/실험설계.md (수집 착수 전 확정)",
+  "회차": [
+    {
+      "회차": 1,
+      "시나리오1": {
+        "설정": {
+          "BE": 1,
+          "BS": 1
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": true
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 1] 동기화"
+          }
+        }
+      },
+      "시나리오2": {
+        "설정": {
+          "BE": 0,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "singleDevice",
+          "backedUp": false
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 5,
+            "flagsHex": "0x05",
+            "flagsBin": "00000101",
+            "UP": true,
+            "UV": true,
+            "BE": false,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 1] 기기전용"
+          }
+        }
+      },
+      "시나리오3": {
+        "설정": {
+          "BE": 1,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": false
+        },
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전이전_로그인": {
+          "보낸플래그": {
+            "flagsInt": 13,
+            "flagsHex": "0x0d",
+            "flagsBin": "00001101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 1] 나중에동기화"
+          }
+        },
+        "전이후_로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 1] 나중에동기화"
+          }
+        },
+        "전이전_보관상태": {
+          "account": {
+            "id": "3ba53da2-bb68-4e5e-a459-21969abf692f",
+            "displayName": "[측정 1] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:19.707Z"
+          },
+          "credentials": [
+            {
+              "id": "fH80-VceG__95Lxy7JH_h2tV50c-zKYMywrMrPdqMRo",
+              "isCurrentSession": true,
+              "shortId": "fH80-VceG__9",
+              "deviceName": "[측정 1] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:19.708Z",
+              "publicKey": "pAEBAycgBiFYIEfown6udNY33YQpYLBkoKYLT58ELw-RWfRZL4alKXfz",
+              "signCount": 2
+            }
+          ]
+        },
+        "전이후_보관상태": {
+          "account": {
+            "id": "3ba53da2-bb68-4e5e-a459-21969abf692f",
+            "displayName": "[측정 1] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:19.707Z"
+          },
+          "credentials": [
+            {
+              "id": "fH80-VceG__95Lxy7JH_h2tV50c-zKYMywrMrPdqMRo",
+              "isCurrentSession": true,
+              "shortId": "fH80-VceG__9",
+              "deviceName": "[측정 1] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:19.708Z",
+              "publicKey": "pAEBAycgBiFYIEfown6udNY33YQpYLBkoKYLT58ELw-RWfRZL4alKXfz",
+              "signCount": 3
+            }
+          ]
+        },
+        "판정": {
+          "플래그가_실제로_바뀌었나": true,
+          "응답본문이_같은가": true,
+          "보관상태가_같은가": true
+        }
+      }
+    },
+    {
+      "회차": 2,
+      "시나리오1": {
+        "설정": {
+          "BE": 1,
+          "BS": 1
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": true
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 2] 동기화"
+          }
+        }
+      },
+      "시나리오2": {
+        "설정": {
+          "BE": 0,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "singleDevice",
+          "backedUp": false
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 5,
+            "flagsHex": "0x05",
+            "flagsBin": "00000101",
+            "UP": true,
+            "UV": true,
+            "BE": false,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 2] 기기전용"
+          }
+        }
+      },
+      "시나리오3": {
+        "설정": {
+          "BE": 1,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": false
+        },
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전이전_로그인": {
+          "보낸플래그": {
+            "flagsInt": 13,
+            "flagsHex": "0x0d",
+            "flagsBin": "00001101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 2] 나중에동기화"
+          }
+        },
+        "전이후_로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 2] 나중에동기화"
+          }
+        },
+        "전이전_보관상태": {
+          "account": {
+            "id": "cd73f49b-da41-410f-9590-7bb2607c2769",
+            "displayName": "[측정 2] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:21.413Z"
+          },
+          "credentials": [
+            {
+              "id": "DkHp8hHXptegjQlAIsq0twv1FF49DlWkP8Qxht76fOc",
+              "isCurrentSession": true,
+              "shortId": "DkHp8hHXpteg",
+              "deviceName": "[측정 2] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:21.414Z",
+              "publicKey": "pAEBAycgBiFYII0NbmZn_QvVB0NnlasTC2wGQNFp-mJ8jiyynDdawM4J",
+              "signCount": 2
+            }
+          ]
+        },
+        "전이후_보관상태": {
+          "account": {
+            "id": "cd73f49b-da41-410f-9590-7bb2607c2769",
+            "displayName": "[측정 2] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:21.413Z"
+          },
+          "credentials": [
+            {
+              "id": "DkHp8hHXptegjQlAIsq0twv1FF49DlWkP8Qxht76fOc",
+              "isCurrentSession": true,
+              "shortId": "DkHp8hHXpteg",
+              "deviceName": "[측정 2] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:21.414Z",
+              "publicKey": "pAEBAycgBiFYII0NbmZn_QvVB0NnlasTC2wGQNFp-mJ8jiyynDdawM4J",
+              "signCount": 3
+            }
+          ]
+        },
+        "판정": {
+          "플래그가_실제로_바뀌었나": true,
+          "응답본문이_같은가": true,
+          "보관상태가_같은가": true
+        }
+      }
+    },
+    {
+      "회차": 3,
+      "시나리오1": {
+        "설정": {
+          "BE": 1,
+          "BS": 1
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": true
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 3] 동기화"
+          }
+        }
+      },
+      "시나리오2": {
+        "설정": {
+          "BE": 0,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "singleDevice",
+          "backedUp": false
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 5,
+            "flagsHex": "0x05",
+            "flagsBin": "00000101",
+            "UP": true,
+            "UV": true,
+            "BE": false,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 3] 기기전용"
+          }
+        }
+      },
+      "시나리오3": {
+        "설정": {
+          "BE": 1,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": false
+        },
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전이전_로그인": {
+          "보낸플래그": {
+            "flagsInt": 13,
+            "flagsHex": "0x0d",
+            "flagsBin": "00001101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 3] 나중에동기화"
+          }
+        },
+        "전이후_로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 3] 나중에동기화"
+          }
+        },
+        "전이전_보관상태": {
+          "account": {
+            "id": "9ee57def-0c96-4327-b1aa-6dc434054725",
+            "displayName": "[측정 3] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:23.118Z"
+          },
+          "credentials": [
+            {
+              "id": "GXLEwfyfYXhuzQ6ACB78z7aN-w8zo9lfwY0qtp3ey5A",
+              "isCurrentSession": true,
+              "shortId": "GXLEwfyfYXhu",
+              "deviceName": "[측정 3] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:23.119Z",
+              "publicKey": "pAEBAycgBiFYIHfRTUjV4lGrsi-q5q_ddCVS1t_5M531QFxL-EMMU2Ia",
+              "signCount": 2
+            }
+          ]
+        },
+        "전이후_보관상태": {
+          "account": {
+            "id": "9ee57def-0c96-4327-b1aa-6dc434054725",
+            "displayName": "[측정 3] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:23.118Z"
+          },
+          "credentials": [
+            {
+              "id": "GXLEwfyfYXhuzQ6ACB78z7aN-w8zo9lfwY0qtp3ey5A",
+              "isCurrentSession": true,
+              "shortId": "GXLEwfyfYXhu",
+              "deviceName": "[측정 3] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:23.119Z",
+              "publicKey": "pAEBAycgBiFYIHfRTUjV4lGrsi-q5q_ddCVS1t_5M531QFxL-EMMU2Ia",
+              "signCount": 3
+            }
+          ]
+        },
+        "판정": {
+          "플래그가_실제로_바뀌었나": true,
+          "응답본문이_같은가": true,
+          "보관상태가_같은가": true
+        }
+      }
+    },
+    {
+      "회차": 4,
+      "시나리오1": {
+        "설정": {
+          "BE": 1,
+          "BS": 1
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": true
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 4] 동기화"
+          }
+        }
+      },
+      "시나리오2": {
+        "설정": {
+          "BE": 0,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "singleDevice",
+          "backedUp": false
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 5,
+            "flagsHex": "0x05",
+            "flagsBin": "00000101",
+            "UP": true,
+            "UV": true,
+            "BE": false,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 4] 기기전용"
+          }
+        }
+      },
+      "시나리오3": {
+        "설정": {
+          "BE": 1,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": false
+        },
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전이전_로그인": {
+          "보낸플래그": {
+            "flagsInt": 13,
+            "flagsHex": "0x0d",
+            "flagsBin": "00001101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 4] 나중에동기화"
+          }
+        },
+        "전이후_로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 4] 나중에동기화"
+          }
+        },
+        "전이전_보관상태": {
+          "account": {
+            "id": "a672f434-c43c-4de7-a33b-2cd7ade0a084",
+            "displayName": "[측정 4] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:24.817Z"
+          },
+          "credentials": [
+            {
+              "id": "6FZco438meJm-jVM10KxgO7T8TXmlh2sJikw7Rv1DzQ",
+              "isCurrentSession": true,
+              "shortId": "6FZco438meJm",
+              "deviceName": "[측정 4] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:24.818Z",
+              "publicKey": "pAEBAycgBiFYIM0yATs586QGdz0B0iWVeV0bM_S2rPNWyqGRY5tCDEjH",
+              "signCount": 2
+            }
+          ]
+        },
+        "전이후_보관상태": {
+          "account": {
+            "id": "a672f434-c43c-4de7-a33b-2cd7ade0a084",
+            "displayName": "[측정 4] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:24.817Z"
+          },
+          "credentials": [
+            {
+              "id": "6FZco438meJm-jVM10KxgO7T8TXmlh2sJikw7Rv1DzQ",
+              "isCurrentSession": true,
+              "shortId": "6FZco438meJm",
+              "deviceName": "[측정 4] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:24.818Z",
+              "publicKey": "pAEBAycgBiFYIM0yATs586QGdz0B0iWVeV0bM_S2rPNWyqGRY5tCDEjH",
+              "signCount": 3
+            }
+          ]
+        },
+        "판정": {
+          "플래그가_실제로_바뀌었나": true,
+          "응답본문이_같은가": true,
+          "보관상태가_같은가": true
+        }
+      }
+    },
+    {
+      "회차": 5,
+      "시나리오1": {
+        "설정": {
+          "BE": 1,
+          "BS": 1
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": true
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 5] 동기화"
+          }
+        }
+      },
+      "시나리오2": {
+        "설정": {
+          "BE": 0,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "singleDevice",
+          "backedUp": false
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 5,
+            "flagsHex": "0x05",
+            "flagsBin": "00000101",
+            "UP": true,
+            "UV": true,
+            "BE": false,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 5] 기기전용"
+          }
+        }
+      },
+      "시나리오3": {
+        "설정": {
+          "BE": 1,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": false
+        },
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전이전_로그인": {
+          "보낸플래그": {
+            "flagsInt": 13,
+            "flagsHex": "0x0d",
+            "flagsBin": "00001101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 5] 나중에동기화"
+          }
+        },
+        "전이후_로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 5] 나중에동기화"
+          }
+        },
+        "전이전_보관상태": {
+          "account": {
+            "id": "ca37dde3-a5c4-4ca8-bb7f-1d1f43749bcb",
+            "displayName": "[측정 5] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:26.532Z"
+          },
+          "credentials": [
+            {
+              "id": "bM9FF2Ol4GmdOB-xy2upUBYdpqttIXe-vOUN3pRF1qc",
+              "isCurrentSession": true,
+              "shortId": "bM9FF2Ol4Gmd",
+              "deviceName": "[측정 5] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:26.534Z",
+              "publicKey": "pAEBAycgBiFYID-0JQKYoNT-ODrrrOeQvIfzCmIJQNlKWdw_TxijhHZY",
+              "signCount": 2
+            }
+          ]
+        },
+        "전이후_보관상태": {
+          "account": {
+            "id": "ca37dde3-a5c4-4ca8-bb7f-1d1f43749bcb",
+            "displayName": "[측정 5] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:26.532Z"
+          },
+          "credentials": [
+            {
+              "id": "bM9FF2Ol4GmdOB-xy2upUBYdpqttIXe-vOUN3pRF1qc",
+              "isCurrentSession": true,
+              "shortId": "bM9FF2Ol4Gmd",
+              "deviceName": "[측정 5] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:26.534Z",
+              "publicKey": "pAEBAycgBiFYID-0JQKYoNT-ODrrrOeQvIfzCmIJQNlKWdw_TxijhHZY",
+              "signCount": 3
+            }
+          ]
+        },
+        "판정": {
+          "플래그가_실제로_바뀌었나": true,
+          "응답본문이_같은가": true,
+          "보관상태가_같은가": true
+        }
+      }
+    },
+    {
+      "회차": 6,
+      "시나리오1": {
+        "설정": {
+          "BE": 1,
+          "BS": 1
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": true
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 6] 동기화"
+          }
+        }
+      },
+      "시나리오2": {
+        "설정": {
+          "BE": 0,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "singleDevice",
+          "backedUp": false
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 5,
+            "flagsHex": "0x05",
+            "flagsBin": "00000101",
+            "UP": true,
+            "UV": true,
+            "BE": false,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 6] 기기전용"
+          }
+        }
+      },
+      "시나리오3": {
+        "설정": {
+          "BE": 1,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": false
+        },
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전이전_로그인": {
+          "보낸플래그": {
+            "flagsInt": 13,
+            "flagsHex": "0x0d",
+            "flagsBin": "00001101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 6] 나중에동기화"
+          }
+        },
+        "전이후_로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 6] 나중에동기화"
+          }
+        },
+        "전이전_보관상태": {
+          "account": {
+            "id": "4d9eef03-aae1-4ec0-9eca-7adfcf22b82e",
+            "displayName": "[측정 6] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:28.235Z"
+          },
+          "credentials": [
+            {
+              "id": "B9DpM3qEiSQAN0sfYF-tdxvXlcFwS_jfoYO3IhRbS3Y",
+              "isCurrentSession": true,
+              "shortId": "B9DpM3qEiSQA",
+              "deviceName": "[측정 6] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:28.236Z",
+              "publicKey": "pAEBAycgBiFYIAd1RTqdHm-RJ95NBFwvLBTYITerTHfV-RndLFrUpkJx",
+              "signCount": 2
+            }
+          ]
+        },
+        "전이후_보관상태": {
+          "account": {
+            "id": "4d9eef03-aae1-4ec0-9eca-7adfcf22b82e",
+            "displayName": "[측정 6] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:28.235Z"
+          },
+          "credentials": [
+            {
+              "id": "B9DpM3qEiSQAN0sfYF-tdxvXlcFwS_jfoYO3IhRbS3Y",
+              "isCurrentSession": true,
+              "shortId": "B9DpM3qEiSQA",
+              "deviceName": "[측정 6] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:28.236Z",
+              "publicKey": "pAEBAycgBiFYIAd1RTqdHm-RJ95NBFwvLBTYITerTHfV-RndLFrUpkJx",
+              "signCount": 3
+            }
+          ]
+        },
+        "판정": {
+          "플래그가_실제로_바뀌었나": true,
+          "응답본문이_같은가": true,
+          "보관상태가_같은가": true
+        }
+      }
+    },
+    {
+      "회차": 7,
+      "시나리오1": {
+        "설정": {
+          "BE": 1,
+          "BS": 1
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": true
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 7] 동기화"
+          }
+        }
+      },
+      "시나리오2": {
+        "설정": {
+          "BE": 0,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "singleDevice",
+          "backedUp": false
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 5,
+            "flagsHex": "0x05",
+            "flagsBin": "00000101",
+            "UP": true,
+            "UV": true,
+            "BE": false,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 7] 기기전용"
+          }
+        }
+      },
+      "시나리오3": {
+        "설정": {
+          "BE": 1,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": false
+        },
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전이전_로그인": {
+          "보낸플래그": {
+            "flagsInt": 13,
+            "flagsHex": "0x0d",
+            "flagsBin": "00001101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 7] 나중에동기화"
+          }
+        },
+        "전이후_로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 7] 나중에동기화"
+          }
+        },
+        "전이전_보관상태": {
+          "account": {
+            "id": "6fd66b4f-7c58-4c81-ba36-4693145b7f0e",
+            "displayName": "[측정 7] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:29.938Z"
+          },
+          "credentials": [
+            {
+              "id": "b_fr9ltkjV-YL_bc0875N0owhmZxHXUS5qbPgxNiZAQ",
+              "isCurrentSession": true,
+              "shortId": "b_fr9ltkjV-Y",
+              "deviceName": "[측정 7] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:29.939Z",
+              "publicKey": "pAEBAycgBiFYIM51vM9p1p5aIoT85HcTeL5DMdgxxAAp7uprI9wVVuJk",
+              "signCount": 2
+            }
+          ]
+        },
+        "전이후_보관상태": {
+          "account": {
+            "id": "6fd66b4f-7c58-4c81-ba36-4693145b7f0e",
+            "displayName": "[측정 7] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:29.938Z"
+          },
+          "credentials": [
+            {
+              "id": "b_fr9ltkjV-YL_bc0875N0owhmZxHXUS5qbPgxNiZAQ",
+              "isCurrentSession": true,
+              "shortId": "b_fr9ltkjV-Y",
+              "deviceName": "[측정 7] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:29.939Z",
+              "publicKey": "pAEBAycgBiFYIM51vM9p1p5aIoT85HcTeL5DMdgxxAAp7uprI9wVVuJk",
+              "signCount": 3
+            }
+          ]
+        },
+        "판정": {
+          "플래그가_실제로_바뀌었나": true,
+          "응답본문이_같은가": true,
+          "보관상태가_같은가": true
+        }
+      }
+    },
+    {
+      "회차": 8,
+      "시나리오1": {
+        "설정": {
+          "BE": 1,
+          "BS": 1
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": true
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 8] 동기화"
+          }
+        }
+      },
+      "시나리오2": {
+        "설정": {
+          "BE": 0,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "singleDevice",
+          "backedUp": false
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 5,
+            "flagsHex": "0x05",
+            "flagsBin": "00000101",
+            "UP": true,
+            "UV": true,
+            "BE": false,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 8] 기기전용"
+          }
+        }
+      },
+      "시나리오3": {
+        "설정": {
+          "BE": 1,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": false
+        },
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전이전_로그인": {
+          "보낸플래그": {
+            "flagsInt": 13,
+            "flagsHex": "0x0d",
+            "flagsBin": "00001101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 8] 나중에동기화"
+          }
+        },
+        "전이후_로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 8] 나중에동기화"
+          }
+        },
+        "전이전_보관상태": {
+          "account": {
+            "id": "6d2f5c9b-98c9-4754-8128-e1804c7adc37",
+            "displayName": "[측정 8] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:31.654Z"
+          },
+          "credentials": [
+            {
+              "id": "GIzXSF7Tk9psi6L8rs7maKqplvjoj2u7rqrLGPBAjcw",
+              "isCurrentSession": true,
+              "shortId": "GIzXSF7Tk9ps",
+              "deviceName": "[측정 8] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:31.655Z",
+              "publicKey": "pAEBAycgBiFYIAf4G_3vGMTjaaFFWGpghMLs_JftbU_mY_roniJHL6Xf",
+              "signCount": 2
+            }
+          ]
+        },
+        "전이후_보관상태": {
+          "account": {
+            "id": "6d2f5c9b-98c9-4754-8128-e1804c7adc37",
+            "displayName": "[측정 8] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:31.654Z"
+          },
+          "credentials": [
+            {
+              "id": "GIzXSF7Tk9psi6L8rs7maKqplvjoj2u7rqrLGPBAjcw",
+              "isCurrentSession": true,
+              "shortId": "GIzXSF7Tk9ps",
+              "deviceName": "[측정 8] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:31.655Z",
+              "publicKey": "pAEBAycgBiFYIAf4G_3vGMTjaaFFWGpghMLs_JftbU_mY_roniJHL6Xf",
+              "signCount": 3
+            }
+          ]
+        },
+        "판정": {
+          "플래그가_실제로_바뀌었나": true,
+          "응답본문이_같은가": true,
+          "보관상태가_같은가": true
+        }
+      }
+    },
+    {
+      "회차": 9,
+      "시나리오1": {
+        "설정": {
+          "BE": 1,
+          "BS": 1
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": true
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 9] 동기화"
+          }
+        }
+      },
+      "시나리오2": {
+        "설정": {
+          "BE": 0,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "singleDevice",
+          "backedUp": false
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 5,
+            "flagsHex": "0x05",
+            "flagsBin": "00000101",
+            "UP": true,
+            "UV": true,
+            "BE": false,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 9] 기기전용"
+          }
+        }
+      },
+      "시나리오3": {
+        "설정": {
+          "BE": 1,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": false
+        },
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전이전_로그인": {
+          "보낸플래그": {
+            "flagsInt": 13,
+            "flagsHex": "0x0d",
+            "flagsBin": "00001101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 9] 나중에동기화"
+          }
+        },
+        "전이후_로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 9] 나중에동기화"
+          }
+        },
+        "전이전_보관상태": {
+          "account": {
+            "id": "e9d1ea57-08f1-4ebf-93c8-a61eb92dc08b",
+            "displayName": "[측정 9] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:33.339Z"
+          },
+          "credentials": [
+            {
+              "id": "DBE_PYJh_T2dDESOJBcaXQfk_pKKW9GYDQ_fXz65h-k",
+              "isCurrentSession": true,
+              "shortId": "DBE_PYJh_T2d",
+              "deviceName": "[측정 9] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:33.340Z",
+              "publicKey": "pAEBAycgBiFYIIIKPPkp--Rg3wHs8IVhYXGziVVmZD3EXvc55ci3mysX",
+              "signCount": 2
+            }
+          ]
+        },
+        "전이후_보관상태": {
+          "account": {
+            "id": "e9d1ea57-08f1-4ebf-93c8-a61eb92dc08b",
+            "displayName": "[측정 9] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:33.339Z"
+          },
+          "credentials": [
+            {
+              "id": "DBE_PYJh_T2dDESOJBcaXQfk_pKKW9GYDQ_fXz65h-k",
+              "isCurrentSession": true,
+              "shortId": "DBE_PYJh_T2d",
+              "deviceName": "[측정 9] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:33.340Z",
+              "publicKey": "pAEBAycgBiFYIIIKPPkp--Rg3wHs8IVhYXGziVVmZD3EXvc55ci3mysX",
+              "signCount": 3
+            }
+          ]
+        },
+        "판정": {
+          "플래그가_실제로_바뀌었나": true,
+          "응답본문이_같은가": true,
+          "보관상태가_같은가": true
+        }
+      }
+    },
+    {
+      "회차": 10,
+      "시나리오1": {
+        "설정": {
+          "BE": 1,
+          "BS": 1
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": true
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 10] 동기화"
+          }
+        }
+      },
+      "시나리오2": {
+        "설정": {
+          "BE": 0,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "singleDevice",
+          "backedUp": false
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 5,
+            "flagsHex": "0x05",
+            "flagsBin": "00000101",
+            "UP": true,
+            "UV": true,
+            "BE": false,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 10] 기기전용"
+          }
+        }
+      },
+      "시나리오3": {
+        "설정": {
+          "BE": 1,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": false
+        },
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전이전_로그인": {
+          "보낸플래그": {
+            "flagsInt": 13,
+            "flagsHex": "0x0d",
+            "flagsBin": "00001101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 10] 나중에동기화"
+          }
+        },
+        "전이후_로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 10] 나중에동기화"
+          }
+        },
+        "전이전_보관상태": {
+          "account": {
+            "id": "c800b1c2-3f1b-4659-9e4b-c1801044824e",
+            "displayName": "[측정 10] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:35.045Z"
+          },
+          "credentials": [
+            {
+              "id": "ECBpmHnsF-pwoHLJPoWhqAKRPTWn1APlId8kZayxCGw",
+              "isCurrentSession": true,
+              "shortId": "ECBpmHnsF-pw",
+              "deviceName": "[측정 10] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:35.047Z",
+              "publicKey": "pAEBAycgBiFYIAEB7Iwfy7VSl_vSCCYtFT2-hwQoLiinaVV4lsciiTiJ",
+              "signCount": 2
+            }
+          ]
+        },
+        "전이후_보관상태": {
+          "account": {
+            "id": "c800b1c2-3f1b-4659-9e4b-c1801044824e",
+            "displayName": "[측정 10] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:35.045Z"
+          },
+          "credentials": [
+            {
+              "id": "ECBpmHnsF-pwoHLJPoWhqAKRPTWn1APlId8kZayxCGw",
+              "isCurrentSession": true,
+              "shortId": "ECBpmHnsF-pw",
+              "deviceName": "[측정 10] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:35.047Z",
+              "publicKey": "pAEBAycgBiFYIAEB7Iwfy7VSl_vSCCYtFT2-hwQoLiinaVV4lsciiTiJ",
+              "signCount": 3
+            }
+          ]
+        },
+        "판정": {
+          "플래그가_실제로_바뀌었나": true,
+          "응답본문이_같은가": true,
+          "보관상태가_같은가": true
+        }
+      }
+    }
+  ],
+  "집계": {
+    "총회차": 10,
+    "시나리오1_multiDevice_backedUp": 10,
+    "시나리오2_singleDevice_notBackedUp": 10,
+    "시나리오3_전환성공": 10,
+    "시나리오3_플래그가_실제로_바뀐_회차": 10,
+    "시나리오3_응답본문이_같은_회차": 10,
+    "시나리오3_보관상태가_같은_회차": 10
+  }
+}
