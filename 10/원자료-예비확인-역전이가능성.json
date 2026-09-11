@@ -1,0 +1,517 @@
+{
+  "목적": "시나리오 4(BS 역전이) 측정 가능성의 예비 확인 — 가상 authenticator가 BS를 1→0으로 되돌릴 수 있는가",
+  "측정대상": "합성 테스트 페이지(http://localhost:5199). portfolio-passkey RP가 아니며, 서버 측 처리는 측정하지 않는다",
+  "환경": {
+    "OS": "Linux (x86_64)",
+    "브라우저": "Chromium 141.0.7390.37 (headless=new)",
+    "구동": "Node.js v22.22.2, CDP WebAuthn 도메인",
+    "비고": "논문 실험 A(원자료-실험A-로컬10회.json)는 Windows + Google Chrome에서 수행되었다. 이 예비 확인은 다른 OS·다른 브라우저 빌드에서 수행된 것이며, 인증장치 계층의 동작만을 본다"
+  },
+  "측정시각": "2026-09-11T01:06:52.665Z",
+  "반복횟수": 10,
+  "회차": [
+    {
+      "회차": 1,
+      "대조_상승_0→1": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "후": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "실제로바뀌었나": true
+      },
+      "신규_역전이_1→0": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "후": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "실제로바뀌었나": true
+      }
+    },
+    {
+      "회차": 2,
+      "대조_상승_0→1": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "후": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "실제로바뀌었나": true
+      },
+      "신규_역전이_1→0": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "후": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "실제로바뀌었나": true
+      }
+    },
+    {
+      "회차": 3,
+      "대조_상승_0→1": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "후": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "실제로바뀌었나": true
+      },
+      "신규_역전이_1→0": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "후": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "실제로바뀌었나": true
+      }
+    },
+    {
+      "회차": 4,
+      "대조_상승_0→1": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "후": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "실제로바뀌었나": true
+      },
+      "신규_역전이_1→0": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "후": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "실제로바뀌었나": true
+      }
+    },
+    {
+      "회차": 5,
+      "대조_상승_0→1": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "후": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "실제로바뀌었나": true
+      },
+      "신규_역전이_1→0": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "후": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "실제로바뀌었나": true
+      }
+    },
+    {
+      "회차": 6,
+      "대조_상승_0→1": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "후": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "실제로바뀌었나": true
+      },
+      "신규_역전이_1→0": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "후": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "실제로바뀌었나": true
+      }
+    },
+    {
+      "회차": 7,
+      "대조_상승_0→1": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "후": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "실제로바뀌었나": true
+      },
+      "신규_역전이_1→0": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "후": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "실제로바뀌었나": true
+      }
+    },
+    {
+      "회차": 8,
+      "대조_상승_0→1": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "후": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "실제로바뀌었나": true
+      },
+      "신규_역전이_1→0": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "후": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "실제로바뀌었나": true
+      }
+    },
+    {
+      "회차": 9,
+      "대조_상승_0→1": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "후": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "실제로바뀌었나": true
+      },
+      "신규_역전이_1→0": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "후": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "실제로바뀌었나": true
+      }
+    },
+    {
+      "회차": 10,
+      "대조_상승_0→1": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "후": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "실제로바뀌었나": true
+      },
+      "신규_역전이_1→0": {
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전": {
+          "hex": "0x1d",
+          "bin": "00011101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": true
+        },
+        "후": {
+          "hex": "0x0d",
+          "bin": "00001101",
+          "UP": true,
+          "UV": true,
+          "BE": true,
+          "BS": false
+        },
+        "실제로바뀌었나": true
+      }
+    }
+  ],
+  "집계": {
+    "총회차": 10,
+    "상승_전환성공": 10,
+    "상승_플래그가_0x0d에서_0x1d로": 10,
+    "역전이_전환성공": 10,
+    "역전이_플래그가_0x1d에서_0x0d로": 10,
+    "역전이_BE가_1로_유지된_회차": 10
+  },
+  "한계": [
+    "합성 페이지를 대상으로 하므로 RP(서버) 측 처리는 전혀 측정하지 않는다 — 이 파일은 '측정이 가능한가'만 답한다",
+    "따라서 이 결과는 논문의 가설을 지지하거나 기각하는 데이터가 아니다",
+    "가상 authenticator는 실제 클라우드 동기화를 수행하지 않고 플래그를 그렇게 신고할 뿐이다(논문 5.1절)"
+  ]
+}

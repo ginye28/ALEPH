@@ -12,7 +12,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-export const CHROME = "C:/Program Files/Google/Chrome/Application/chrome.exe";
+/**
+ * 크롬 실행 파일의 위치. 설치 위치가 다르거나 다른 OS에서 돌릴 때는 고칠 필요 없이
+ * 환경변수로 덮어쓸 수 있다 — 예) PowerShell: $env:CHROME="C:/…/chrome.exe"
+ * 기본값은 윈도우의 표준 설치 경로다.
+ */
+export const CHROME = process.env.CHROME ?? "C:/Program Files/Google/Chrome/Application/chrome.exe";
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /** 브라우저 안에서 등록·로그인 흐름을 단계별로 태우고, 오간 값을 그대로 돌려주는 도우미. */
