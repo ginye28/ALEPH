@@ -1,0 +1,167 @@
+{
+  "대상": "https://aleph-passkey.vercel.app",
+  "측정시각": "2026-09-10T06:19:46.057Z",
+  "반복횟수": 1,
+  "설계": "10/실험설계.md (수집 착수 전 확정)",
+  "회차": [
+    {
+      "회차": 1,
+      "시나리오1": {
+        "설정": {
+          "BE": 1,
+          "BS": 1
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": true
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 1] 동기화"
+          }
+        }
+      },
+      "시나리오2": {
+        "설정": {
+          "BE": 0,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "singleDevice",
+          "backedUp": false
+        },
+        "로그인": {
+          "보낸플래그": {
+            "flagsInt": 5,
+            "flagsHex": "0x05",
+            "flagsBin": "00000101",
+            "UP": true,
+            "UV": true,
+            "BE": false,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 1] 기기전용"
+          }
+        }
+      },
+      "시나리오3": {
+        "설정": {
+          "BE": 1,
+          "BS": 0
+        },
+        "등록응답": {
+          "credentialDeviceType": "multiDevice",
+          "backedUp": false
+        },
+        "전환": {
+          "성공": true,
+          "오류": null
+        },
+        "전이전_로그인": {
+          "보낸플래그": {
+            "flagsInt": 13,
+            "flagsHex": "0x0d",
+            "flagsBin": "00001101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": false,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 1] 나중에동기화"
+          }
+        },
+        "전이후_로그인": {
+          "보낸플래그": {
+            "flagsInt": 29,
+            "flagsHex": "0x1d",
+            "flagsBin": "00011101",
+            "UP": true,
+            "UV": true,
+            "BE": true,
+            "BS": true,
+            "AT": false,
+            "ED": false
+          },
+          "응답상태": 200,
+          "응답본문": {
+            "ok": true,
+            "deviceName": "[측정 1] 나중에동기화"
+          }
+        },
+        "전이전_보관상태": {
+          "account": {
+            "id": "f58f604a-cd05-4c14-8a71-4ceef3255330",
+            "displayName": "[측정 1] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:03.501Z"
+          },
+          "credentials": [
+            {
+              "id": "vjfE3UN8PFbCvtFSquxdBVl3lj1Jv5Bd4KYgmLnm3TE",
+              "isCurrentSession": true,
+              "shortId": "vjfE3UN8PFbC",
+              "deviceName": "[측정 1] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:04.173Z",
+              "publicKey": "pAEBAycgBiFYIC9sxxRUElPxQVl4Zi3OZTMfB42BSlj1kuUZnFjsD-X0",
+              "signCount": 2
+            }
+          ]
+        },
+        "전이후_보관상태": {
+          "account": {
+            "id": "f58f604a-cd05-4c14-8a71-4ceef3255330",
+            "displayName": "[측정 1] 나중에동기화",
+            "createdAt": "2026-09-10T06:19:03.501Z"
+          },
+          "credentials": [
+            {
+              "id": "vjfE3UN8PFbCvtFSquxdBVl3lj1Jv5Bd4KYgmLnm3TE",
+              "isCurrentSession": true,
+              "shortId": "vjfE3UN8PFbC",
+              "deviceName": "[측정 1] 나중에동기화",
+              "createdAt": "2026-09-10T06:19:04.173Z",
+              "publicKey": "pAEBAycgBiFYIC9sxxRUElPxQVl4Zi3OZTMfB42BSlj1kuUZnFjsD-X0",
+              "signCount": 3
+            }
+          ]
+        },
+        "판정": {
+          "플래그가_실제로_바뀌었나": true,
+          "응답본문이_같은가": true,
+          "보관상태가_같은가": true
+        }
+      }
+    }
+  ],
+  "집계": {
+    "총회차": 1,
+    "시나리오1_multiDevice_backedUp": 1,
+    "시나리오2_singleDevice_notBackedUp": 1,
+    "시나리오3_전환성공": 1,
+    "시나리오3_플래그가_실제로_바뀐_회차": 1,
+    "시나리오3_응답본문이_같은_회차": 1,
+    "시나리오3_보관상태가_같은_회차": 1
+  }
+}
