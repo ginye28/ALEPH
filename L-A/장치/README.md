@@ -23,7 +23,8 @@
    ```
    `../site/index.html`의 자동 구역 두 곳(`AUTO-HERO`, `AUTO`)만 다시 씁니다. 나머지는 건드리지 않습니다.
    ZIP만 받아 `site/` 폴더가 옆에 없으면 반영은 건너뛰고 `out/`만 만듭니다.
-   공개 사이트(https://aleph-intro.vercel.app)에 올리려면 `site/` 폴더에서 `npx vercel --prod --yes`.
+   바뀐 `site/index.html`을 커밋하고 `git push`하면 공개 사이트(https://aleph-intro.vercel.app)에 자동으로 배포됩니다
+   (Vercel 프로젝트 `aleph-intro`의 Root Directory = `L-A/site`).
 
 ## 결과 (`out/`)
 
