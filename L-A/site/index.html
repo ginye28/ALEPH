@@ -82,10 +82,13 @@
   .ch time { font-family: var(--mono); font-size: .8rem; letter-spacing: .06em; display: inline-block; padding: .1rem .5rem; border-radius: 4px; background: rgba(255,255,255,.1); }
   .ch h3 { font-size: 1.15rem; margin: .5rem 0 .4rem; }
   .ch p { font-family: var(--serif); font-size: 1.05rem; line-height: 1.95; margin: 0; }
-  .ch.n { --from: var(--night); --to: var(--night-2); color: #dfe4ef; }
-  .ch.n + .ch.n { --from: var(--night-2); --to: var(--dusk); } .ch.n h3 { color: #fff; } .ch.n time { color: var(--star); }
-  .ch.d { --from: var(--dusk); --to: var(--plum); color: #f4ecf0; }
-  .ch.d + .ch.d { --from: var(--plum); --to: var(--mauve); } .ch.d h3 { color: #fff; } .ch.d time { color: #ffe3c8; }
+  .ch.n { color: #dfe4ef; }
+  .story article:nth-of-type(1) { --from: var(--night); --to: var(--night-2); }
+  .story article:nth-of-type(2) { --from: var(--night-2); --to: #222a4a; }
+  .story article:nth-of-type(3) { --from: #222a4a; --to: var(--dusk); } .ch.n h3 { color: #fff; } .ch.n time { color: var(--star); }
+  .ch.d { color: #f4ecf0; }
+  .story article:nth-of-type(4) { --from: var(--dusk); --to: var(--plum); }
+  .story article:nth-of-type(5) { --from: var(--plum); --to: var(--mauve); } .ch.d h3 { color: #fff; } .ch.d time { color: #ffe3c8; }
   .ch.m, .ch.a { color: var(--ink); }
   .ch.m { --from: var(--dawn); --to: var(--dawn-2); }
   .ch.a { --from: var(--dawn-2); --to: var(--paper); padding-bottom: 3rem; }
@@ -190,7 +193,7 @@
 <section class="story" id="story">
   <div class="wrap">
     <div class="story-head">
-      <p>STORY · 2012 → 2026</p>
+      <p>STORY · 2012 → 2019 → 2026</p>
       <h2>여섯 살의 밤에서,<br>지금의 아침까지</h2>
     </div>
 
@@ -200,13 +203,19 @@
     <article class="ch n">
       <time>2012</time>
       <h3>여섯 살의 밤</h3>
-      <p>가족이 모두 잠들고 혼자 남으면 "나는 언젠가 죽는다"는 생각이 찾아왔습니다. 딴생각으로 밀어내도 곧 다시 돌아왔고, 저는 휴대전화를 보다 지쳐 쓰러질 때까지 버티는 밤을 이어 갔습니다. 사람에게 크게 데인 날에는 숨이 막힐 만큼 심해졌습니다. 답을 찾으려 초등학교 1학년부터 6학년까지 5년 넘게 교회에 다녔지만, "믿으라"는 말 말고 제가 원한 근거는 끝내 듣지 못했습니다.</p>
+      <p>가족이 모두 잠들고 혼자 남으면 "나는 언젠가 죽는다"는 생각이 찾아왔습니다. 저는 휴대전화를 보다 지쳐 쓰러질 때까지 버티는 밤을 이어 갔습니다. 사람에게 크게 데인 날에는 숨이 막힐 만큼 심해졌습니다. 답을 찾으려 초등학교 1학년부터 6학년까지 5년 넘게 교회에 다녔지만, "믿으라"는 말 말고 제가 원한 근거는 끝내 듣지 못했습니다.</p>
     </article>
 
     <article class="ch n">
-      <time>2025 가을</time>
-      <h3>질문을 바꾼 밤</h3>
-      <p>2025년 2월 고등학교를 졸업하고 일정이 텅 비자, 미뤄 둔 그 생각이 한꺼번에 돌아왔습니다. 그해 가을 저는 질문을 바꿨습니다. 답을 못 찾겠다면, 그래서 나는 무엇을 할 것인가. 제 대답은 돈을 벌고, 빠르게 바뀌는 기술의 한가운데에 서는 것이었습니다. 2026년 3월 25일, 저는 국비 풀스택 과정 첫 수업에 앉았고 보안 엔지니어를 목표로 정했습니다.</p>
+      <time>2019 겨울</time>
+      <h3>질문을 바꾼 겨울</h3>
+      <p>초등학교 6학년 겨울, 교회를 그만둔 저는 질문을 바꿨습니다. 죽음을 받아들일 수 없다면, 그 끝을 최대한 뒤로 미루는 쪽으로 직접 움직여 보자. 그 겨울부터 용돈의 절반을 저금통에 넣었고, 고등학교 1학년 때 아르바이트를 시작했습니다. 시간을 파는 돈만으로는 닿을 수 없다는 걸 첫 급여로 확인했고, 고3 때 대학 대신 실무 중심의 국비 과정을 골랐습니다.</p>
+    </article>
+
+    <article class="ch n">
+      <time>2026 봄 · 국비 과정</time>
+      <h3>토큰 하나로 열린 화면</h3>
+      <p>2026년 3월 25일, 국비 풀스택 과정 첫 수업에 앉았습니다. 로그인 기능을 만들던 주, 과제는 로그인만 되면 끝이었지만 저는 개발자 도구를 열어 요청에 실린 토큰을 들여다봤습니다. 가운데 토막을 풀어 보니 제 아이디와 만료 시각이 그대로 읽혔고, 시크릿 창에 그 값만 넣자 비밀번호 없이 제 이름이 떴습니다. 그날부터 기능을 하나 만들 때마다 안을 열어 보는 버릇이 생겼습니다.</p>
     </article>
 
     <article class="ch d">

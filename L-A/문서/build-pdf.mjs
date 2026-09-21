@@ -78,8 +78,8 @@ const html = `<!doctype html>
   table.c5 td:first-child { white-space: normal; width: 22%; }
   table.c5 td:nth-child(2) { width: 7%; text-align: center; }
   a { color: #c2572b; text-decoration: none; word-break: break-all; }
-  .story h3 { font-size: 10.5pt; margin: 5mm 0 1.5mm; color: #c2572b; }
-  .story p { font-size: 10.5pt; line-height: 1.85; }
+  .story h3 { font-size: 10.2pt; margin: 3.6mm 0 1mm; color: #c2572b; }
+  .story p { font-size: 10pt; line-height: 1.75; margin-bottom: 2mm; }
 </style></head><body>
 ${toHtml(md)
   // 자기소개서 구간은 이야기 서식으로 감싼다
