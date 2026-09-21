@@ -17,7 +17,7 @@ const PDF_LOCAL = join(HERE, '진혜정_이력서_자기소개서_경력기술�
 const esc = (s) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const inline = (s) => esc(s)
   .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-  .replace(/(https?:\/\/[^\s|)]+)/g, (u) => `<a href="${u}">${u.replace(/^https?:\/\//, '')}</a>`);
+  .replace(/(https?:\/\/[^\s|)]+)/g, (u) => `<a href="${encodeURI(decodeURI(u))}">${u.replace(/^https?:\/\//, '')}</a>`);
 
 // 자기소개 본편: 첫 --- 와 둘째 --- 사이, 작업 표시 제거
 const storyMd = readFileSync(join(HERE, '자기소개 본편.md'), 'utf8').replace(/\r\n/g, '\n').split('\n---\n')[1]
