@@ -21,7 +21,7 @@ const inline = (s) => esc(s)
 
 // 자기소개 본편: 첫 --- 와 둘째 --- 사이, 작업 표시 제거
 const storyMd = readFileSync(join(HERE, '자기소개 본편.md'), 'utf8').replace(/\r\n/g, '\n').split('\n---\n')[1]
-  .replace(/\*\*\[직접 쓰기[^\]]*\]\*\* ?/g, '')
+  .replace(/\*\*\[[^\]]*\]\*\* ?/g, '') // 작업 표시([첫 문장 — 확정] 등)
   .replace(/ ?〔[^〕]*〕/g, '')
   .trim();
 
