@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>진혜정 — 보안 엔지니어 지망</title>
+<meta name="description" content="내가 만든 로그인의 빈틈을 직접 서른 번 재서 논문으로 남긴, 끝까지 확인하는 사람 — 보안 엔지니어를 준비하는 진혜정.">
+<meta property="og:title" content="진혜정 — 보안 엔지니어 지망">
+<meta property="og:description" content="내가 만든 로그인의 빈틈을 직접 서른 번 재서 논문으로 남긴, 끝까지 확인하는 사람">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://aleph-intro.vercel.app/">
+<meta name="theme-color" content="#0b1220">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1220'/%3E%3Cpath d='M16 6l2.6 6.6L25 13.2l-5 4.3 1.6 6.9L16 20.8l-5.6 3.6 1.6-6.9-5-4.3 6.4-.6z' fill='%23f6e7b0'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<style>
+  :root {
+    --night: #0b1220; --night-2: #16223a; --dusk: #2c2f55; --plum: #5a4a6e; --mauve: #735779; --dawn: #efc3a0; --dawn-2: #f8e6d4;
+    --paper: #fbf8f2; --card: #ffffff; --ink: #1c1b19; --muted: #6d6a63; --line: #e7e1d6;
+    --star: #f6e7b0; --accent: #c2572b; --accent-soft: #f3dccf; --todo: #b3541e;
+    --sans: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+    --serif: "Gowun Batang", "Nanum Myeongjo", serif;
+    --mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --paper: #15140f; --card: #1f1d18; --ink: #efeae0; --muted: #a9a398; --line: #34312a; --accent: #ec8b5e; --accent-soft: #3a2a22; --dawn: #5e433f; --dawn-2: #3a2e2a; --todo: #ec9a6f; }
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; overflow-x: clip; background: var(--paper); color: var(--ink); font: 17px/1.8 var(--sans); word-break: keep-all; overflow-wrap: anywhere; }
+  a { color: inherit; text-underline-offset: 3px; }
+  .wrap { max-width: 46rem; margin: 0 auto; padding: 0 16px; }
+  .todo { color: var(--todo); font-weight: 400; font-size: .9em; }
+
+  /* ── 첫 화면: 밤하늘 ── */
+  .hero { position: relative; min-height: 100svh; color: #eef1f8; overflow: hidden;
+    background: radial-gradient(120% 80% at 70% 0%, var(--dusk) 0%, var(--night-2) 45%, var(--night) 100%); }
+  .sky { position: absolute; inset: 0; pointer-events: none; }
+  .sky i { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: var(--star); box-shadow: 0 0 6px var(--star); opacity: .8; animation: tw 4s ease-in-out infinite; }
+  .sky i:nth-child(3n) { width: 2px; height: 2px; animation-delay: 1.3s; }
+  .sky i:nth-child(4n) { animation-delay: 2.6s; opacity: .5; }
+  @keyframes tw { 50% { opacity: .2; } }
+  @media (prefers-reduced-motion: reduce) { .sky i { animation: none; } html { scroll-behavior: auto; } }
+  .hero .wrap { position: relative; padding-top: 12vh; padding-bottom: 3rem; }
+  .kicker { font-family: var(--mono); font-size: .8rem; color: var(--star); text-transform: uppercase; letter-spacing: .14em; margin: 0 0 1rem; }
+  .hero h1 { font-size: clamp(3rem, 13vw, 5.5rem); line-height: 1; margin: 0 0 1.2rem; letter-spacing: -.04em; font-weight: 800; }
+  .line { font-family: var(--serif); font-size: clamp(1.2rem, 4.4vw, 1.55rem); line-height: 1.6; margin: 0 0 2.2rem; max-width: 34rem; color: #fff; }
+  .line em { font-style: normal; background: linear-gradient(transparent 62%, rgba(194,87,43,.6) 62%); }
+
+  .strip { list-style: none; padding: 0; margin: 0 0 2rem; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid rgba(255,255,255,.18); border-bottom: 1px solid rgba(255,255,255,.18); }
+  .strip li { padding: .9rem .6rem .9rem 0; }
+  .strip li + li { padding-left: .9rem; border-left: 1px solid rgba(255,255,255,.18); }
+  .strip b { display: block; font-family: var(--mono); font-size: clamp(1.4rem, 5.5vw, 2rem); font-weight: 600; color: var(--star); line-height: 1.2; }
+  .strip b small { font-size: .55em; color: #aeb6c9; font-weight: 400; }
+  .strip span { display: block; font-size: .8rem; color: #c3c9d8; line-height: 1.4; margin-top: .2rem; }
+
+  .brief { margin: 0 0 2.2rem; }
+  .brief h2 { font-family: var(--mono); font-size: .78rem; color: #aeb6c9; letter-spacing: .14em; font-weight: 400; margin: 0 0 .6rem; }
+  .brief dl { margin: 0; display: grid; gap: .55rem; }
+  .brief div { display: grid; grid-template-columns: 6.2rem 1fr; gap: .8rem; align-items: baseline; }
+  .brief dt { font-weight: 700; color: #fff; font-size: .95rem; }
+  .brief dd { margin: 0; color: #d4d9e5; font-size: .95rem; line-height: 1.6; }
+  .brief dd a { color: var(--star); }
+
+  .doors { display: flex; flex-wrap: wrap; gap: .5rem; }
+  .doors a { font-size: .92rem; text-decoration: none; padding: .55rem 1rem; border-radius: 999px; border: 1px solid rgba(255,255,255,.3); color: #fff; }
+  .doors a:first-child { background: var(--star); color: var(--night); border-color: var(--star); font-weight: 700; }
+  .doors a:hover { border-color: var(--star); }
+
+  /* ── 이야기: 밤 → 새벽 → 아침 ── */
+  .story { background: var(--night); padding: 5rem 0 0; }
+  .story-head { color: #eef1f8; margin-bottom: 3rem; }
+  .story-head p { font-family: var(--mono); font-size: .8rem; color: var(--star); letter-spacing: .14em; margin: 0 0 .4rem; }
+  .story-head h2 { font-family: var(--serif); font-size: clamp(1.7rem, 6vw, 2.4rem); line-height: 1.35; margin: 0; font-weight: 700; }
+  .opening { font-family: var(--serif); font-size: 1.3rem; color: #fff; margin: 0 0 2.5rem; }
+  /* 토막마다 화면 끝까지 닿는 배경 — 밤에서 아침으로 이어진다 */
+  .ch { position: relative; padding: 1.4rem 0 2.6rem 1.6rem; border-image: linear-gradient(var(--from), var(--to)) fill 0 // 0 100vmax; }
+  .ch::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 1px; background: currentColor; opacity: .25; }
+  .ch::before { content: ""; position: absolute; left: -5px; top: 1.85rem; z-index: 1; width: 11px; height: 11px; border-radius: 50%; background: var(--star); box-shadow: 0 0 10px var(--star); }
+  .ch time { font-family: var(--mono); font-size: .8rem; letter-spacing: .06em; display: inline-block; padding: .1rem .5rem; border-radius: 4px; background: rgba(255,255,255,.1); }
+  .ch h3 { font-size: 1.15rem; margin: .5rem 0 .4rem; }
+  .ch p { font-family: var(--serif); font-size: 1.05rem; line-height: 1.95; margin: 0; }
+  .ch.n { --from: var(--night); --to: var(--night-2); color: #dfe4ef; }
+  .ch.n + .ch.n { --from: var(--night-2); --to: var(--dusk); } .ch.n h3 { color: #fff; } .ch.n time { color: var(--star); }
+  .ch.d { --from: var(--dusk); --to: var(--plum); color: #f4ecf0; }
+  .ch.d + .ch.d { --from: var(--plum); --to: var(--mauve); } .ch.d h3 { color: #fff; } .ch.d time { color: #ffe3c8; }
+  .ch.m, .ch.a { color: var(--ink); }
+  .ch.m { --from: var(--dawn); --to: var(--dawn-2); }
+  .ch.a { --from: var(--dawn-2); --to: var(--paper); padding-bottom: 3rem; }
+  .ch.m::before, .ch.a::before { background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+  .ch.m time, .ch.a time { background: rgba(128,120,110,.15); }
+  .ch.a::after { bottom: auto; height: 2rem; }
+  .ch .jump { font-family: var(--sans); font-size: .9rem; color: var(--accent); }
+  .ch .jump, .ch a { color: var(--accent); }
+  .ch.m a, .ch.d a { color: inherit; text-decoration-color: var(--accent); text-decoration-thickness: 2px; font-weight: 700; }
+  blockquote.peer { margin: 1rem 0 0; padding: .9rem 1.1rem; border-radius: 10px; background: var(--card); border: 1px solid var(--line); font-family: var(--serif); font-size: 1.02rem; line-height: 1.8; }
+  blockquote.peer cite { display: block; font: .78rem var(--mono); color: var(--muted); margin-top: .3rem; font-style: normal; }
+  .closing { font-family: var(--serif); font-size: 1.3rem; line-height: 1.7; font-weight: 700; margin: 1.6rem 0 0 !important; padding-top: 1.4rem; border-top: 2px solid var(--accent); }
+
+  /* ── 아래 절들: 낮 ── */
+  section.day { padding: 4.5rem 0 1rem; }
+  .sec-head { display: flex; align-items: baseline; gap: .8rem; margin-bottom: 1.4rem; }
+  .sec-head span { font-family: var(--mono); color: var(--accent); font-size: .85rem; }
+  .sec-head h2 { font-size: 1.6rem; margin: 0; letter-spacing: -.02em; }
+  .lead { color: var(--muted); font-size: .92rem; margin: -.6rem 0 1.4rem; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr)); gap: .8rem; }
+  .stat { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 1.1rem 1.2rem; }
+  .stat.pair { border: 2px solid var(--accent); }
+  .stat-num { font-family: var(--mono); font-size: 2.3rem; font-weight: 600; margin: 0; line-height: 1.15; color: var(--accent); }
+  .stat-num small { font-size: 1rem; color: var(--muted); font-weight: 400; }
+  .stat-label { margin: .4rem 0; line-height: 1.55; }
+  .stat-label a { color: var(--accent); }
+  .stat-src { color: var(--muted); font-size: .78rem; margin: 0; font-family: var(--mono); line-height: 1.5; }
+  h3.ab { font-size: 1rem; margin: 2rem 0 .4rem; }
+  .quotes { padding-left: 1.1rem; } .quotes li { margin-bottom: .5rem; font-family: var(--serif); } .quotes time { font: .8rem var(--mono); color: var(--muted); margin-right: .3rem; }
+
+  .work { border-radius: 14px; padding: 1.4rem; margin-bottom: 1rem; }
+  .work.paper { background: var(--night); color: #e7ebf4; }
+  .work.paper .tag, .work.paper a { color: var(--star); }
+  .work .tag { font: .78rem var(--mono); letter-spacing: .1em; margin: 0 0 .5rem; }
+  .work h3 { font-size: 1.2rem; line-height: 1.5; margin: 0 0 .8rem; }
+  .work .result { display: grid; grid-template-columns: repeat(3, 1fr); gap: .6rem; margin: 1rem 0; }
+  .work .result div { border-top: 1px solid rgba(255,255,255,.2); padding-top: .5rem; }
+  .work .result b { display: block; font: 600 1.4rem var(--mono); color: var(--star); }
+  .work .result span { font-size: .8rem; color: #b9c0d0; line-height: 1.4; display: block; }
+  .work.empty { border: 2px dashed var(--line); color: var(--muted); }
+
+  .resume { display: grid; grid-template-columns: 7rem 1fr; gap: .4rem 1rem; margin: 0 0 1.5rem; }
+  .resume dt { font: .85rem var(--mono); color: var(--muted); padding-top: .15rem; }
+  .resume dd { margin: 0; }
+  .btn.off { opacity: .45; cursor: default; }
+  .btn { display: inline-block; padding: .7rem 1.2rem; border-radius: 999px; background: var(--ink); color: var(--paper); text-decoration: none; font-weight: 700; }
+
+  footer { margin-top: 4rem; padding: 2.5rem 0 3rem; background: var(--night); color: #c3c9d8; font-size: .9rem; }
+  footer b { color: #fff; }
+
+  @media (max-width: 480px) {
+    .strip { grid-template-columns: 1fr 1fr; }
+    .strip li:nth-child(3) { grid-column: 1 / -1; padding-left: 0; border-left: 0; border-top: 1px solid rgba(255,255,255,.18); }
+    .brief div { grid-template-columns: 1fr; gap: 0; }
+    .resume { grid-template-columns: 1fr; gap: 0; } .resume dd { margin-bottom: .6rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ───────── 첫 화면 ───────── -->
+<header class="hero" id="top">
+  <div class="sky" aria-hidden="true">
+    <i style="left:8%;top:12%"></i><i style="left:22%;top:30%"></i><i style="left:35%;top:8%"></i><i style="left:48%;top:22%"></i>
+    <i style="left:61%;top:6%"></i><i style="left:72%;top:26%"></i><i style="left:84%;top:14%"></i><i style="left:92%;top:36%"></i>
+    <i style="left:15%;top:52%"></i><i style="left:55%;top:44%"></i><i style="left:78%;top:58%"></i><i style="left:4%;top:72%"></i>
+    <i style="left:40%;top:66%"></i><i style="left:88%;top:80%"></i><i style="left:66%;top:90%"></i><i style="left:28%;top:86%"></i>
+  </div>
+  <div class="wrap">
+    <p class="kicker">Security Engineer · 지망</p>
+    <h1>진혜정</h1>
+    <p class="line">내가 만든 로그인의 빈틈을 <em>직접 서른 번 재서</em> 논문으로 남긴, 끝까지 확인하는 사람</p>
+
+    <ul class="strip">
+<!-- AUTO-HERO:START -->
+<!-- 이 구역은 장치/refresh.mjs --apply 가 다시 씁니다. 손으로 고치지 마세요. 기준일 2026-09-21 -->
+<li><b>29<small>/29</small></b><span>출석한 날 · 지각 0</span></li>
+<li><b>28<small>번</small></b><span>스스로 점검한 저녁 · 실천 27 · 일부 실천 1</span></li>
+<!-- AUTO-HERO:END -->
+      <li><b>30<small>회</small></b><span>직접 만든 로그인을 스스로 측정한 횟수</span></li>
+    </ul>
+
+    <div class="brief">
+      <h2>30초 요약</h2>
+      <dl>
+        <div><dt>자기조절력</dt><dd>2026년 7월, 팀장의 화풀이 앞에서 맞서지 않고 지켜본 뒤 거리를 두는 법을 익혔습니다.</dd></div>
+        <div><dt>대인관계력</dt><dd>동료가 적어 준 말: 함께 대화하다 보면 “어느새 여러 사람이 웃고 있는” 사람.</dd></div>
+        <div><dt>자기동기력</dt><dd>누가 시키지 않은 질문을 끝까지 파고들어 <a href="#works">논문</a>으로 만들었습니다.</dd></div>
+      </dl>
+    </div>
+
+    <nav class="doors" aria-label="바로가기">
+      <a href="#story">이야기 읽기 · 3분</a>
+      <a href="#numbers">숫자</a>
+      <a href="#works">대표작</a>
+      <a href="#resume">이력서</a>
+    </nav>
+  </div>
+</header>
+
+<!-- ───────── 이야기 ───────── -->
+<section class="story" id="story">
+  <div class="wrap">
+    <div class="story-head">
+      <p>STORY · 2012 → 2026</p>
+      <h2>여섯 살의 밤에서,<br>지금의 아침까지</h2>
+    </div>
+
+    <!-- [직접 쓰기] 첫 문장 -->
+    <p class="opening">저는 여섯 살 때부터 잠드는 일이 어려운 아이였습니다.</p>
+
+    <article class="ch n">
+      <time>2012</time>
+      <h3>여섯 살의 밤</h3>
+      <p>가족이 모두 잠들고 혼자 남으면 "나는 언젠가 죽는다"는 생각이 찾아왔습니다. 딴생각으로 밀어내도 곧 다시 돌아왔고, 저는 휴대전화를 보다 지쳐 쓰러질 때까지 버티는 밤을 이어 갔습니다. 사람에게 크게 데인 날에는 숨이 막힐 만큼 심해졌습니다. 답을 찾으려 초등학교 1학년부터 6학년까지 5년 넘게 교회에 다녔지만, "믿으라"는 말 말고 제가 원한 근거는 끝내 듣지 못했습니다.</p>
+    </article>
+
+    <article class="ch n">
+      <time>2025 가을</time>
+      <h3>질문을 바꾼 밤</h3>
+      <p>2025년 2월 고등학교를 졸업하고 일정이 텅 비자, 미뤄 둔 그 생각이 한꺼번에 돌아왔습니다. 그해 가을 저는 질문을 바꿨습니다. 답을 못 찾겠다면, 그래서 나는 무엇을 할 것인가. 제 대답은 돈을 벌고, 빠르게 바뀌는 기술의 한가운데에 서는 것이었습니다. 2026년 3월 25일, 저는 국비 풀스택 과정 첫 수업에 앉았고 보안 엔지니어를 목표로 정했습니다.</p>
+    </article>
+
+    <article class="ch d">
+      <time>2026.07</time>
+      <h3>세 번 다시 연 회의</h3>
+      <p>과정 마지막 팀 프로젝트에서 팀장은 자기 포트폴리오에 넣을 주제를 고집했고, 다른 팀이 한 번에 정한 주제를 저희 팀은 세 번이나 다시 회의했습니다. 팀장은 쌓인 스트레스를 제게 풀거나 제 작업만 감시하듯 지켜봤고, 옆 팀 사람들까지 알아챌 정도였습니다. 저는 그 자리에서 똑같이 맞서지 않았습니다. 프로젝트가 끝난 뒤에는 부당한 화풀이 앞에서 일단 참고 지켜본 다음, 자연스럽게 거리를 두는 법을 익혔습니다.</p>
+    </article>
+
+    <article class="ch d">
+      <time>2026.08.11</time>
+      <h3>다시 시작한 기록</h3>
+      <p>2026년 8월 11일, 새 과정의 첫 수업에서 부장님이 "머지않아 천 살까지 사는 시대가 온다"고 했을 때 다들 웃었지만, 저는 웃지 못했습니다. 그 말이 실현될지는 모릅니다. 다만 그날부터 밤의 잡생각이 줄고 잠이 쉽게 왔습니다. 그날부터 매일 아침과 저녁에 저를 점검하는 기록을 남겼습니다. 8월 18일에는 "화가 너무 나서 진짜 그냥 싸울까도 생각했지만 참고 참아서 싸우진 않았다"고 적었고, 8월 26일에는 먼저 교류하려고 애써 "몇 번 대화를 나눴다"고 적었습니다.</p>
+    </article>
+
+    <article class="ch m" id="d-0831">
+      <time>2026.08.31 → 09.01</time>
+      <h3>다음 날, 제자리로</h3>
+      <p>8월 31일 저녁, 저는 기록을 시작한 뒤 처음으로 "강점 행동: 일부 실천했다"고 적었습니다. 지친 하루였고, "실천했다"고 쓰면 거짓말이었습니다. 다음 날인 9월 1일에는 "최대한 부정적인 생각은 안 하려고 했고 오늘은 긍정적 생각하려고 했다"고, 그리고 "노력의 결실이 있었던 것 같다"고 적었습니다. 9월 7일에는 부상으로 쉬던 클라이밍을 다시 시작했습니다. <a class="jump" href="#numbers">이 하루를 숫자로 보기 →</a></p>
+    </article>
+
+    <article class="ch a">
+      <time>지금</time>
+      <h3>보안 엔지니어를 준비합니다</h3>
+      <p>지금 저는 인증 구조를 직접 만들고 무너뜨려 보며 보안 엔지니어를 준비합니다. 제가 만든 패스키 로그인이 백업 상태 신호를 흘려보내고 있다는 걸 측정으로 확인하고, 오픈소스 구현체까지 조사해 <a href="#works">논문</a>으로 정리했습니다. 여섯 살 밤의 무서움은 사라지지 않았지만, 이제 그 무서움은 저를 뒤척이게 하는 대신 앞으로 밀어 줍니다.</p>
+      <blockquote class="peer">“주변이 산만하거나 소란스러워도 쉽게 동요하지 않고 차분하게 본인만의 리듬을 유지하시는 뚝심이 인상 깊었습니다.”<cite>동료 · 리추얼 기록 2026-09-02</cite></blockquote>
+      <blockquote class="peer">“…혜정님과 대화를 나누고 있으면 어느새 여러 사람이 웃고 있는 모습에 멋지다고 느낀 것 같습니다.”<cite>동료 · 리추얼 기록 2026-09-09</cite></blockquote>
+      <!-- [직접 쓰기] 마지막 문장 -->
+      <p class="closing">하루 안에 제자리로 돌아오는 사람으로, 함께 일할 팀의 하루를 단단하게 지키고 싶습니다.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ───────── 숫자 ───────── -->
+<section class="day" id="numbers">
+  <div class="wrap">
+    <div class="sec-head"><span>01</span><h2>숫자로 보면</h2></div>
+    <p class="lead">기록 파일을 넣고 장치를 돌리면 이 칸이 다시 만들어집니다. 모든 숫자에 출처를 붙였습니다.</p>
+<!-- AUTO:START -->
+<!-- 이 구역은 장치/refresh.mjs --apply 가 다시 씁니다. 손으로 고치지 마세요. 기준일 2026-09-21 -->
+<div class="stats">
+  <div class="stat">
+    <p class="stat-num">29<small>/29일</small></p>
+    <p class="stat-label">출석한 날 · 지각 0번</p>
+    <p class="stat-src">출처: 내 출석 기록 · 2026-09-21 기준</p>
+  </div>
+  <div class="stat">
+    <p class="stat-num">29<small>/29일</small></p>
+    <p class="stat-label">수업일마다 아침·저녁으로 나를 점검한 기록</p>
+    <p class="stat-src">출처: 리추얼 기록 · 2026-08-11 ~ 2026-09-21 · 공휴일 2026-08-17 제외</p>
+  </div>
+  <div class="stat pair">
+    <p class="stat-num">27<small>/28번</small></p>
+    <p class="stat-label">저녁 점검에서 “실천했다”고 적은 날 — 남은 1번은 <a href="#d-0831">2026-08-31</a>의 “일부 실천했다”, 다음 기록일 2026-09-01에 다시 “실천했다”</p>
+    <p class="stat-src">출처: 리추얼 기록 · 마무리 「강점 행동」 칸 · 가장 긴 연속 15번</p>
+  </div>
+  <div class="stat">
+    <p class="stat-num">11<small>/13개</small></p>
+    <p class="stat-label">낸 과제</p>
+    <p class="stat-src">출처: 내 제출 현황 · 2026-09-21 기준</p>
+  </div>
+</div>
+<h3 class="ab">자기조절력 — 기록에서 고른 문장</h3>
+<ul class="quotes">
+  <li><time>2026-08-18</time> “화가 너무 나서 진짜 그냥 싸울까도 생각했지만 참고 참아서 싸우진 않았다.” <span class="stat-src">아침 · 강점이 드러난 일화</span></li>
+  <li><time>2026-09-01</time> “최대한 부정적인 생각은 안 하려고 했고 오늘은 긍정적 생각하려고 했다.” <span class="stat-src">마무리 · 강점을 위해 노력하고 생각한 것</span></li>
+  <li><time>2026-09-02</time> “주변이 산만하거나 소란스러워도 쉽게 동요하지 않고 차분하게 본인만의 리듬을 유지하시는 뚝심이 인상 깊었습니다.” <span class="stat-src">동료가 말해 준 내 장점</span></li>
+</ul>
+<h3 class="ab">대인관계력 — 기록에서 고른 문장</h3>
+<ul class="quotes">
+  <li><time>2026-08-26</time> “다른 사람과 계속 교류를 할 수 있도록 노력했고 몇 번 대화를 나눴다.” <span class="stat-src">마무리 · 강점을 위해 노력하고 생각한 것</span></li>
+  <li><time>2026-09-09</time> “다른 사람과의 대인관계에서 분위기를 띄우는 분위기 메이커와 같은 포지션으로 혜정님과 대화를 나누고 있으면 어느새 여러 사람이 웃고 있는 모습에 멋지다고 느낀 것 같습니다.” <span class="stat-src">동료가 말해 준 내 장점</span></li>
+  <li><time>2026-09-16</time> “언제나 주변동기들을 누구보다 먼저 살피며 먼저 대화를 걸어주며 매번 주변 동기들에게 긍정적인 영향을 주십니다.” <span class="stat-src">동료가 말해 준 내 장점</span></li>
+</ul>
+<h3 class="ab">자기동기력 — 기록에서 고른 문장</h3>
+<ul class="quotes">
+  <li><time>2026-09-07</time> “최근 부상과 운동 부족으로 인한 몸의 피로라던가 건강이 이래저래 안 좋았지만 주말에 다시 운동(클라이밍)을 시작하였다.” <span class="stat-src">아침 · 강점이 드러난 일화</span></li>
+  <li><time>2026-09-09</time> “언제나 어떻게 피곤해도 지각을 안 하고 정돈된 상태로 평소와 같이 갈 수 있는 능력을 기른 느낌이다.” <span class="stat-src">아침 · 그 결과·알게 된 점</span></li>
+  <li><time>2026-09-16</time> “최근엔 개인 시간이 너무 없고 수면 시간도 적지만 꾸준하게 학원을 다니고 스터디를 하고 있다.” <span class="stat-src">아침 · 강점이 드러난 일화</span></li>
+</ul>
+<!-- AUTO:END -->
+  </div>
+</section>
+
+<!-- ───────── 대표작 ───────── -->
+<section class="day" id="works">
+  <div class="wrap">
+    <div class="sec-head"><span>02</span><h2>대표작</h2></div>
+    <article class="work paper">
+      <p class="tag">PAPER · 2026.09.10 · 정보보안 — 인증</p>
+      <h3>동기화 패스키의 백업 상태 전이는 서비스에 관측되는가</h3>
+      <p>제가 만든 패스키 서비스에서 WebAuthn 백업 상태(BS) 플래그를 0→1, 1→0으로 바꿔 가며 측정했습니다. 플래그 바이트는 매번 바뀌었지만 서버 응답과 저장 레코드는 로그인 횟수를 빼면 그대로였습니다. 오픈소스까지 조사해 보니, 신호가 끊기는 곳은 라이브러리와 응용 사이였습니다.</p>
+      <div class="result">
+        <div><b>10/10</b><span>전이를 줘도 서버 상태 무변화</span></div>
+        <div><b>4/11</b><span>규격대로 대조·갱신하는 라이브러리</span></div>
+        <div><b>0/3</b><span>신호를 끝까지 지킨 응용</span></div>
+      </div>
+      <p><a href="https://github.com/ginye28/ALEPH/blob/main/10/%EB%85%BC%EB%AC%B8.md">논문 읽기 →</a> &nbsp; <a href="https://github.com/ginye28/ALEPH/tree/main/10/%EA%B3%BC%EC%A0%9C10_%EB%85%BC%EB%AC%B8_%EC%9E%AC%ED%98%84%ED%8C%A8%ED%82%A4%EC%A7%80">재현 패키지 →</a></p>
+    </article>
+    <article class="work empty">
+      <p class="tag">APP · 13번 과제</p>
+      <h3>이 자리에 13번 앱이 들어옵니다</h3>
+      <p>2026년 9월 23일 만들기 시작 · 완성되면 여기에 주소와 설명을 올립니다.</p>
+    </article>
+  </div>
+</section>
+
+<!-- ───────── 이력서 ───────── -->
+<section class="day" id="resume">
+  <div class="wrap">
+    <div class="sec-head"><span>03</span><h2>이력서</h2></div>
+    <dl class="resume">
+      <dt>지원 분야</dt><dd>보안 엔지니어 — 인증·인가, 웹 취약점 진단</dd>
+      <dt>2026.08.11 –</dt><dd>ALEPH 과정 (13주)</dd>
+      <dt>2026.03 – 08</dt><dd>국비지원 풀스택 과정 수료 (2026.03.25 – 2026.08.14)</dd>
+      <dt>2025.02</dt><dd>충렬여자고등학교 졸업</dd>
+      <dt>개인 프로젝트</dt><dd><a href="https://github.com/ginye28/streaming-platform">streaming-platform</a> — Spring Boot · React 실시간 스트리밍. 리프레시 토큰 재발급, 스트림 키를 재생 주소에 드러내지 않는 송출 구조</dd>
+      <dt>기술</dt><dd>Java · Spring Boot · Spring Security · JPA · JWT / React · Vite / MySQL · Supabase(RLS) / Docker · GitHub Actions · Vercel / WebAuthn(패스키) · Python · n8n</dd>
+      <dt>연락</dt><dd><a href="mailto:bisJiNess@gmail.com">bisJiNess@gmail.com</a></dd>
+    </dl>
+    <a class="btn" href="docs/jin-hyejeong-resume.pdf" download>이력서 · 자기소개서 · 경력기술서 PDF 받기</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p><b>진혜정</b> · 연락 <a href="mailto:bisJiNess@gmail.com">bisJiNess@gmail.com</a></p>
+    <p>이 사이트의 숫자는 리추얼 기록·출석 기록·제출 현황에서 옮겨 왔고, 다른 사람의 이름은 넣지 않았습니다.</p>
+  </div>
+</footer>
+
+</body>
+</html>

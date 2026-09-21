@@ -1,0 +1,44 @@
+{
+  "asOf": "2026-09-21",
+  "ritual": {
+    "source": "리추얼 기록 (ritual-history-2026-09-21.txt)",
+    "period": "2026-08-11 ~ 2026-09-21",
+    "weekdaysInPeriod": 30,
+    "holidaysInPeriod": [
+      "2026-08-17"
+    ],
+    "classDays": 29,
+    "recordedDays": 29,
+    "missingWeekdays": [],
+    "morningDays": 29,
+    "closingDays": 28,
+    "strengthActionRecorded": 28,
+    "strengthActionDone": 27,
+    "strengthActionPartial": 1,
+    "wobbles": [
+      {
+        "date": "2026-08-31",
+        "value": "일부 실천했다",
+        "recoveredOn": "2026-09-01",
+        "recordsToRecover": 1
+      }
+    ],
+    "longestDoneStreak": 15,
+    "peerNotes": 106
+  },
+  "attendance": {
+    "source": "내 출석 기록",
+    "asOf": "2026-09-21",
+    "attended": 29,
+    "total": 29,
+    "late": 0
+  },
+  "submissions": {
+    "source": "내 제출 현황",
+    "asOf": "2026-09-21",
+    "submitted": 11,
+    "planned": 2,
+    "unconfirmed": 0,
+    "total": 13
+  }
+}
