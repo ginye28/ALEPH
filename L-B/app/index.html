@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BS 신호 점검기</title>
-<meta name="description" content="패스키 로그인을 만드는 개발자가 인증 응답의 백업 상태(BE/BS) 전이를 놓치지 않도록, 논문이 확인한 규칙으로 판정하고 빠진 저장·대조 단계를 알려 주는 앱">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230b1220'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='monospace' font-size='15' font-weight='700' fill='%23f6e7b0'%3EBS%3C/text%3E%3C/svg%3E">
+<title>BS Check — 패스키 백업 상태 판정기</title>
+<meta name="description" content="패스키 로그인 응답을 넣으면 백업 상태(BE/BS) 전이를 판정하고, 서버에 빠진 저장·대조 단계를 알려 주는 도구. 모든 계산은 브라우저 안에서만 이뤄집니다.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b1220'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='monospace' font-size='15' font-weight='700' fill='%23f6c667'%3EBS%3C/text%3E%3C/svg%3E">
 <style>
   :root {
     --bg: #fbf8f2; --card: #ffffff; --ink: #1c1b19; --muted: #6d6a63; --line: #e7e1d6;
-    --night: #0b1220; --accent: #c2572b; --accent-soft: #f6e4d9;
+    --night: #0b1220; --night-2: #101a2e; --accent: #c2572b; --accent-2: #f6c667; --accent-soft: #f6e4d9;
     --ok: #2f7a4d; --ok-soft: #e3f1e7; --warn: #9a6a00; --warn-soft: #fbf0d4; --bad: #b3261e; --bad-soft: #f9e0dd; --info: #2d5b9a; --info-soft: #e1eaf7;
     --code: #f3efe7;
     --sans: "Pretendard", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
@@ -30,139 +30,218 @@
     --code: #26241e;
   }
   * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
   body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.7 var(--sans); word-break: keep-all; overflow-wrap: anywhere; }
   a { color: var(--accent); text-underline-offset: 3px; }
-  .wrap { max-width: 50rem; margin: 0 auto; padding: 0 16px; }
+  .wrap { max-width: 52rem; margin: 0 auto; padding: 0 16px; }
   code, .mono { font-family: var(--mono); font-size: .92em; }
+  svg.icon { width: 1em; height: 1em; stroke: currentColor; fill: none; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; vertical-align: -.14em; flex: none; }
 
-  header.top { background: var(--night); color: #eef1f8; padding: 40px 0 32px; }
-  .paper-tag { margin: 0 0 6px; font: 700 13px/1.5 var(--sans); letter-spacing: .02em; color: #f6e7b0; text-transform: uppercase; }
-  .paper-title { margin: 0 0 22px; font-size: 15px; color: #c9cfdd; }
-  .paper-title a { color: #eef1f8; }
-  h1 { margin: 0 0 12px; font-size: clamp(28px, 6vw, 40px); line-height: 1.2; letter-spacing: -.02em; }
-  .helps { margin: 0; font-size: 18px; line-height: 1.65; color: #eef1f8; max-width: 44rem; }
-  .helps b { color: #f6e7b0; font-weight: 700; }
-  .tasks { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 26px 0 0; padding: 0; list-style: none; }
-  .tasks a { display: block; height: 100%; padding: 12px 14px; border: 1px solid #2c3a57; border-radius: 10px; color: #eef1f8; text-decoration: none; background: #111a2d; }
-  .tasks a:hover, .tasks a:focus-visible { border-color: #f6e7b0; }
-  .tasks b { display: block; font: 700 13px var(--sans); color: #f6e7b0; }
-  .tasks span { font-size: 14px; line-height: 1.5; }
-  @media (max-width: 640px) { .tasks { grid-template-columns: 1fr; } }
+  /* ── 상단 내비 ── */
+  .nav { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--night) 94%, transparent); backdrop-filter: blur(8px); border-bottom: 1px solid rgba(255,255,255,.08); }
+  .nav .wrap { display: flex; align-items: center; gap: 18px; height: 54px; }
+  .brand { display: flex; align-items: center; gap: 8px; color: #eef1f8; text-decoration: none; font-weight: 700; margin-right: auto; }
+  .brand .mark { width: 26px; height: 26px; border-radius: 7px; background: linear-gradient(155deg, var(--accent-2), var(--accent)); display: flex; align-items: center; justify-content: center; font: 800 11px var(--mono); color: var(--night); }
+  .navlinks { display: flex; gap: 4px; align-items: center; }
+  .navlinks a { color: #c9cfdd; text-decoration: none; font-size: 14px; padding: 6px 10px; border-radius: 7px; }
+  .navlinks a:hover { color: #fff; background: rgba(255,255,255,.08); }
+  .navlinks a.ext { color: #8892a6; display: none; }
+  @media (min-width: 560px) { .navlinks a.ext { display: inline-flex; align-items: center; gap: 4px; } }
 
-  main section { padding: 34px 0 6px; }
-  .step-head { display: flex; gap: 12px; align-items: baseline; margin: 0 0 6px; }
-  .step-head .n { font: 700 14px var(--sans); color: var(--accent); }
-  h2 { margin: 0; font-size: 22px; letter-spacing: -.01em; }
-  .lead { margin: 0 0 16px; color: var(--muted); }
-  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 18px; }
+  /* ── 히어로 ── */
+  .hero { position: relative; color: #eef1f8; overflow: hidden; padding: 52px 0 46px;
+    background:
+      radial-gradient(60% 90% at 85% -10%, rgba(246,198,103,.16) 0%, transparent 60%),
+      radial-gradient(80% 60% at 10% 110%, rgba(194,87,43,.18) 0%, transparent 60%),
+      var(--night); }
+  .hero::before { content: ""; position: absolute; inset: 0; opacity: .5; pointer-events: none;
+    background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
+    background-size: 34px 34px; mask-image: radial-gradient(70% 70% at 50% 0%, #000 30%, transparent 90%); }
+  .hero .in { position: relative; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 6px; font: 700 12px/1 var(--mono); letter-spacing: .04em; color: var(--accent-2); background: rgba(246,198,103,.1); border: 1px solid rgba(246,198,103,.28); border-radius: 999px; padding: 6px 12px; margin: 0 0 18px; }
+  h1 { margin: 0 0 14px; font-size: clamp(28px, 5.4vw, 40px); line-height: 1.24; letter-spacing: -.02em; max-width: 20ch; }
+  .hero .lead { margin: 0 0 22px; font-size: 17px; line-height: 1.7; color: #d3d8e4; max-width: 42rem; }
+  .privacy { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: #bfe8cf; background: rgba(90,190,130,.1); border: 1px solid rgba(90,190,130,.28); border-radius: 999px; padding: 7px 13px 7px 11px; margin: 0 0 24px; }
+  .privacy svg { color: #6fcf97; }
+  .features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 0; padding: 0; list-style: none; }
+  .features a { display: flex; flex-direction: column; gap: 8px; height: 100%; padding: 14px 15px; border: 1px solid #2c3a57; border-radius: 12px; color: #eef1f8; text-decoration: none; background: #111a2d; transition: border-color .15s, transform .15s; }
+  .features a:hover, .features a:focus-visible { border-color: var(--accent-2); transform: translateY(-1px); }
+  .features svg { width: 20px; height: 20px; color: var(--accent-2); }
+  .features b { font-size: 14px; }
+  .features span { font-size: 13px; line-height: 1.5; color: #aab2c5; }
+  @media (max-width: 640px) { .features { grid-template-columns: 1fr; } }
+
+  /* ── 본문 ── */
+  main .wrap { padding-top: 8px; }
+  section { padding: 40px 0 8px; scroll-margin-top: 66px; }
+  .sec-head { margin: 0 0 6px; }
+  .sec-head .kicker { display: block; font: 700 12px var(--mono); letter-spacing: .06em; color: var(--accent); text-transform: uppercase; margin: 0 0 6px; }
+  h2 { margin: 0; font-size: 23px; letter-spacing: -.01em; }
+  .lead { margin: 6px 0 18px; color: var(--muted); max-width: 42rem; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  .card + .card { margin-top: 14px; }
+  .subdivider { display: flex; align-items: center; gap: 10px; margin: 24px 0 14px; color: var(--muted); font: 700 13px var(--sans); }
+  .subdivider::after { content: ""; flex: 1; height: 1px; background: var(--line); }
   label.field { display: block; font-weight: 600; margin: 0 0 6px; }
-  textarea, select { width: 100%; font: 15px var(--mono); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 10px 12px; }
+  textarea, select { width: 100%; font: 15px var(--mono); color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 9px; padding: 11px 13px; }
   textarea { min-height: 76px; resize: vertical; }
-  select { font-family: var(--sans); }
-  textarea:focus, select:focus, button:focus-visible, input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  select { font-family: var(--sans); padding-top: 10px; padding-bottom: 10px; }
+  textarea:focus, select:focus, button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   .hint { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
-  .chips span { font-size: 13px; color: var(--muted); align-self: center; margin-right: 2px; }
-  button { font: 600 14px var(--sans); cursor: pointer; border-radius: 999px; padding: 7px 14px; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+  .chips-label { width: 100%; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin: 0 0 2px; }
+  button { font: 600 14px var(--sans); cursor: pointer; border-radius: 999px; padding: 7px 14px; border: 1px solid var(--line); background: var(--card); color: var(--ink); display: inline-flex; align-items: center; gap: 6px; transition: border-color .15s, background .15s; }
   button:hover { border-color: var(--accent); }
   button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  button.copy { font-size: 12px; padding: 5px 11px; }
+  button.copy.done { border-color: var(--ok); color: var(--ok); }
 
-  .err { margin: 10px 0 0; padding: 10px 12px; border-radius: 8px; background: var(--bad-soft); color: var(--bad); font-size: 14px; }
-  .meta { margin: 12px 0 0; font-size: 14px; color: var(--muted); }
+  .err { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0 0; padding: 11px 13px; border-radius: 9px; background: var(--bad-soft); color: var(--bad); font-size: 14px; }
+  .err svg { flex: none; margin-top: 2px; }
+  .meta { margin: 14px 0 0; font-size: 14px; color: var(--muted); }
   .bits { display: grid; grid-template-columns: repeat(8, 1fr); gap: 6px; margin: 14px 0 0; }
-  .bit { border: 1px solid var(--line); border-radius: 8px; padding: 8px 4px 6px; text-align: center; background: var(--bg); }
-  .bit .nm { font: 700 13px var(--mono); }
-  .bit .v { font: 700 20px var(--mono); line-height: 1.3; }
-  .bit .mk { font: 11px var(--mono); color: var(--muted); }
+  .bit { border: 1px solid var(--line); border-radius: 9px; padding: 9px 4px 7px; text-align: center; background: var(--bg); }
+  .bit .ic { height: 15px; display: flex; align-items: center; justify-content: center; color: var(--muted); margin: 0 0 2px; }
+  .bit .nm { font: 700 12px var(--mono); }
+  .bit .v { font: 700 19px var(--mono); line-height: 1.3; }
+  .bit .mk { font: 10px var(--mono); color: var(--muted); }
   .bit.on { border-color: var(--ink); }
   .bit.key { background: var(--accent-soft); border-color: var(--accent); }
+  .bit.key .ic { color: var(--accent); }
   .bit.key.on .v { color: var(--accent); }
-  .bitlabels { margin: 10px 0 0; padding: 0; list-style: none; font-size: 14px; }
-  .bitlabels li { padding: 2px 0; }
-  .bitlabels b { font-family: var(--mono); display: inline-block; min-width: 2.4em; }
+  .bitlabels { margin: 12px 0 0; padding: 0; list-style: none; font-size: 14px; display: grid; gap: 4px; }
+  .bitlabels li { display: flex; gap: 8px; align-items: baseline; }
+  .bitlabels b { font-family: var(--mono); flex: none; }
   @media (max-width: 520px) { .bits { grid-template-columns: repeat(4, 1fr); } }
 
   .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
   @media (max-width: 640px) { .grid3 { grid-template-columns: 1fr; } }
-  fieldset { border: 0; padding: 0; margin: 14px 0 0; }
+  fieldset { border: 0; padding: 0; margin: 16px 0 0; }
   legend { font-weight: 600; padding: 0; margin: 0 0 6px; }
   .radios { display: flex; flex-wrap: wrap; gap: 8px; }
   .radios label { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); border-radius: 999px; padding: 5px 12px; font-size: 14px; cursor: pointer; background: var(--bg); }
   .radios input { accent-color: var(--accent); margin: 0; }
   .radios label:has(input:checked) { border-color: var(--accent); background: var(--accent-soft); }
 
-  .verdict { display: flex; gap: 14px; align-items: center; margin: 18px 0 12px; padding: 14px 16px; border-radius: 12px; border: 2px solid; }
-  .verdict .badge { font-size: 20px; font-weight: 800; white-space: nowrap; }
-  .verdict p { margin: 0; font-size: 15px; }
-  .verdict.pass { border-color: var(--ok); background: var(--ok-soft); } .verdict.pass .badge { color: var(--ok); }
-  .verdict.stepup { border-color: var(--warn); background: var(--warn-soft); } .verdict.stepup .badge { color: var(--warn); }
-  .verdict.reject { border-color: var(--bad); background: var(--bad-soft); } .verdict.reject .badge { color: var(--bad); }
-  .finding { border-left: 4px solid var(--line); padding: 8px 12px; margin: 0 0 10px; background: var(--bg); border-radius: 0 8px 8px 0; }
-  .finding h3 { margin: 0 0 2px; font-size: 15px; }
-  .finding p { margin: 0; font-size: 14px; }
-  .finding .ref { font-size: 12px; color: var(--muted); }
-  .finding.ok { border-color: var(--ok); } .finding.warn { border-color: var(--warn); } .finding.bad { border-color: var(--bad); } .finding.info { border-color: var(--info); }
-  pre { margin: 8px 0 0; padding: 12px 14px; background: var(--code); border-radius: 8px; overflow-x: auto; font: 13px/1.55 var(--mono); }
-  .rowhead { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 16px 0 0; }
-  .rowhead h3 { margin: 0; font-size: 15px; }
-  .rowhead button { padding: 4px 12px; font-size: 13px; }
+  .verdict { display: flex; gap: 14px; align-items: center; margin: 18px 0 12px; padding: 15px 17px; border-radius: 13px; border: 2px solid; }
+  .verdict .ic { flex: none; width: 30px; height: 30px; }
+  .verdict .badge { font-size: 19px; font-weight: 800; }
+  .verdict p { margin: 2px 0 0; font-size: 14.5px; }
+  .verdict.pass { border-color: var(--ok); background: var(--ok-soft); } .verdict.pass .badge, .verdict.pass .ic { color: var(--ok); }
+  .verdict.stepup { border-color: var(--warn); background: var(--warn-soft); } .verdict.stepup .badge, .verdict.stepup .ic { color: var(--warn); }
+  .verdict.reject { border-color: var(--bad); background: var(--bad-soft); } .verdict.reject .badge, .verdict.reject .ic { color: var(--bad); }
+  .finding { display: flex; gap: 10px; border-left: 4px solid var(--line); padding: 9px 12px; margin: 0 0 10px; background: var(--bg); border-radius: 0 9px 9px 0; }
+  .finding .ic { flex: none; margin-top: 2px; }
+  .finding h3 { margin: 0 0 2px; font-size: 14.5px; }
+  .finding p { margin: 0; font-size: 13.5px; }
+  .finding .ref { display: inline-block; margin-top: 4px; font-size: 11.5px; font-family: var(--mono); color: var(--muted); background: var(--code); border-radius: 5px; padding: 1px 6px; }
+  .finding.ok { border-color: var(--ok); } .finding.ok .ic { color: var(--ok); }
+  .finding.warn { border-color: var(--warn); } .finding.warn .ic { color: var(--warn); }
+  .finding.bad { border-color: var(--bad); } .finding.bad .ic { color: var(--bad); }
+  .finding.info { border-color: var(--info); } .finding.info .ic { color: var(--info); }
+  pre { margin: 8px 0 0; padding: 12px 14px; background: var(--code); border-radius: 9px; overflow-x: auto; font: 13px/1.55 var(--mono); }
+  .rowhead { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 18px 0 0; }
+  .rowhead h3 { margin: 0; font-size: 14.5px; }
 
   .q { padding: 12px 0; border-top: 1px solid var(--line); }
   .q:first-of-type { border-top: 0; padding-top: 4px; }
-  .q p { margin: 0 0 8px; font-weight: 600; }
+  .q p { margin: 0 0 8px; font-weight: 600; font-size: 14.5px; }
   .q .num { font-family: var(--mono); color: var(--accent); margin-right: 6px; }
-  table.m { width: 100%; border-collapse: collapse; font-size: 14px; margin: 8px 0 0; }
+  table.m { width: 100%; border-collapse: collapse; font-size: 13.5px; margin: 10px 0 0; }
   table.m th, table.m td { border-bottom: 1px solid var(--line); padding: 6px 8px; text-align: left; vertical-align: top; }
-  table.m th { color: var(--muted); font-weight: 600; font-size: 13px; }
+  table.m th { color: var(--muted); font-weight: 600; font-size: 12.5px; }
   .yes { color: var(--ok); font-weight: 700; } .no { color: var(--bad); font-weight: 700; }
   .audit-result { margin: 16px 0 0; }
-  .note { margin: 10px 0 0; padding: 10px 12px; border-radius: 8px; background: var(--info-soft); font-size: 14px; }
+  .note { display: flex; gap: 9px; margin: 10px 0 0; padding: 11px 13px; border-radius: 9px; background: var(--info-soft); font-size: 13.5px; }
+  .note svg { flex: none; margin-top: 2px; color: var(--info); }
+  .stack-picks { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+  .stack-picks button { font-size: 13px; padding: 6px 13px; }
+  .stack-picks button.active { border-color: var(--accent); background: var(--accent-soft); }
 
-  footer { margin: 40px 0 0; padding: 26px 0 40px; border-top: 1px solid var(--line); color: var(--muted); font-size: 14px; }
-  footer h2 { font-size: 16px; color: var(--ink); margin: 0 0 8px; }
-  footer ul { margin: 0 0 14px; padding-left: 1.2em; }
+  details.limits { margin-top: 8px; }
+  details.limits summary { cursor: pointer; font-weight: 600; font-size: 14.5px; padding: 4px 0; list-style: none; display: flex; align-items: center; gap: 6px; }
+  details.limits summary::-webkit-details-marker { display: none; }
+  details.limits summary svg { transition: transform .15s; color: var(--muted); }
+  details.limits[open] summary svg { transform: rotate(180deg); }
+  details.limits ul { margin: 10px 0 0; padding-left: 1.2em; color: var(--muted); font-size: 14px; }
+  details.limits li { margin: 6px 0; }
+
+  footer { margin: 44px 0 0; padding: 24px 0 44px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13.5px; }
+  .footlinks { display: flex; flex-wrap: wrap; gap: 4px 16px; margin: 0 0 14px; }
+  .footlinks a { color: var(--muted); display: inline-flex; align-items: center; gap: 4px; text-decoration: none; }
+  .footlinks a:hover { color: var(--accent); }
 </style>
 </head>
 <body>
 
-<header class="top">
+<svg style="position:absolute; width:0; height:0; overflow:hidden" aria-hidden="true">
+  <defs>
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="10.5" cy="10.5" r="6.5"/><line x1="20" y1="20" x2="15.3" y2="15.3"/></symbol>
+    <symbol id="i-scale" viewBox="0 0 24 24"><line x1="12" y1="3" x2="12" y2="21"/><path d="M5 7h14"/><path d="M5 7l-3.2 6.2a3.2 3.2 0 0 0 6.4 0z"/><path d="M19 7l-3.2 6.2a3.2 3.2 0 0 0 6.4 0z"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><line x1="4" y1="6" x2="20" y2="6"/><circle cx="9" cy="6" r="2" fill="var(--night,#0b1220)"/><line x1="4" y1="12" x2="20" y2="12"/><circle cx="15" cy="12" r="2" fill="var(--night,#0b1220)"/><line x1="4" y1="18" x2="20" y2="18"/><circle cx="7" cy="18" r="2" fill="var(--night,#0b1220)"/></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></symbol>
+    <symbol id="i-cloud" viewBox="0 0 24 24"><path d="M7 18a4 4 0 0 1-.6-7.95A5 5 0 0 1 16 8.3 3.5 3.5 0 0 1 17.5 18H7z"/></symbol>
+    <symbol id="i-check-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M7.5 12.5l3 3 6-6"/></symbol>
+    <symbol id="i-alert-triangle" viewBox="0 0 24 24"><path d="M12 3.3l9.5 17H2.5z"/><line x1="12" y1="9.5" x2="12" y2="14"/><line x1="12" y1="16.6" x2="12" y2="16.7"/></symbol>
+    <symbol id="i-x-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="8.5" y1="8.5" x2="15.5" y2="15.5"/><line x1="15.5" y1="8.5" x2="8.5" y2="15.5"/></symbol>
+    <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><line x1="12" y1="11" x2="12" y2="16.3"/><line x1="12" y1="7.6" x2="12" y2="7.7"/></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></symbol>
+    <symbol id="i-external" viewBox="0 0 24 24"><path d="M14 4h6v6"/><line x1="20" y1="4" x2="11" y2="13"/><path d="M18 13v5a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h5"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6z"/><path d="M9 12l2 2 4-4"/></symbol>
+  </defs>
+</svg>
+
+<nav class="nav">
   <div class="wrap">
-    <p class="paper-tag">10번 논문을 반영한 앱</p>
-    <p class="paper-title">논문 · <a href="https://github.com/ginye28/ALEPH/blob/main/10/%EB%85%BC%EB%AC%B8.md">「동기화 패스키의 백업 상태 전이는 서비스에 관측되는가」</a> (진혜정, 2026)</p>
-    <h1>BS 신호 점검기</h1>
-    <p class="helps">이 앱은 <b>패스키 로그인을 만드는 개발자</b>가 로그인 응답을 넣으면, 논문이 확인한 규칙(규격 §7.2 단계 18·19와 적응형 인증)으로 <b>백업 상태(BE/BS) 전이를 판정</b>하고 <b>서버에 빠진 저장·대조 단계</b>를 알려 줍니다.</p>
-    <ol class="tasks">
-      <li><a href="#read"><b>할 일 1</b><span>로그인 응답에서 BE·BS 읽기</span></a></li>
-      <li><a href="#judge"><b>할 일 2</b><span>보관한 값과 비교해 대응 받기</span></a></li>
-      <li><a href="#audit"><b>할 일 3</b><span>내 서버의 빠진 단계 찾기</span></a></li>
-    </ol>
+    <a class="brand" href="#top"><span class="mark">BS</span>BS Check</a>
+    <div class="navlinks">
+      <a href="#read">판독</a>
+      <a href="#policy">판정</a>
+      <a href="#audit">서버 진단</a>
+      <a class="ext" href="https://github.com/ginye28/ALEPH/blob/main/10/%EB%85%BC%EB%AC%B8.md" target="_blank" rel="noopener">연구 배경 <svg class="icon"><use href="#i-external"/></svg></a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap in">
+    <span class="eyebrow"><svg class="icon"><use href="#i-shield"/></svg> WebAuthn · 패스키</span>
+    <h1>로그인 응답 하나로 백업 상태 전이를 판정합니다</h1>
+    <p class="lead">동기화 패스키는 등록된 뒤에도 클라우드로 넘어가거나 다른 기기로 옮겨질 수 있습니다. 서버가 그 변화(BE/BS 플래그)를 실제로 붙잡고 있는지, 붙잡고 있지 않다면 어디서 놓치는지를 이 도구로 바로 확인하세요.</p>
+    <p class="privacy"><svg class="icon"><use href="#i-lock"/></svg>계산은 전부 이 브라우저 안에서 이뤄집니다 — 값을 어디로도 보내지 않습니다</p>
+    <ul class="features">
+      <li><a href="#read"><svg class="icon"><use href="#i-search"/></svg><b>실시간 판독</b><span>로그인 응답의 BE·BS 비트를 즉시 풀어 봅니다</span></a></li>
+      <li><a href="#policy"><svg class="icon"><use href="#i-scale"/></svg><b>정책 판정</b><span>통과 · 한 단계 더 확인 · 거부 가운데 어디에 해당하는지 알려 줍니다</span></a></li>
+      <li><a href="#audit"><svg class="icon"><use href="#i-sliders"/></svg><b>서버 진단</b><span>내 라이브러리·서버에서 빠진 저장·대조 단계를 찾습니다</span></a></li>
+    </ul>
   </div>
 </header>
 
 <main class="wrap">
 
   <section id="read" aria-labelledby="h-read">
-    <div class="step-head"><span class="n">01</span><h2 id="h-read">로그인 응답에서 BE·BS 읽기</h2></div>
-    <p class="lead">로그인 응답의 <code>authenticatorData</code>나 플래그 한 바이트를 넣으면 비트를 풀어 보여 줍니다. 지금은 첫 번째 예시가 채워져 있습니다. 다른 예시를 누르거나 내 값을 붙여 넣어 보세요.</p>
+    <div class="sec-head"><span class="kicker">Step 1</span><h2 id="h-read">응답 판독</h2></div>
+    <p class="lead">로그인 응답의 <code>authenticatorData</code>나 플래그 한 바이트를 넣으면 비트를 풀어 보여 줍니다. 먼저 예시로 감을 잡아 보세요.</p>
     <div class="card">
+      <p class="chips-label">시나리오 예시</p>
       <div class="chips" id="examples" aria-label="예시">
-        <span>예시</span>
-        <button type="button" data-ex="up">등록 뒤 동기화를 켰다</button>
-        <button type="button" data-ex="down">동기화를 껐다</button>
+        <button type="button" data-ex="up">동기화 시작됨</button>
+        <button type="button" data-ex="down">동기화 해제됨</button>
         <button type="button" data-ex="device">기기 전용 키</button>
-        <button type="button" data-ex="invalid">규격 위반 be:0, bs:1</button>
-        <button type="button" data-ex="nostore">보관값이 없는 서버</button>
+        <button type="button" data-ex="invalid">규격 위반 응답</button>
+        <button type="button" data-ex="nostore">보관 이력 없음</button>
       </div>
       <label class="field" for="input">authenticatorData 또는 플래그 바이트</label>
       <textarea id="input" spellcheck="false" autocomplete="off" placeholder="예: 0x1d  또는  -Td_nnE76Hb1-9671tqGcgHGs4jDZp695XBUSp4KOasdAAAABw"></textarea>
-      <p class="hint">받는 형식: <code>0x1d</code>·<code>1d</code>·<code>29</code>·<code>0b00011101</code> 같은 한 바이트, 또는 authenticatorData 전체(base64url·16진수). 넣은 값은 이 브라우저 밖으로 나가지 않습니다.</p>
+      <p class="hint">받는 형식: <code>0x1d</code>·<code>1d</code>·<code>29</code>·<code>0b00011101</code> 같은 한 바이트, 또는 authenticatorData 전체(base64url·16진수).</p>
       <div id="read-out" aria-live="polite"></div>
     </div>
   </section>
 
-  <section id="judge" aria-labelledby="h-judge">
-    <div class="step-head"><span class="n">02</span><h2 id="h-judge">보관한 값과 비교해 대응 받기</h2></div>
-    <p class="lead">서버가 이 자격증명에 대해 저장해 둔 값을 고르세요. 저장하지 않았다면 “저장 안 함”입니다. 논문은 BS 전이를 <b>막지 말고</b>, 되돌릴 수 없는 동작에만 한 단계 더 요구하라고 결론 내렸습니다.</p>
+  <section id="policy" aria-labelledby="h-policy">
+    <div class="sec-head"><span class="kicker">Step 2</span><h2 id="h-policy">정책 판정</h2></div>
+    <p class="lead">서버가 이 자격증명에 대해 저장해 둔 값을 고르세요. 저장하지 않았다면 “저장 안 함”입니다. 전이는 막지 않고, 되돌릴 수 없는 동작에만 한 단계 더 요구합니다.</p>
     <div class="card">
       <div class="grid3">
         <div>
@@ -190,10 +269,16 @@
   </section>
 
   <section id="audit" aria-labelledby="h-audit">
-    <div class="step-head"><span class="n">03</span><h2 id="h-audit">내 서버의 빠진 단계 찾기</h2></div>
-    <p class="lead">논문은 라이브러리가 규격을 구현해도 <b>응용이 값을 집어 들지 않아</b> 신호가 끊긴다는 것을 보였습니다. 쓰는 것을 고르고 세 질문에 답하면 빠진 단계와 고치는 코드를 보여 줍니다.</p>
+    <div class="sec-head"><span class="kicker">Step 3</span><h2 id="h-audit">서버 진단</h2></div>
+    <p class="lead">라이브러리가 규격을 구현해도 서버가 값을 집어 들지 않으면 신호는 끊깁니다. 스택을 고르고 세 질문에 답하면 빠진 단계와 고치는 코드를 보여 줍니다.</p>
     <div class="card">
-      <label class="field" for="lib">쓰는 라이브러리 · 응용</label>
+      <p class="chips-label">빠른 선택</p>
+      <div class="stack-picks" id="stack-picks">
+        <button type="button" data-lib="app:spring">Spring Security</button>
+        <button type="button" data-lib="app:keycloak">Keycloak</button>
+        <button type="button" data-lib="app:portfolio">SimpleWebAuthn 예제</button>
+      </div>
+      <label class="field" for="lib">그 밖의 라이브러리</label>
       <select id="lib"></select>
       <div id="lib-info"></div>
       <div id="questions" style="margin-top:14px"></div>
@@ -204,13 +289,20 @@
 </main>
 
 <footer class="wrap">
-  <h2>이 앱이 말하지 않는 것</h2>
-  <ul>
-    <li>BE/BS는 인증장치가 스스로 신고하는 값입니다. 이 앱의 판정은 <b>정직한 인증장치의 상태 변화를 놓치지 않기 위한 것</b>이지, 값을 위장하는 공격자를 잡는 수단이 아닙니다(논문 5.1절).</li>
-    <li>그래서 BS 전이를 이유로 로그인을 막지 않습니다. 전이는 사용자가 동기화를 켜는 흔한 정상 동작입니다(논문 5.2절).</li>
-    <li>라이브러리·응용 판정은 2026-09-11에 소스를 읽어 얻은 것이며, 실행해 측정한 것은 논문 실험 A의 시스템 하나뿐입니다(논문 5.4절).</li>
-  </ul>
-  <p>만든 사람 진혜정 · <a href="https://aleph-intro.vercel.app">소개 사이트</a> · <a href="https://github.com/ginye28/ALEPH/blob/main/10/%EB%85%BC%EB%AC%B8.md">논문</a> · 예시 값은 모두 만든 값이며 실제 사용자 자료가 아닙니다.</p>
+  <div class="footlinks">
+    <a href="https://aleph-intro.vercel.app">소개 사이트</a>
+    <a href="https://github.com/ginye28/ALEPH/blob/main/10/%EB%85%BC%EB%AC%B8.md" target="_blank" rel="noopener">연구 논문 <svg class="icon"><use href="#i-external"/></svg></a>
+    <a href="https://github.com/ginye28/ALEPH/tree/main/L-B/app" target="_blank" rel="noopener">소스 코드 <svg class="icon"><use href="#i-external"/></svg></a>
+  </div>
+  <details class="limits">
+    <summary>이 도구가 말하지 않는 것 <svg class="icon"><use href="#i-chevron"/></svg></summary>
+    <ul>
+      <li>BE/BS는 인증장치가 스스로 신고하는 값입니다. 이 도구의 판정은 <b>정직한 인증장치의 상태 변화를 놓치지 않기 위한 것</b>이지, 값을 위장하는 공격자를 잡는 수단이 아닙니다.</li>
+      <li>그래서 BS 전이를 이유로 로그인을 막지 않습니다. 전이는 사용자가 동기화를 켜는 흔한 정상 동작입니다.</li>
+      <li>Step 3의 라이브러리·응용 판정은 2026-09-11에 소스를 직접 읽어 얻은 것이며, 실행해 측정한 것은 제작자가 만든 시스템 하나뿐입니다.</li>
+    </ul>
+  </details>
+  <p style="margin-top:16px">만든 사람 진혜정 · 예시 값은 모두 만든 값이며 실제 사용자 자료가 아닙니다.</p>
 </footer>
 
 <script src="logic.js"></script>

@@ -114,7 +114,7 @@
         level: 'bad',
         title: 'be:0, bs:1 — 규격상 있을 수 없는 조합',
         body: '백업될 수 없는 자격증명이 "백업됐다"고 신고했습니다. 규격 §7.2 단계 18은 이 조합을 조건 없이 거부하라고 요구합니다.',
-        ref: '논문 2.3절',
+        ref: 'WebAuthn §7.2 · 단계 18',
       });
       raise('reject');
     }
@@ -124,15 +124,15 @@
       findings.push({
         level: 'warn',
         title: '보관한 BE가 없어 대조할 수 없습니다',
-        body: '규격 §7.2 단계 19는 등록 때 저장한 BE와 지금의 BE를 대조합니다. 저장하지 않았다면 이 단계를 할 수 없습니다. 논문 실험 A의 서버도 이 상태였고, 전이를 줘도 10/10 모두 아무 변화가 없었습니다.',
-        ref: '논문 2.3절 · 4.1절',
+        body: '규격 §7.2 단계 19는 등록 때 저장한 BE와 지금의 BE를 대조합니다. 저장하지 않았다면 이 단계를 할 수 없습니다. 실측한 배포 사례에서도 이 상태였고, 전이를 줘도 10/10 모두 서버에 아무 변화가 없었습니다.',
+        ref: 'WebAuthn §7.2 · 단계 19 (권장)',
       });
     } else if (st.be !== cur.BE) {
       findings.push({
         level: 'bad',
         title: `BE가 바뀌었습니다 (보관 ${st.be ? 1 : 0} → 지금 ${cur.BE ? 1 : 0})`,
         body: 'BE는 자격증명이 만들어질 때 정해지고 바뀌지 않는 값입니다. 달라졌다면 같은 자격증명이라고 보기 어렵습니다. 규격 §7.2 단계 19에 따라 거부합니다.',
-        ref: '논문 2.3절',
+        ref: 'WebAuthn §7.2 · 단계 19',
       });
       raise('reject');
     }
@@ -144,7 +144,7 @@
         level: 'warn',
         title: '보관한 BS가 없어 전이를 알 수 없습니다',
         body: `지금 BS=${cur.BS ? 1 : 0}이라는 것만 보입니다. 이전 값을 저장해 두지 않으면 "방금 클라우드로 들어갔다"와 "원래 그랬다"를 구분할 수 없습니다.`,
-        ref: '논문 5.2절',
+        ref: 'WebAuthn §4 · Credential Record',
       });
     } else if (!st.bs && cur.BS) {
       transition = 'up';
@@ -152,7 +152,7 @@
         level: 'info',
         title: 'BS 0 → 1: 이 자격증명이 방금 클라우드 백업 범위에 들어왔습니다',
         body: '사용자가 동기화를 켠 흔한 정상 동작입니다. 로그인은 막지 않습니다. 다만 이제 이 키는 다른 기기로 옮겨질 수 있으므로, 되돌릴 수 없는 동작(자격증명 삭제, 결제 수단 변경, 민감 자료 내려받기)에는 한 단계 더 확인합니다.',
-        ref: '논문 5.2절 적응형 인증',
+        ref: '적응형 인증 정책',
       });
       if (action === 'irreversible') raise('stepup');
     } else if (st.bs && !cur.BS) {
@@ -161,7 +161,7 @@
         level: 'info',
         title: 'BS 1 → 0: 동기화가 꺼졌습니다',
         body: `지금 받은 ${hex2(flagsByte)}는 한 번도 백업된 적 없는 자격증명이 보내는 바이트와 같습니다. 그동안 만들어졌을 사본은 동기화를 끈다고 회수되지 않으므로 "한 번이라도 백업된 적 있음(ever_backed_up)"은 내리지 말고 유지합니다.`,
-        ref: '논문 5.2절 · 6장',
+        ref: 'Credential Record 이력 보관',
       });
     } else {
       transition = 'same';
@@ -169,7 +169,7 @@
         level: 'ok',
         title: `BS 변화 없음 (${cur.BS ? 1 : 0} → ${cur.BS ? 1 : 0})`,
         body: '백업 상태가 지난번과 같습니다. 서명 카운터와 함께 BS도 갱신해 저장하면 됩니다.',
-        ref: '논문 2.3절',
+        ref: 'WebAuthn §4 · Credential Record',
       });
     }
 
@@ -178,7 +178,7 @@
         level: 'warn',
         title: 'UP(사용자 조작)가 꺼져 있습니다',
         body: '사용자가 인증장치를 직접 조작하지 않은 응답입니다. 대부분의 RP는 로그인에서 UP를 요구합니다. (이 앱의 판정은 BE/BS를 중심으로 합니다.)',
-        ref: '논문 표 2',
+        ref: 'WebAuthn §6.1 authenticatorData',
       });
     }
 
@@ -222,7 +222,7 @@
   ];
 
   const LIB_NOTES = {
-    simplewebauthn: '인증 결과의 authenticationInfo.credentialBackedUp에 BS가 들어 있지만, 보관값과 대조하는 일은 응용이 해야 합니다. 논문 실험 A의 서버가 이 라이브러리의 공식 예제를 따르다 BS를 놓쳤습니다.',
+    simplewebauthn: '인증 결과의 authenticationInfo.credentialBackedUp에 BS가 들어 있지만, 보관값과 대조하는 일은 응용이 해야 합니다. 실측한 배포 사례가 이 라이브러리의 공식 예제를 따르다 BS를 놓쳤습니다.',
     py_webauthn: '검증 결과에 BE/BS가 노출되지만 대조·갱신은 응용이 직접 해야 합니다.',
     'go-webauthn': '보관값과의 대조·갱신을 구현했습니다. 응용이 갱신된 Credential을 다시 저장하는지만 확인하면 됩니다.',
     yubico: 'RegisteredCredential에 backupEligible·backupState 필드가 있고, FinishAssertionSteps가 현재 BE를 보관값과 대조합니다. 응용이 이 필드를 채워 넘기는지 확인하세요.',
@@ -233,7 +233,7 @@
     lbuchs: 'getIsBackupEligible()·getIsBackup()을 제공합니다. 저장과 대조는 응용이 직접 해야 합니다.',
     'web-auth': '편의 메서드가 없어 원시 플래그 바이트에서 0x08·0x10을 직접 읽어야 합니다.',
     'fido2-lib': 'BE·BS 비트를 예약 비트(RFU3·RFU4)로 파싱합니다. 플래그 바이트를 직접 읽어야 합니다.',
-    other: '논문이 조사하지 않은 라이브러리입니다. 아래 세 질문에 직접 답해 보세요.',
+    other: '조사 목록에 없는 라이브러리입니다. 아래 세 질문에 직접 답해 보세요.',
   };
 
   // 논문 표 16 — 응용 층위(소스 열람 판정, 실행 측정 아님)
@@ -242,7 +242,7 @@
       note: '등록 때는 backup_eligible·backup_state 컬럼에 저장하지만, 로그인 때 보관값을 webauthn4j에 넘기지 않아 BEFlagVerifier가 무동작으로 통과하고, 갱신 레코드는 이전 backupState를 그대로 복사합니다.' },
     { id: 'keycloak', name: 'Keycloak', lib: 'webauthn4j', answers: { s1: 'no', s2: 'no', s3: 'no' },
       note: 'WebAuthnCredentialData에 백업 관련 필드가 없고, 인증 경로가 AuthenticatorImpl을 써서 webauthn4j의 대조·갱신 로직을 건너뜁니다.' },
-    { id: 'portfolio', name: 'portfolio-passkey (논문 실험 A)', lib: 'simplewebauthn', answers: { s1: 'no', s2: 'no', s3: 'no' },
+    { id: 'portfolio', name: 'portfolio-passkey (실측 사례)', lib: 'simplewebauthn', answers: { s1: 'no', s2: 'no', s3: 'no' },
       note: '라이브러리는 매 인증마다 값을 돌려주지만 응용이 꺼내지 않고, 스키마에 컬럼도 없었습니다.' },
   ];
 
