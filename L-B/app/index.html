@@ -58,7 +58,9 @@
     background-image: linear-gradient(rgba(255,255,255,.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.045) 1px, transparent 1px);
     background-size: 34px 34px; mask-image: radial-gradient(70% 70% at 50% 0%, #000 30%, transparent 90%); }
   .hero .in { position: relative; }
-  .eyebrow { display: inline-flex; align-items: center; gap: 6px; font: 700 12px/1 var(--mono); letter-spacing: .04em; color: var(--accent-2); background: rgba(246,198,103,.1); border: 1px solid rgba(246,198,103,.28); border-radius: 999px; padding: 6px 12px; margin: 0 0 18px; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 6px; font: 700 12px/1 var(--mono); letter-spacing: .04em; color: var(--accent-2); background: rgba(246,198,103,.1); border: 1px solid rgba(246,198,103,.28); border-radius: 999px; padding: 6px 12px; margin: 0 0 14px; }
+  .paper-credit { margin: 0 0 16px; font-size: 13px; color: #9aa4bb; max-width: 34rem; }
+  .paper-credit a { color: #c9cfdd; }
   h1 { margin: 0 0 14px; font-size: clamp(28px, 5.4vw, 40px); line-height: 1.24; letter-spacing: -.02em; max-width: 20ch; }
   .hero .lead { margin: 0 0 22px; font-size: 17px; line-height: 1.7; color: #d3d8e4; max-width: 42rem; }
   .privacy { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: #bfe8cf; background: rgba(90,190,130,.1); border: 1px solid rgba(90,190,130,.28); border-radius: 999px; padding: 7px 13px 7px 11px; margin: 0 0 24px; }
@@ -89,6 +91,7 @@
   textarea:focus, select:focus, button:focus-visible, input:focus-visible, a:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
   .hint { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
   .chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 16px; }
+  .chips button.active { border-color: var(--accent); background: var(--accent-soft); }
   .chips-label { width: 100%; font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin: 0 0 2px; }
   button { font: 600 14px var(--sans); cursor: pointer; border-radius: 999px; padding: 7px 14px; border: 1px solid var(--line); background: var(--card); color: var(--ink); display: inline-flex; align-items: center; gap: 6px; transition: border-color .15s, background .15s; }
   button:hover { border-color: var(--accent); }
@@ -207,8 +210,9 @@
 <header class="hero" id="top">
   <div class="wrap in">
     <span class="eyebrow"><svg class="icon"><use href="#i-shield"/></svg> WebAuthn · 패스키</span>
+    <p class="paper-credit">기반 연구 · <a href="https://github.com/ginye28/ALEPH/blob/main/10/%EB%85%BC%EB%AC%B8.md" target="_blank" rel="noopener">「동기화 패스키의 백업 상태 전이는 서비스에 관측되는가」</a> (진혜정, 2026)</p>
     <h1>로그인 응답 하나로 백업 상태 전이를 판정합니다</h1>
-    <p class="lead">동기화 패스키는 등록된 뒤에도 클라우드로 넘어가거나 다른 기기로 옮겨질 수 있습니다. 서버가 그 변화(BE/BS 플래그)를 실제로 붙잡고 있는지, 붙잡고 있지 않다면 어디서 놓치는지를 이 도구로 바로 확인하세요.</p>
+    <p class="lead">패스키 로그인을 만드는 개발자를 위한 도구입니다. 동기화 패스키는 등록된 뒤에도 클라우드로 넘어가거나 다른 기기로 옮겨질 수 있습니다. 서버가 그 변화(BE/BS 플래그)를 실제로 붙잡고 있는지, 붙잡고 있지 않다면 어디서 놓치는지를 이 도구로 바로 확인하세요.</p>
     <p class="privacy"><svg class="icon"><use href="#i-lock"/></svg>계산은 전부 이 브라우저 안에서 이뤄집니다 — 값을 어디로도 보내지 않습니다</p>
     <ul class="features">
       <li><a href="#read"><svg class="icon"><use href="#i-search"/></svg><b>실시간 판독</b><span>로그인 응답의 BE·BS 비트를 즉시 풀어 봅니다</span></a></li>

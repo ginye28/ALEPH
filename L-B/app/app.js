@@ -21,11 +21,12 @@
   let parsed = null;
 
   async function copyText(btn, text) {
-    try { await navigator.clipboard.writeText(text); } catch (e) { /* 클립보드를 못 쓰면 그냥 둔다 */ return; }
     const original = btn.innerHTML;
-    btn.innerHTML = `${icon('check-circle')} 복사됨`;
-    btn.classList.add('done');
-    setTimeout(() => { btn.innerHTML = original; btn.classList.remove('done'); }, 1600);
+    let ok = true;
+    try { await navigator.clipboard.writeText(text); } catch (e) { ok = false; }
+    btn.innerHTML = ok ? `${icon('check-circle')} 복사됨` : `${icon('x-circle')} 복사 막힘 — 직접 선택하세요`;
+    btn.classList.toggle('done', ok);
+    setTimeout(() => { btn.innerHTML = original; btn.classList.remove('done'); }, 1800);
   }
 
   function renderRead() {
@@ -157,6 +158,10 @@
     </div>`;
   }
 
+  function setActiveExample(key) {
+    document.querySelectorAll('#examples button[data-ex]').forEach((b) => b.classList.toggle('active', b.dataset.ex === key));
+  }
+
   function applyExample(key) {
     const ex = EXAMPLES[key];
     if (!ex) return;
@@ -165,6 +170,7 @@
     $('st-bs').value = ex.bs;
     $('st-ever').value = ex.ever;
     document.querySelector(`input[name="action"][value="${ex.action}"]`).checked = true;
+    setActiveExample(key);
     renderRead();
     renderJudge();
   }
@@ -176,9 +182,9 @@
     applyExample('up');
     renderAudit();
 
-    $('input').addEventListener('input', () => { renderRead(); renderJudge(); });
-    ['st-be', 'st-bs', 'st-ever'].forEach((id) => $(id).addEventListener('change', renderJudge));
-    document.querySelectorAll('input[name="action"]').forEach((el) => el.addEventListener('change', renderJudge));
+    $('input').addEventListener('input', () => { setActiveExample(null); renderRead(); renderJudge(); });
+    ['st-be', 'st-bs', 'st-ever'].forEach((id) => $(id).addEventListener('change', () => { setActiveExample(null); renderJudge(); }));
+    document.querySelectorAll('input[name="action"]').forEach((el) => el.addEventListener('change', () => { setActiveExample(null); renderJudge(); }));
     $('examples').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-ex]');
       if (b) applyExample(b.dataset.ex);
