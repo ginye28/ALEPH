@@ -129,6 +129,12 @@
   .work .result b { display: block; font: 600 1.4rem var(--mono); color: var(--star); }
   .work .result span { font-size: .8rem; color: #b9c0d0; line-height: 1.4; display: block; }
   .work.empty { border: 2px dashed var(--line); color: var(--muted); }
+  .work.app { background: var(--card); border: 1px solid var(--line); border-left: 4px solid var(--accent); }
+  .work.app .tag { color: var(--accent); }
+  .work.app a { color: var(--accent); font-weight: 600; }
+  .work.app em { font-style: normal; font-weight: 600; }
+  .app-steps { margin: 0 0 1rem; padding-left: 1.3em; font-size: .95rem; }
+  .app-steps li { margin: .15rem 0; }
 
   .resume { display: grid; grid-template-columns: 7rem 1fr; gap: .4rem 1rem; margin: 0 0 1.5rem; }
   .resume dt { font: .85rem var(--mono); color: var(--muted); padding-top: .15rem; }
@@ -314,10 +320,16 @@
       </div>
       <p><a href="https://github.com/ginye28/ALEPH/blob/main/10/%EB%85%BC%EB%AC%B8.md">논문 읽기 →</a> &nbsp; <a href="https://github.com/ginye28/ALEPH/tree/main/10/%EA%B3%BC%EC%A0%9C10_%EB%85%BC%EB%AC%B8_%EC%9E%AC%ED%98%84%ED%8C%A8%ED%82%A4%EC%A7%80">재현 패키지 →</a></p>
     </article>
-    <article class="work empty">
-      <p class="tag">APP · 13번 과제</p>
-      <h3>이 자리에 13번 앱이 들어옵니다</h3>
-      <p>2026년 9월 23일 만들기 시작 · 완성되면 여기에 주소와 설명을 올립니다.</p>
+    <article class="work app">
+      <p class="tag">APP · 2026.09 · 위 논문을 반영한 앱</p>
+      <h3>BS 신호 점검기</h3>
+      <p><b>패스키 로그인을 만드는 개발자</b>가 로그인 응답을 넣으면, 논문이 확인한 규칙(규격 §7.2 단계 18·19와 적응형 인증)으로 백업 상태 전이를 판정하고 서버에 빠진 저장·대조 단계를 알려 줍니다.</p>
+      <ul class="app-steps">
+        <li>로그인 응답에서 BE·BS 읽기</li>
+        <li>보관한 값과 비교해 <em>통과 · 한 단계 더 확인 · 거부</em> 받기</li>
+        <li>내 라이브러리·서버에서 빠진 단계와 고치는 코드 찾기</li>
+      </ul>
+      <p><a href="https://aleph-bs-check.vercel.app">앱 열기 →</a> &nbsp; <a href="https://github.com/ginye28/ALEPH/tree/main/L-B/app">소스 →</a></p>
     </article>
   </div>
 </section>
