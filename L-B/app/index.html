@@ -5,7 +5,23 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>BS Check — 패스키 백업 상태 판정기</title>
 <meta name="description" content="패스키 로그인 응답을 넣으면 백업 상태(BE/BS) 전이를 판정하고, 서버에 빠진 저장·대조 단계를 알려 주는 도구. 모든 계산은 브라우저 안에서만 이뤄집니다.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b1220'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='monospace' font-size='15' font-weight='700' fill='%23f6c667'%3EBS%3C/text%3E%3C/svg%3E">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="BS Check">
+<meta property="og:title" content="BS Check — 패스키 백업 상태 판정기">
+<meta property="og:description" content="로그인 응답 하나로 백업 상태(BE/BS) 전이를 판정하고, 서버에 빠진 저장·대조 단계를 알려 줍니다. 가입 없이, 브라우저 안에서만.">
+<meta property="og:url" content="https://aleph-bs-check.vercel.app/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="BS Check — 패스키 백업 상태 판정기">
+<meta name="twitter:description" content="로그인 응답 하나로 백업 상태(BE/BS) 전이를 판정하는 도구.">
+<meta name="theme-color" content="#0b1220">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="BS Check">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b1220'/%3E%3Ctext x='16' y='22' text-anchor='middle' font-family='monospace' font-size='15' font-weight='700' fill='%23f6c667'%3EBS%3C/text%3E%3C/svg%3E">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/icon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 <style>
   :root {
     --bg: #fbf8f2; --card: #ffffff; --ink: #1c1b19; --muted: #6d6a63; --line: #e7e1d6;
@@ -42,6 +58,7 @@
   .nav .wrap { display: flex; align-items: center; gap: 18px; height: 54px; }
   .brand { display: flex; align-items: center; gap: 8px; color: #eef1f8; text-decoration: none; font-weight: 700; margin-right: auto; }
   .brand .mark { width: 26px; height: 26px; border-radius: 7px; background: linear-gradient(155deg, var(--accent-2), var(--accent)); display: flex; align-items: center; justify-content: center; font: 800 11px var(--mono); color: var(--night); }
+  .brand .ver { font: 600 10px var(--mono); color: #8892a6; background: rgba(255,255,255,.08); border-radius: 5px; padding: 2px 6px; margin-left: 3px; }
   .navlinks { display: flex; gap: 4px; align-items: center; }
   .navlinks a { color: #c9cfdd; text-decoration: none; font-size: 14px; padding: 6px 10px; border-radius: 7px; }
   .navlinks a:hover { color: #fff; background: rgba(255,255,255,.08); }
@@ -72,6 +89,24 @@
   .features b { font-size: 14px; }
   .features span { font-size: 13px; line-height: 1.5; color: #aab2c5; }
   @media (max-width: 640px) { .features { grid-template-columns: 1fr; } }
+
+  /* ── 증거 바 ── */
+  .proof { background: var(--night-2); color: #eef1f8; padding: 22px 0; border-bottom: 1px solid rgba(255,255,255,.07); }
+  .proof-label { margin: 0 0 14px; font: 700 12px var(--mono); letter-spacing: .06em; color: #8892a6; text-transform: uppercase; }
+  .proof-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .proof-grid div { border-left: 2px solid rgba(255,255,255,.14); padding-left: 14px; }
+  .proof-grid b { display: block; font: 700 26px/1.1 var(--mono); color: var(--accent-2); }
+  .proof-grid b span { font-size: .58em; color: #8892a6; font-weight: 600; }
+  .proof-grid > div > span:last-child { display: block; font-size: 13px; color: #c9cfdd; margin-top: 5px; line-height: 1.5; }
+  @media (max-width: 640px) { .proof-grid { grid-template-columns: 1fr; gap: 14px; } }
+
+  /* ── 파이프라인 다이어그램 ── */
+  .pipeline-scroll { overflow-x: auto; margin: 16px 0 4px; -webkit-overflow-scrolling: touch; }
+  svg.pipeline-svg { width: 680px; max-width: none; display: block; }
+  .pipeline-note { margin: 6px 0 0; font-size: 13px; color: var(--muted); }
+
+  .reveal-init { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal-init.revealed { opacity: 1; transform: none; }
 
   /* ── 본문 ── */
   main .wrap { padding-top: 8px; }
@@ -197,7 +232,7 @@
 
 <nav class="nav">
   <div class="wrap">
-    <a class="brand" href="#top"><span class="mark">BS</span>BS Check</a>
+    <a class="brand" href="#top"><span class="mark">BS</span>BS Check<span class="ver">v1.0</span></a>
     <div class="navlinks">
       <a href="#read">판독</a>
       <a href="#policy">판정</a>
@@ -221,6 +256,17 @@
     </ul>
   </div>
 </header>
+
+<div class="proof">
+  <div class="wrap">
+    <p class="proof-label">직접 측정하고 조사해서 확인한 문제</p>
+    <div class="proof-grid">
+      <div><b>10<span>/10</span></b><span>전이를 줘도 서버 응답·저장 상태는 그대로였습니다</span></div>
+      <div><b>4<span>/11</span></b><span>보관값과 대조·갱신까지 구현한 라이브러리 수</span></div>
+      <div><b>0<span>/3</span></b><span>끝까지 신호를 지킨 실제 응용 — Spring Security·Keycloak 포함</span></div>
+    </div>
+  </div>
+</div>
 
 <main class="wrap">
 
@@ -274,7 +320,43 @@
 
   <section id="audit" aria-labelledby="h-audit">
     <div class="sec-head"><span class="kicker">Step 3</span><h2 id="h-audit">서버 진단</h2></div>
-    <p class="lead">라이브러리가 규격을 구현해도 서버가 값을 집어 들지 않으면 신호는 끊깁니다. 스택을 고르고 세 질문에 답하면 빠진 단계와 고치는 코드를 보여 줍니다.</p>
+    <p class="lead">라이브러리가 규격을 구현해도 서버가 값을 집어 들지 않으면 신호는 끊깁니다. 로그인 한 번마다 이 세 단계가 모두 이어져야 합니다.</p>
+    <div class="pipeline-scroll">
+      <svg class="pipeline-svg" viewBox="0 0 680 108" role="img" aria-label="1단계 저장 모델에 컬럼 추가, 2단계 라이브러리 검증 함수에 전달, 3단계 새 값을 받아 저장 — 세 단계가 모두 이어져야 신호가 응용까지 도달합니다">
+        <defs>
+          <marker id="pf-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6.5" markerHeight="6.5" orient="auto-start-reverse">
+            <path d="M0 0L10 5L0 10z" fill="var(--muted)"/>
+          </marker>
+        </defs>
+        <line x1="200" y1="50" x2="238" y2="50" stroke="var(--muted)" stroke-width="2" marker-end="url(#pf-arrow)"/>
+        <line x1="440" y1="50" x2="478" y2="50" stroke="var(--muted)" stroke-width="2" marker-end="url(#pf-arrow)"/>
+        <g>
+          <rect x="0" y="6" width="200" height="88" rx="12" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+          <circle cx="27" cy="30" r="12" fill="var(--accent)"/>
+          <text x="27" y="34.5" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">1</text>
+          <text x="46" y="35" font-size="14.5" font-weight="700" fill="var(--ink)">저장 모델</text>
+          <text x="18" y="66" font-size="12.5" fill="var(--muted)">backup_eligible ·</text>
+          <text x="18" y="82" font-size="12.5" fill="var(--muted)">backup_state 컬럼</text>
+        </g>
+        <g transform="translate(240,0)">
+          <rect x="0" y="6" width="200" height="88" rx="12" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+          <circle cx="27" cy="30" r="12" fill="var(--accent)"/>
+          <text x="27" y="34.5" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">2</text>
+          <text x="46" y="35" font-size="14.5" font-weight="700" fill="var(--ink)">라이브러리 호출</text>
+          <text x="18" y="66" font-size="12.5" fill="var(--muted)">보관값을 검증</text>
+          <text x="18" y="82" font-size="12.5" fill="var(--muted)">함수 인자로 전달</text>
+        </g>
+        <g transform="translate(480,0)">
+          <rect x="0" y="6" width="200" height="88" rx="12" fill="var(--card)" stroke="var(--line)" stroke-width="1.5"/>
+          <circle cx="27" cy="30" r="12" fill="var(--accent)"/>
+          <text x="27" y="34.5" text-anchor="middle" font-size="12" font-weight="700" fill="#fff">3</text>
+          <text x="46" y="35" font-size="14.5" font-weight="700" fill="var(--ink)">결과 저장</text>
+          <text x="18" y="66" font-size="12.5" fill="var(--muted)">라이브러리가 돌려준</text>
+          <text x="18" y="82" font-size="12.5" fill="var(--muted)">새 BS를 받아 갱신</text>
+        </g>
+      </svg>
+    </div>
+    <p class="pipeline-note">Spring Security는 2번에서, Keycloak은 1번에서 끊깁니다 — 아래에서 내 스택을 확인해 보세요.</p>
     <div class="card">
       <p class="chips-label">빠른 선택</p>
       <div class="stack-picks" id="stack-picks">

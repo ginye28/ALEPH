@@ -1,0 +1,16 @@
+{
+  "name": "BS Check — 패스키 백업 상태 판정기",
+  "short_name": "BS Check",
+  "description": "패스키 로그인 응답을 넣으면 백업 상태(BE/BS) 전이를 판정하고, 서버에 빠진 저장·대조 단계를 알려 주는 도구.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0b1220",
+  "theme_color": "#0b1220",
+  "lang": "ko",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -175,12 +175,33 @@
     renderJudge();
   }
 
+  // 장식용 요소에만 쓰는 살짝 나타나는 효과. Step 1~3 카드처럼 실제로 써야 하는 내용은
+  // 절대 여기 넣지 않는다 — 옵저버가 늦게 뜨거나(백그라운드 탭 등) 못 뜨면 내용이 숨겨진 채로
+  // 남을 수 있어서다. 그래도 안전망으로 일정 시간 뒤엔 무조건 보이게 한다.
+  function setupReveal() {
+    const targets = document.querySelectorAll('.proof');
+    if (!targets.length) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    targets.forEach((el) => el.classList.add('reveal-init'));
+    const reveal = (el) => el.classList.add('revealed');
+    if ('IntersectionObserver' in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((en) => { if (en.isIntersecting) { reveal(en.target); io.unobserve(en.target); } });
+      }, { threshold: 0.08 });
+      targets.forEach((el) => io.observe(el));
+    } else {
+      targets.forEach(reveal);
+    }
+    setTimeout(() => targets.forEach(reveal), 1200);
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
     fillLibs();
     renderQuestions(null);
     // 처음 온 사람이 바로 결과를 보도록 첫 예시를 채워 둔다
     applyExample('up');
     renderAudit();
+    setupReveal();
 
     $('input').addEventListener('input', () => { setActiveExample(null); renderRead(); renderJudge(); });
     ['st-be', 'st-bs', 'st-ever'].forEach((id) => $(id).addEventListener('change', () => { setActiveExample(null); renderJudge(); }));
