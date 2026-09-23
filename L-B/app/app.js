@@ -1478,7 +1478,10 @@ function App() {
   };
 
   // 판정이 새로 나오면(입력이 잠깐 멈춘 뒤) 이 브라우저의 점검 기록에 남긴다 — 같은 값을 반복해서 쌓지는 않는다.
+  // 대시보드에 가만히 있을 때는(맨 처음 채워진 예시 값이 뒤에서 계산되고 있어도) 기록하지 않는다 —
+  // "점검"·"서버 진단"·"기록" 탭으로 실제로 넘어갔을 때만 "내가 한 점검"으로 친다.
   useEffect(() => {
+    if (view === 'dashboard') return;
     if (!parsed.ok || !result || result.error) return;
     const dedupKey = `${B.hex2(parsed.flags)}|${stored.be}|${stored.bs}|${stored.ever}|${action}`;
     if (lastLoggedRef.current === dedupKey) return;
@@ -1498,7 +1501,7 @@ function App() {
       }));
     }, 900);
     return () => clearTimeout(timer);
-  }, [parsed, result, stored, action, pick, activeEx, input]);
+  }, [view, parsed, result, stored, action, pick, activeEx, input]);
 
   // 주소창을 지금 상태의 공유 링크로 유지한다 — 서버 왕복 없이 replaceState만 쓴다.
   useEffect(() => {
