@@ -6,10 +6,11 @@
 
 - 공개 주소: https://aleph-bs-check.vercel.app
 - 설치할 것 없음. 서버·로그인·AI 호출·비밀값 없음. 넣은 값은 브라우저 밖으로 나가지 않습니다.
+- Step 1에서 "내 브라우저로 직접 확인하기"를 누르면 지금 기기에 진짜 패스키를 만들어(WebAuthn) 그 authenticatorData를 그대로 보여줍니다 — 예시 값이 아니라 실제 값입니다.
 
 ## 여는 방법 (둘 중 하나)
 
-1. **그냥 열기** — 이 폴더의 `index.html`을 더블클릭합니다. React·React DOM과 폰트만 CDN에서 불러오므로 인터넷 연결이 필요합니다(판정 규칙 `logic.js`와 `node test.cjs`는 오프라인으로 동작).
+1. **그냥 열기** — 이 폴더의 `index.html`을 더블클릭합니다. React·React DOM과 폰트만 CDN에서 불러오므로 인터넷 연결이 필요합니다(판정 규칙 `logic.js`와 `node test.cjs`는 오프라인으로 동작). "내 브라우저로 직접 확인하기"(진짜 패스키 등록)는 WebAuthn 규격상 HTTPS나 localhost에서만 되므로, `file://`로 열면 버튼을 눌러도 안내 문구가 뜨고 만들어지지 않습니다 — 그때는 시나리오 예시를 씁니다.
 2. **로컬 서버로 열기** — 이 폴더에서 아래를 실행하고 http://localhost:5180 을 엽니다.
    ```bash
    python -m http.server 5180

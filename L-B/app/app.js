@@ -90,7 +90,14 @@ const PATHS = {
   })),
   arrow: /*#__PURE__*/React.createElement("path", {
     d: "M9 6l6 6-6 6"
-  })
+  }),
+  key: /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("circle", {
+    cx: "7.5",
+    cy: "7.5",
+    r: "4"
+  }), /*#__PURE__*/React.createElement("path", {
+    d: "M10.3 10.3L20.5 20.5M15 15l3-3M17.3 17.3l2.2-2.2"
+  }))
 };
 function Icon({
   name,
@@ -368,6 +375,146 @@ function Proof() {
   }, t))))));
 }
 
+// ── 진짜 패스키로 확인하기 (WebAuthn) ─────────────────────
+// 서버 없이, 이 브라우저·기기가 실제로 만들어 내는 authenticatorData를 그대로 읽는다.
+// 검증(서명 확인)은 하지 않는다 — 이 앱이 보는 건 그 값의 BE·BS 비트뿐이다.
+function randomBytes(n) {
+  const a = new Uint8Array(n);
+  crypto.getRandomValues(a);
+  return a;
+}
+function toBase64url(bufferLike) {
+  const bytes = new Uint8Array(bufferLike);
+  let bin = '';
+  for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+async function createRealPasskey() {
+  const cred = await navigator.credentials.create({
+    publicKey: {
+      challenge: randomBytes(32),
+      rp: {
+        name: 'BS Check 데모'
+      },
+      user: {
+        id: randomBytes(16),
+        name: 'bs-check-demo',
+        displayName: 'BS Check 데모'
+      },
+      pubKeyCredParams: [{
+        type: 'public-key',
+        alg: -7
+      }, {
+        type: 'public-key',
+        alg: -257
+      }],
+      authenticatorSelection: {
+        residentKey: 'preferred',
+        userVerification: 'preferred'
+      },
+      attestation: 'none',
+      timeout: 60000
+    }
+  });
+  if (!cred.response.getAuthenticatorData) {
+    const e = new Error('NO_GET_AUTH_DATA');
+    e.code = 'NO_GET_AUTH_DATA';
+    throw e;
+  }
+  return {
+    rawId: cred.rawId,
+    authDataB64: toBase64url(cred.response.getAuthenticatorData())
+  };
+}
+async function assertRealPasskey(rawId) {
+  const cred = await navigator.credentials.get({
+    publicKey: {
+      challenge: randomBytes(32),
+      allowCredentials: [{
+        id: rawId,
+        type: 'public-key'
+      }],
+      userVerification: 'preferred',
+      timeout: 60000
+    }
+  });
+  return toBase64url(cred.response.authenticatorData);
+}
+function passkeyErrorText(e) {
+  if (e.name === 'NotAllowedError') return '취소했거나 시간이 지났습니다. 버튼을 다시 누르고 뜨는 확인 창(지문·PIN 등)을 완료해 주세요.';
+  if (e.name === 'SecurityError') return '이 주소에서는 패스키를 만들 수 없습니다. https://aleph-bs-check.vercel.app 에서 열어 주세요.';
+  if (e.code === 'NO_GET_AUTH_DATA') return '이 브라우저는 원시 데이터를 바로 꺼내는 방식을 아직 지원하지 않습니다. 최신 Chrome·Edge·Safari로 해 보세요.';
+  return '만들지 못했습니다. 잠시 뒤 다시 시도하거나 예시로 감을 잡아 보세요.';
+}
+function PasskeyDemo({
+  onResult
+}) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState('');
+  const [done, setDone] = useState(null); // null | 'created' | 'asserted'
+  const rawIdRef = useRef(null);
+  const supported = typeof window !== 'undefined' && !!window.PublicKeyCredential;
+  if (!supported) {
+    return /*#__PURE__*/React.createElement("p", {
+      className: "flex items-start gap-3 rounded-2xl bg-mist px-6 py-5 text-[14px] leading-[1.7] text-sub"
+    }, /*#__PURE__*/React.createElement(Icon, {
+      name: "info",
+      className: "mt-0.5 w-5 h-5 shrink-0"
+    }), "이 브라우저·기기는 패스키(WebAuthn)를 지원하지 않는 것 같습니다. 아래 예시로 감을 잡아 보세요.");
+  }
+  const run = async (fn, resultKind) => {
+    setBusy(true);
+    setError('');
+    try {
+      const value = await fn();
+      onResult(value);
+      setDone(resultKind);
+    } catch (e) {
+      setError(passkeyErrorText(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+  const handleCreate = () => run(async () => {
+    const r = await createRealPasskey();
+    rawIdRef.current = r.rawId;
+    return r.authDataB64;
+  }, 'created');
+  const handleAssert = () => run(() => assertRealPasskey(rawIdRef.current), 'asserted');
+  return /*#__PURE__*/React.createElement("div", {
+    className: "rounded-2xl bg-white p-6 ring-1 ring-hair"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-2"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "key",
+    className: "w-5 h-5 text-ink"
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "text-[15px] font-medium"
+  }, "내 브라우저로 직접 확인하기")), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-[14px] leading-[1.7] text-sub"
+  }, "버튼을 누르면 이 사이트(aleph-bs-check.vercel.app)용 진짜 패스키가 지금 기기에 만들어지고, 기기가 실제로 돌려주는 authenticatorData를 그대로 아래에 넣어 드립니다. Windows Hello·Touch ID 같은 확인 창이 뜹니다 — 값은 이 브라우저 밖으로 나가지 않고, 서명을 검증하지도 않습니다."), /*#__PURE__*/React.createElement("div", {
+    className: "mt-5 flex flex-wrap items-center gap-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: handleCreate,
+    disabled: busy,
+    className: "inline-flex min-h-[40px] items-center gap-2 rounded-full bg-ink px-5 text-[14px] font-medium text-white disabled:opacity-50"
+  }, busy ? '확인 창 기다리는 중…' : done ? '새 패스키 등록해서 보기' : '패스키 등록해서 보기'), done && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: handleAssert,
+    disabled: busy,
+    className: "inline-flex min-h-[40px] items-center gap-2 rounded-full bg-mist px-5 text-[14px] font-medium text-ink disabled:opacity-50"
+  }, "같은 패스키로 다시 인증해서 보기")), error && /*#__PURE__*/React.createElement("p", {
+    role: "alert",
+    className: "mt-4 flex items-start gap-3 rounded-2xl bg-mist px-5 py-4 text-[13.5px] leading-[1.6] text-ink"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "x",
+    className: "mt-0.5 w-4 h-4 shrink-0"
+  }), error), done && !error && /*#__PURE__*/React.createElement("p", {
+    className: "mt-4 text-[13px] leading-[1.7] text-sub"
+  }, "아래 비트는 방금 ", done === 'created' ? '등록' : '인증', " 응답에서 그대로 꺼낸 진짜 값입니다. 지우려면 브라우저의 비밀번호(패스키) 관리 화면에서 \"aleph-bs-check.vercel.app\"을 찾아 삭제하면 됩니다."));
+}
+
 // ── Step 1 · 판독 ────────────────────────────────────────
 function ReadStep({
   input,
@@ -380,10 +527,12 @@ function ReadStep({
     id: "read",
     eyebrow: "Step 1 · 판독",
     title: "응답을 읽습니다.",
-    lead: "로그인 응답의 authenticatorData나 플래그 한 바이트를 넣으면 비트를 풀어 보여 줍니다. 먼저 예시로 감을 잡아 보세요."
-  }, /*#__PURE__*/React.createElement("p", {
-    className: "text-[13px] font-semibold text-sub"
-  }, "시나리오 예시"), /*#__PURE__*/React.createElement("div", {
+    lead: "내 브라우저로 진짜 패스키를 만들어 실제 값을 보거나, 로그인 응답의 authenticatorData·플래그 한 바이트를 직접 넣어 비트를 풀어 봅니다."
+  }, /*#__PURE__*/React.createElement(PasskeyDemo, {
+    onResult: setInput
+  }), /*#__PURE__*/React.createElement("p", {
+    className: "mt-10 text-[13px] font-semibold text-sub"
+  }, "또는 시나리오 예시"), /*#__PURE__*/React.createElement("div", {
     className: "mt-4 flex flex-wrap gap-2"
   }, EXAMPLES.map(ex => /*#__PURE__*/React.createElement(Pill, {
     key: ex.key,
