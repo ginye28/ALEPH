@@ -33,4 +33,24 @@ t('세 단계 모두 예 → ok', () => assert.equal(B.audit({ s1: 'yes', s2: 'y
 t('답이 비어도 멈추지 않음', () => assert.equal(B.audit(undefined).status, 'unknown'));
 t('논문 표 14: 대조·갱신 구현 4/11', () => { assert.equal(B.LIBRARIES.length, 11); assert.equal(B.LIBRARIES.filter((l) => l.m[3] === '예').length, 4); });
 
+// 리포트 — 공유·내보내기 기능이 쓰는 순수 함수
+t('리포트: 정상 입력은 세 단계 다 담김', () => {
+  const rep = B.buildReport({ input: '0x1d', stored: { be: '1', bs: '0', ever: '0' }, action: 'irreversible', pick: 'app:spring', answers: B.APPS.find((a) => a.id === 'spring').answers });
+  assert.ok(rep.includes('Step 1'));
+  assert.ok(rep.includes('BE=1'));
+  assert.ok(rep.includes('한 단계 더 확인'));
+  assert.ok(rep.includes('Spring Security'));
+  assert.ok(rep.includes('2·3단계 빠짐'));
+});
+t('리포트: 빈 입력·선택 안 함이어도 멈추지 않음', () => {
+  const rep = B.buildReport({ input: '', stored: { be: '', bs: '', ever: '' }, action: 'login', pick: '', answers: {} });
+  assert.ok(rep.includes('값을 읽지 못함') || rep.includes('Step 1'));
+  assert.ok(rep.includes('스택 선택 안 함'));
+});
+t('리포트: 잘못된 입력도 멈추지 않음', () => {
+  const rep = B.buildReport({ input: 'hello!!', stored: {}, action: 'login', pick: 'lib:other', answers: { s1: 'unknown', s2: 'unknown', s3: 'unknown' } });
+  assert.ok(rep.includes('값을 읽지 못함'));
+  assert.ok(rep.includes('목록에 없음'));
+});
+
 console.log(`\n${n}개 모두 통과`);

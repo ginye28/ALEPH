@@ -10,7 +10,8 @@
 <meta property="og:title" content="BS Check — 패스키 백업 상태 판정기">
 <meta property="og:description" content="로그인 응답 하나로 백업 상태(BE/BS) 전이를 판정하고, 서버에 빠진 저장·대조 단계를 알려 줍니다. 가입 없이, 브라우저 안에서만.">
 <meta property="og:url" content="https://aleph-bs-check.vercel.app/">
-<meta name="theme-color" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#ffffff">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0a0a0b">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="BS Check">
 <link rel="manifest" href="manifest.json">
@@ -23,6 +24,18 @@
      L-B/app/README.md의 "다시 빌드할 때"를 본다. -->
 <link rel="stylesheet" href="styles.css">
 <style>
+  /* 다크 모드 — 색은 여기 변수만 바꾸고, 화면 코드(bg-white·text-ink 등)는 그대로 둔다.
+     tailwind.config.js가 이 변수를 그대로 쓰도록 색을 정의해 뒀다(README 참고). */
+  :root {
+    --c-bg: 255 255 255; --c-mist: 245 245 247; --c-ink: 29 29 31; --c-inkhover: 0 0 0;
+    --c-sub: 110 110 115; --c-hair: 210 210 215;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --c-bg: 10 10 11; --c-mist: 28 28 30; --c-ink: 245 245 247; --c-inkhover: 255 255 255;
+      --c-sub: 152 152 157; --c-hair: 56 56 60;
+    }
+  }
   html { scroll-behavior: smooth; }
   body { word-break: keep-all; overflow-wrap: anywhere; -webkit-font-smoothing: antialiased; }
   /* 스크롤 페이드인 — 텍스트에만, 아주 미세하게 */
@@ -30,7 +43,7 @@
   .fade.in { opacity: 1; transform: none; }
   @media (prefers-reduced-motion: reduce) { .fade { opacity: 1; transform: none; transition: none; } }
   select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236e6e73' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; background-size: 16px; }
-  :focus-visible { outline: 2px solid #1d1d1f; outline-offset: 2px; }
+  :focus-visible { outline: 2px solid rgb(var(--c-ink)); outline-offset: 2px; }
 </style>
 </head>
 <body class="bg-white text-ink font-sans">

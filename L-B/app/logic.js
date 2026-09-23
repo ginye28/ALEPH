@@ -281,7 +281,55 @@ await db.update(credentials, {
 // 막지 말고 적응한다: 되돌릴 수 없는 동작에만 한 단계 더
 if (justBackedUp) session.requireStepUpFor = ['delete-credential', 'change-payment', 'export-data'];`;
 
-  const api = { FLAG_BITS, parseInput, decodeFlags, evaluate, VERDICT_TEXT, STEPS, LIBRARIES, LIB_NOTES, APPS, audit, FIX_SQL, FIX_JS, hex2 };
+  // 지금까지의 확인을 텍스트 리포트로 — Step1~3의 상태만으로 계산하는 순수 함수라 Node에서도 그대로 돈다.
+  function buildReport({ input, stored, action, pick, answers }) {
+    const lines = ['# BS Check 진단 리포트', ''];
+    let parsed;
+    try { parsed = parseInput(input); } catch (e) { parsed = { ok: false, error: '값을 읽는 중 문제가 생겼습니다.' }; }
+
+    lines.push('## Step 1 · 판독');
+    if (parsed.ok) {
+      const f = decodeFlags(parsed.flags);
+      lines.push(`- ${parsed.source} · 플래그 ${hex2(parsed.flags)}`, `- BE=${f.BE ? 1 : 0} · BS=${f.BS ? 1 : 0}`);
+    } else {
+      lines.push(`- 값을 읽지 못함: ${parsed.error}`);
+    }
+
+    lines.push('', '## Step 2 · 판정');
+    const sel = (v) => (v === '' || v === undefined || v === null ? null : v === '1');
+    const st = stored || {};
+    if (parsed.ok) {
+      let result = null;
+      try { result = evaluate(parsed.flags, { be: sel(st.be), bs: sel(st.bs), ever: sel(st.ever) }, action); } catch (e) { result = null; }
+      if (result) {
+        lines.push(`- 보관값: BE=${st.be || '저장 안 함'} · BS=${st.bs || '저장 안 함'} · ever=${st.ever || '저장 안 함'} · 동작: ${action === 'irreversible' ? '되돌릴 수 없는 동작' : '평소 로그인'}`);
+        lines.push(`- 판정: **${VERDICT_TEXT[result.verdict].label}**`);
+        result.findings.forEach((x) => lines.push(`  - ${x.title} (${x.ref})`));
+      } else {
+        lines.push('- 판정 중 문제가 생김');
+      }
+    } else {
+      lines.push('- Step 1 값이 없어 판정 없음');
+    }
+
+    lines.push('', '## Step 3 · 서버 진단');
+    if (pick) {
+      const [kind, id] = pick.split(':');
+      const name = kind === 'app' ? (APPS.find((a) => a.id === id) || {}).name : (LIBRARIES.find((l) => l.id === id) || {}).name;
+      lines.push(`- 스택: ${name || (id === 'other' ? '목록에 없음 / 직접 구현' : pick)}`);
+    } else {
+      lines.push('- 스택 선택 안 함');
+    }
+    const r = audit(answers);
+    const n = (sid) => STEPS.findIndex((s) => s.id === sid) + 1;
+    const label = r.status === 'ok' ? '세 단계 모두 있음' : r.status === 'gap' ? `${r.missing.map(n).join('·')}단계 빠짐` : '확인 필요';
+    lines.push(`- 판정: **${label}**`);
+
+    lines.push('', '_https://aleph-bs-check.vercel.app 에서 만든 리포트 — 값은 이 브라우저 안에서만 계산됐습니다._');
+    return lines.join('\n');
+  }
+
+  const api = { FLAG_BITS, parseInput, decodeFlags, evaluate, VERDICT_TEXT, STEPS, LIBRARIES, LIB_NOTES, APPS, audit, FIX_SQL, FIX_JS, hex2, buildReport };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   else root.BSCheck = api;
 })(typeof window !== 'undefined' ? window : globalThis);

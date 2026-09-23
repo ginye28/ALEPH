@@ -227,7 +227,9 @@ function Segmented({
   }, t)));
 }
 function CopyButton({
-  text
+  text,
+  label = '복사',
+  tone = 'text'
 }) {
   const [state, setState] = useState('idle');
   const onClick = async () => {
@@ -240,14 +242,15 @@ function CopyButton({
     setState(ok ? 'done' : 'blocked');
     setTimeout(() => setState('idle'), 1800);
   };
+  const cls = tone === 'button' ? 'min-h-[40px] rounded-full bg-mist px-5 text-ink hover:bg-hair/50' : 'min-h-[36px] text-sub hover:text-ink';
   return /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: onClick,
-    className: "inline-flex min-h-[36px] items-center gap-1.5 text-[13px] text-sub hover:text-ink"
+    className: `inline-flex items-center gap-1.5 text-[13px] ${cls}`
   }, /*#__PURE__*/React.createElement(Icon, {
     name: state === 'blocked' ? 'x' : state === 'done' ? 'check' : 'copy',
     className: "w-4 h-4"
-  }), state === 'done' ? '복사됨' : state === 'blocked' ? '복사 막힘 — 직접 선택하세요' : '복사');
+  }), state === 'done' ? '복사됨' : state === 'blocked' ? '복사 막힘 — 직접 선택하세요' : label);
 }
 function Code({
   title,
@@ -292,7 +295,7 @@ function Verdict({
 // ── 머리 ────────────────────────────────────────────────
 function Nav() {
   return /*#__PURE__*/React.createElement("nav", {
-    className: "sticky top-0 z-50 border-b border-black/5 bg-white/80 backdrop-blur-xl"
+    className: "sticky top-0 z-50 border-b border-hair/60 bg-white/80 backdrop-blur-xl"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mx-auto flex h-12 max-w-[980px] items-center justify-between px-6 text-[12px]"
   }, /*#__PURE__*/React.createElement("a", {
@@ -338,7 +341,7 @@ function Hero() {
     className: "mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-4"
   }, /*#__PURE__*/React.createElement("a", {
     href: "#read",
-    className: "inline-flex min-h-[44px] items-center rounded-full bg-ink px-7 text-[15px] font-medium text-white hover:bg-black"
+    className: "inline-flex min-h-[44px] items-center rounded-full bg-ink px-7 text-[15px] font-medium text-white hover:bg-inkhover"
   }, "시작하기"), /*#__PURE__*/React.createElement("a", {
     href: "#audit",
     className: "inline-flex min-h-[44px] items-center gap-0.5 text-[17px] text-ink hover:underline underline-offset-4"
@@ -446,13 +449,52 @@ function passkeyErrorText(e) {
   if (e.code === 'NO_GET_AUTH_DATA') return '이 브라우저는 원시 데이터를 바로 꺼내는 방식을 아직 지원하지 않습니다. 최신 Chrome·Edge·Safari로 해 보세요.';
   return '만들지 못했습니다. 잠시 뒤 다시 시도하거나 예시로 감을 잡아 보세요.';
 }
+
+// 이 자격증명의 지난 값을 이 브라우저에만 기억해 뒀다가, 다음 확인 때 진짜 전이를 비교한다.
+// 서버가 없으니 localStorage가 "서버가 보관해 둔 값" 역할을 한다 — 논문 5.2절이 말하는 바로 그 패턴이다.
+const CRED_KEY_PREFIX = 'bscheck:cred:';
+function safeGetJSON(key) {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    return null;
+  }
+}
+function safeSetJSON(key, val) {
+  try {
+    localStorage.setItem(key, JSON.stringify(val));
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+function safeRemove(key) {
+  try {
+    localStorage.removeItem(key);
+  } catch (e) {/* 무시 */}
+}
+function fmtWhen(iso) {
+  try {
+    return new Date(iso).toLocaleString('ko-KR', {
+      month: 'numeric',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (e) {
+    return iso;
+  }
+}
 function PasskeyDemo({
   onResult
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
   const [done, setDone] = useState(null); // null | 'created' | 'asserted'
+  const [compare, setCompare] = useState(null); // { first:true } | { first:false, changed, prev:{be,bs}, curr:{be,bs}, prevAt }
   const rawIdRef = useRef(null);
+  const credKeyRef = useRef(null);
   const supported = typeof window !== 'undefined' && !!window.PublicKeyCredential;
   if (!supported) {
     return /*#__PURE__*/React.createElement("p", {
@@ -462,12 +504,61 @@ function PasskeyDemo({
       className: "mt-0.5 w-5 h-5 shrink-0"
     }), "이 브라우저·기기는 패스키(WebAuthn)를 지원하지 않는 것 같습니다. 아래 예시로 감을 잡아 보세요.");
   }
+
+  // 방금 받은 진짜 값을 지난번 기억과 비교하고, 이번 값을 다음을 위해 저장한다.
+  const rememberAndCompare = (authDataB64, rawIdB64) => {
+    const key = CRED_KEY_PREFIX + rawIdB64;
+    credKeyRef.current = key;
+    const parsed = B.parseInput(authDataB64);
+    if (!parsed.ok) return null;
+    const f = B.decodeFlags(parsed.flags);
+    const curr = {
+      be: f.BE,
+      bs: f.BS
+    };
+    const prev = safeGetJSON(key);
+    const everBackedUp = Boolean(prev && prev.everBackedUp) || curr.bs;
+    const savedOk = safeSetJSON(key, {
+      be: curr.be,
+      bs: curr.bs,
+      everBackedUp,
+      updatedAt: new Date().toISOString()
+    });
+    if (!prev) return {
+      first: true,
+      curr,
+      saved: savedOk
+    };
+    return {
+      first: false,
+      curr,
+      prev: {
+        be: prev.be,
+        bs: prev.bs
+      },
+      everBackedUp,
+      changed: prev.be !== curr.be || prev.bs !== curr.bs,
+      prevAt: prev.updatedAt,
+      saved: savedOk
+    };
+  };
   const run = async (fn, resultKind) => {
     setBusy(true);
     setError('');
+    setCompare(null);
     try {
-      const value = await fn();
-      onResult(value);
+      const {
+        rawId,
+        authDataB64
+      } = await fn();
+      const cmp = rememberAndCompare(authDataB64, toBase64url(rawId));
+      setCompare(cmp);
+      const remembered = cmp && !cmp.first ? {
+        be: cmp.prev.be ? '1' : '0',
+        bs: cmp.prev.bs ? '1' : '0',
+        ever: cmp.everBackedUp ? '1' : '0'
+      } : null;
+      onResult(authDataB64, remembered);
       setDone(resultKind);
     } catch (e) {
       setError(passkeyErrorText(e));
@@ -478,9 +569,16 @@ function PasskeyDemo({
   const handleCreate = () => run(async () => {
     const r = await createRealPasskey();
     rawIdRef.current = r.rawId;
-    return r.authDataB64;
+    return r;
   }, 'created');
-  const handleAssert = () => run(() => assertRealPasskey(rawIdRef.current), 'asserted');
+  const handleAssert = () => run(async () => ({
+    rawId: rawIdRef.current,
+    authDataB64: await assertRealPasskey(rawIdRef.current)
+  }), 'asserted');
+  const forget = () => {
+    if (credKeyRef.current) safeRemove(credKeyRef.current);
+    setCompare(null);
+  };
   return /*#__PURE__*/React.createElement("div", {
     className: "rounded-2xl bg-white p-6 ring-1 ring-hair"
   }, /*#__PURE__*/React.createElement("div", {
@@ -492,7 +590,7 @@ function PasskeyDemo({
     className: "text-[15px] font-medium"
   }, "내 브라우저로 직접 확인하기")), /*#__PURE__*/React.createElement("p", {
     className: "mt-2 text-[14px] leading-[1.7] text-sub"
-  }, "버튼을 누르면 이 사이트(aleph-bs-check.vercel.app)용 진짜 패스키가 지금 기기에 만들어지고, 기기가 실제로 돌려주는 authenticatorData를 그대로 아래에 넣어 드립니다. Windows Hello·Touch ID 같은 확인 창이 뜹니다 — 값은 이 브라우저 밖으로 나가지 않고, 서명을 검증하지도 않습니다."), /*#__PURE__*/React.createElement("div", {
+  }, "버튼을 누르면 이 사이트(aleph-bs-check.vercel.app)용 진짜 패스키가 지금 기기에 만들어지고, 기기가 실제로 돌려주는 authenticatorData를 그대로 아래에 넣어 드립니다. Windows Hello·Touch ID 같은 확인 창이 뜹니다 — 값은 이 브라우저 밖으로 나가지 않고, 서명을 검증하지도 않습니다. 지난 값은 이 브라우저에만 기억해 뒀다가, 다음에 다시 확인하면 실제로 뭐가 바뀌었는지 비교해 드립니다(다른 곳으로 보내지 않습니다)."), /*#__PURE__*/React.createElement("div", {
     className: "mt-5 flex flex-wrap items-center gap-3"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -504,15 +602,26 @@ function PasskeyDemo({
     onClick: handleAssert,
     disabled: busy,
     className: "inline-flex min-h-[40px] items-center gap-2 rounded-full bg-mist px-5 text-[14px] font-medium text-ink disabled:opacity-50"
-  }, "같은 패스키로 다시 인증해서 보기")), error && /*#__PURE__*/React.createElement("p", {
+  }, "같은 패스키로 다시 인증해서 보기"), credKeyRef.current && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: forget,
+    className: "text-[13px] text-sub hover:text-ink underline underline-offset-4"
+  }, "기억해 둔 지난 값 지우기")), error && /*#__PURE__*/React.createElement("p", {
     role: "alert",
     className: "mt-4 flex items-start gap-3 rounded-2xl bg-mist px-5 py-4 text-[13.5px] leading-[1.6] text-ink"
   }, /*#__PURE__*/React.createElement(Icon, {
     name: "x",
     className: "mt-0.5 w-4 h-4 shrink-0"
-  }), error), done && !error && /*#__PURE__*/React.createElement("p", {
+  }), error), compare && !compare.first && /*#__PURE__*/React.createElement("p", {
+    className: `mt-4 flex items-start gap-3 rounded-2xl px-5 py-4 text-[13.5px] leading-[1.7] ${compare.changed ? 'bg-mist text-ink' : 'text-sub'}`
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: compare.changed ? 'alert' : 'check',
+    className: "mt-0.5 w-4 h-4 shrink-0"
+  }), compare.changed ? /*#__PURE__*/React.createElement(React.Fragment, null, "실제로 바뀌었습니다 — 지난 확인(", fmtWhen(compare.prevAt), ")엔 BE=", compare.prev.be ? 1 : 0, "·BS=", compare.prev.bs ? 1 : 0, "이었는데, 지금은 BE=", compare.curr.be ? 1 : 0, "·BS=", compare.curr.bs ? 1 : 0, "입니다. Step 2가 이 실제 지난 값으로 채워졌습니다 — 아래에서 판정을 보세요.") : /*#__PURE__*/React.createElement(React.Fragment, null, "지난 확인(", fmtWhen(compare.prevAt), ")과 같습니다 — BE=", compare.curr.be ? 1 : 0, "·BS=", compare.curr.bs ? 1 : 0, ".")), compare && compare.first && /*#__PURE__*/React.createElement("p", {
     className: "mt-4 text-[13px] leading-[1.7] text-sub"
-  }, "아래 비트는 방금 ", done === 'created' ? '등록' : '인증', " 응답에서 그대로 꺼낸 진짜 값입니다. 지우려면 브라우저의 비밀번호(패스키) 관리 화면에서 \"aleph-bs-check.vercel.app\"을 찾아 삭제하면 됩니다."));
+  }, "이 패스키는 이 브라우저에서 처음 봅니다. 값을 기억해 뒀다가, 다음에 \"같은 패스키로 다시 인증해서 보기\"를 누르면 진짜로 뭐가 바뀌었는지 비교해 드립니다."), done && !error && /*#__PURE__*/React.createElement("p", {
+    className: "mt-4 text-[13px] leading-[1.7] text-sub"
+  }, "아래 비트는 방금 ", done === 'created' ? '등록' : '인증', " 응답에서 그대로 꺼낸 진짜 값입니다. 패스키 자체를 지우려면 브라우저의 비밀번호(패스키) 관리 화면에서 \"aleph-bs-check.vercel.app\"을 찾아 삭제하면 됩니다."));
 }
 
 // ── Step 1 · 판독 ────────────────────────────────────────
@@ -521,7 +630,8 @@ function ReadStep({
   setInput,
   activeEx,
   applyExample,
-  parsed
+  parsed,
+  onRealResult
 }) {
   return /*#__PURE__*/React.createElement(Section, {
     id: "read",
@@ -529,7 +639,7 @@ function ReadStep({
     title: "응답을 읽습니다.",
     lead: "내 브라우저로 진짜 패스키를 만들어 실제 값을 보거나, 로그인 응답의 authenticatorData·플래그 한 바이트를 직접 넣어 비트를 풀어 봅니다."
   }, /*#__PURE__*/React.createElement(PasskeyDemo, {
-    onResult: setInput
+    onResult: onRealResult
   }), /*#__PURE__*/React.createElement("p", {
     className: "mt-10 text-[13px] font-semibold text-sub"
   }, "또는 시나리오 예시"), /*#__PURE__*/React.createElement("div", {
@@ -748,17 +858,73 @@ const STEP_CHECKS = {
   s2: '로그인 검증 코드에서 라이브러리의 검증 함수를 부르는 줄을 찾아, 그 인자로 저장해 둔 backup_eligible·backup_state를 실제로 넘기는지 봅니다.',
   s3: '같은 계정으로 두 번 로그인한 뒤 SELECT backup_state, updated_at FROM credentials WHERE id = ...로 두 로그인 사이에 값이나 시각이 바뀌었는지 봅니다.'
 };
-function AuditStep() {
-  const [pick, setPick] = useState('');
-  const [answers, setAnswers] = useState(EMPTY_ANSWERS);
-  const choose = v => {
-    setPick(v);
-    const [kind, id] = v.split(':');
-    const app = kind === 'app' ? B.APPS.find(a => a.id === id) : null;
-    setAnswers(app ? {
-      ...app.answers
-    } : EMPTY_ANSWERS);
-  };
+
+// 논문 표 14·16을 한 화면에서 다 보는 참고표 — 내 스택 하나가 아니라 생태계 전체를 볼 때
+function FullComparisonTable() {
+  const [open, setOpen] = useState(false);
+  const cls = t => t === '예' ? 'text-ink font-medium' : t.startsWith('아니오') ? 'text-ink font-semibold' : 'text-sub';
+  return /*#__PURE__*/React.createElement("details", {
+    className: "mt-8 group",
+    open: open,
+    onToggle: e => setOpen(e.target.open)
+  }, /*#__PURE__*/React.createElement("summary", {
+    className: "cursor-pointer list-none text-[14px] font-medium text-ink"
+  }, "라이브러리·응용 11+3개 전체 비교표 보기 ", /*#__PURE__*/React.createElement("span", {
+    className: "inline-block transition-transform group-open:rotate-180 text-sub"
+  }, "⌄")), /*#__PURE__*/React.createElement("div", {
+    className: "mt-6"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-[13px] font-semibold text-sub"
+  }, "라이브러리 11개 — 논문 표 14 (2026-09-11 소스 열람)"), /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 overflow-x-auto"
+  }, /*#__PURE__*/React.createElement("table", {
+    className: "w-full min-w-[640px] text-left text-[13.5px]"
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    className: "text-[11.5px] text-sub"
+  }, ['이름', '언어', '등록 노출', '인증 노출', '저장', '대조·갱신'].map(h => /*#__PURE__*/React.createElement("th", {
+    key: h,
+    className: "border-b border-hair pb-2 pr-4 font-semibold"
+  }, h)))), /*#__PURE__*/React.createElement("tbody", null, B.LIBRARIES.map(l => /*#__PURE__*/React.createElement("tr", {
+    key: l.id,
+    className: "border-b border-hair/60"
+  }, /*#__PURE__*/React.createElement("td", {
+    className: "py-2 pr-4 font-medium text-ink"
+  }, l.name), /*#__PURE__*/React.createElement("td", {
+    className: "py-2 pr-4 text-sub"
+  }, l.lang), l.m.map((t, i) => /*#__PURE__*/React.createElement("td", {
+    key: i,
+    className: `py-2 pr-4 ${cls(t)}`
+  }, t))))))), /*#__PURE__*/React.createElement("p", {
+    className: "mt-8 text-[13px] font-semibold text-sub"
+  }, "응용 3개 — 논문 표 16 (소스 열람 판정, 실행 측정 아님)"), /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 overflow-x-auto"
+  }, /*#__PURE__*/React.createElement("table", {
+    className: "w-full min-w-[520px] text-left text-[13.5px]"
+  }, /*#__PURE__*/React.createElement("thead", null, /*#__PURE__*/React.createElement("tr", {
+    className: "text-[11.5px] text-sub"
+  }, ['이름', '기반 라이브러리', '1.저장', '2.전달', '3.갱신'].map(h => /*#__PURE__*/React.createElement("th", {
+    key: h,
+    className: "border-b border-hair pb-2 pr-4 font-semibold"
+  }, h)))), /*#__PURE__*/React.createElement("tbody", null, B.APPS.map(a => /*#__PURE__*/React.createElement("tr", {
+    key: a.id,
+    className: "border-b border-hair/60"
+  }, /*#__PURE__*/React.createElement("td", {
+    className: "py-2 pr-4 font-medium text-ink"
+  }, a.name), /*#__PURE__*/React.createElement("td", {
+    className: "py-2 pr-4 text-sub"
+  }, B.LIBRARIES.find(l => l.id === a.lib)?.name), ['s1', 's2', 's3'].map(sid => /*#__PURE__*/React.createElement("td", {
+    key: sid,
+    className: `py-2 pr-4 ${a.answers[sid] === 'yes' ? 'text-ink font-medium' : 'text-ink font-semibold'}`
+  }, a.answers[sid] === 'yes' ? '예' : '아니오'))))))), /*#__PURE__*/React.createElement("p", {
+    className: "mt-4 text-[12.5px] leading-[1.6] text-sub"
+  }, "채택 규모(star·다운로드 등)는 서로 다른 단위라 순위가 아닌 참고용입니다. 대조·갱신을 구현한 4개는 규모 상위권이 아닙니다 — 이 갈림은 프로젝트 규모로 설명되지 않습니다.")));
+}
+function AuditStep({
+  pick,
+  choose,
+  answers,
+  setAnswers
+}) {
   const [kind, id] = pick ? pick.split(':') : [null, null];
   const app = kind === 'app' ? B.APPS.find(a => a.id === id) : null;
   const lib = kind === 'lib' ? B.LIBRARIES.find(l => l.id === id) : null;
@@ -849,7 +1015,7 @@ function AuditStep() {
     className: "mt-0.5 w-5 h-5 shrink-0"
   }), /*#__PURE__*/React.createElement("span", null, app ? /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
     className: "font-medium text-ink"
-  }, app.name), " — 기반 라이브러리 ", B.LIBRARIES.find(l => l.id === app.lib).name, ". ", app.note, " 아래 답은 조사한 판정으로 채웠습니다.") : B.LIB_NOTES[id] || B.LIB_NOTES.other))), /*#__PURE__*/React.createElement("div", {
+  }, app.name), " — 기반 라이브러리 ", B.LIBRARIES.find(l => l.id === app.lib).name, ". ", app.note, " 아래 답은 조사한 판정으로 채웠습니다.") : B.LIB_NOTES[id] || B.LIB_NOTES.other)), /*#__PURE__*/React.createElement(FullComparisonTable, null)), /*#__PURE__*/React.createElement("div", {
     className: "mt-20 divide-y divide-hair border-y border-hair"
   }, B.STEPS.map((s, i) => /*#__PURE__*/React.createElement("div", {
     key: s.id,
@@ -891,6 +1057,79 @@ function AuditStep() {
 }
 
 // ── 바닥 ────────────────────────────────────────────────
+// ── 저장·공유 ────────────────────────────────────────────
+// 주소창의 쿼리스트링에 지금 상태를 실어 두면, 그 URL 자체가 "지금 이 화면" 공유 링크가 된다.
+// 서버가 없으니 값은 이 브라우저와 받는 사람의 브라우저 사이(링크 안)에만 있고, 어디로도 전송되지 않는다.
+function readURLState() {
+  try {
+    const p = new URLSearchParams(location.search);
+    if (!p.has('in')) return null;
+    return {
+      input: p.get('in') || '',
+      be: p.get('be') || '',
+      bs: p.get('bs') || '',
+      ever: p.get('ev') || '',
+      action: p.get('ac') === 'irreversible' ? 'irreversible' : 'login',
+      pick: p.get('lib') || ''
+    };
+  } catch (e) {
+    return null;
+  }
+}
+function answersForPick(pick) {
+  if (!pick) return EMPTY_ANSWERS;
+  const [kind, id] = pick.split(':');
+  const app = kind === 'app' ? B.APPS.find(a => a.id === id) : null;
+  return app ? {
+    ...app.answers
+  } : EMPTY_ANSWERS;
+}
+function ShareReport({
+  input,
+  stored,
+  action,
+  pick,
+  answers
+}) {
+  const reportText = useMemo(() => {
+    try {
+      return B.buildReport({
+        input,
+        stored,
+        action,
+        pick,
+        answers
+      });
+    } catch (e) {
+      return '리포트를 만들지 못했습니다.';
+    }
+  }, [input, stored, action, pick, answers]);
+  const [href, setHref] = useState('');
+  useEffect(() => {
+    setHref(typeof location !== 'undefined' ? location.href : '');
+  }, [input, stored, action, pick, answers]);
+  return /*#__PURE__*/React.createElement("section", {
+    className: "bg-mist",
+    "aria-labelledby": "h-share"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mx-auto max-w-[980px] px-6 py-24 sm:py-32"
+  }, /*#__PURE__*/React.createElement("p", {
+    id: "h-share",
+    className: "text-[14px] font-semibold text-sub"
+  }, "지금까지 확인한 것을 저장·공유하기"), /*#__PURE__*/React.createElement("p", {
+    className: "mt-3 max-w-[600px] text-[15px] font-light leading-[1.6] text-sub"
+  }, "아래 링크를 열면 지금 이 화면(입력값·판정·스택 선택)이 그대로 다시 뜹니다. 리포트는 Step 1~3 결과를 텍스트로 정리한 것입니다. 둘 다 이 브라우저 안에서만 만들어지고, 어디로도 전송되지 않습니다."), /*#__PURE__*/React.createElement("div", {
+    className: "mt-6 flex flex-wrap gap-3"
+  }, /*#__PURE__*/React.createElement(CopyButton, {
+    text: href,
+    label: "지금 상태 링크 복사",
+    tone: "button"
+  }), /*#__PURE__*/React.createElement(CopyButton, {
+    text: reportText,
+    label: "진단 리포트 복사",
+    tone: "button"
+  }))));
+}
 function Footer() {
   return /*#__PURE__*/React.createElement("footer", {
     className: "bg-mist"
@@ -927,14 +1166,21 @@ function Footer() {
 // ── 앱 ──────────────────────────────────────────────────
 function App() {
   const first = EXAMPLES[0];
-  const [input, setInputRaw] = useState(first.input);
-  const [stored, setStoredRaw] = useState({
+  const urlState = useMemo(() => readURLState(), []);
+  const [input, setInputRaw] = useState(() => urlState ? urlState.input : first.input);
+  const [stored, setStoredRaw] = useState(() => urlState ? {
+    be: urlState.be,
+    bs: urlState.bs,
+    ever: urlState.ever
+  } : {
     be: first.be,
     bs: first.bs,
     ever: first.ever
   });
-  const [action, setActionRaw] = useState(first.action);
-  const [activeEx, setActiveEx] = useState(first.key);
+  const [action, setActionRaw] = useState(() => urlState ? urlState.action : first.action);
+  const [activeEx, setActiveEx] = useState(() => urlState ? null : first.key);
+  const [pick, setPick] = useState(() => urlState ? urlState.pick : '');
+  const [answers, setAnswers] = useState(() => answersForPick(urlState ? urlState.pick : ''));
   const parsed = useMemo(() => {
     try {
       return B.parseInput(input);
@@ -959,6 +1205,10 @@ function App() {
     setActiveEx(null);
     setActionRaw(v);
   };
+  const choose = v => {
+    setPick(v);
+    setAnswers(answersForPick(v));
+  };
   const applyExample = key => {
     const ex = EXAMPLES.find(e => e.key === key);
     if (!ex) return;
@@ -971,18 +1221,55 @@ function App() {
     setActionRaw(ex.action);
     setActiveEx(key);
   };
+  // 진짜 패스키 값이 들어오면 예시 선택을 끄고, 이 브라우저가 기억한 지난 값이 있으면
+  // Step 2도 그 실제 값으로 채운다(없으면 Step 2는 손대지 않는다).
+  const applyRealResult = (b64, remembered) => {
+    setActiveEx(null);
+    setInputRaw(b64);
+    if (remembered) {
+      setStoredRaw(remembered);
+      setActionRaw('login');
+    }
+  };
+
+  // 주소창을 지금 상태의 공유 링크로 유지한다 — 서버 왕복 없이 replaceState만 쓴다.
+  useEffect(() => {
+    try {
+      const p = new URLSearchParams();
+      if (input) p.set('in', input);
+      if (stored.be) p.set('be', stored.be);
+      if (stored.bs) p.set('bs', stored.bs);
+      if (stored.ever) p.set('ev', stored.ever);
+      if (action === 'irreversible') p.set('ac', action);
+      if (pick) p.set('lib', pick);
+      const qs = p.toString();
+      history.replaceState(null, '', qs ? `${location.pathname}?${qs}` : location.pathname);
+    } catch (e) {/* 사생활 보호 모드 등에서 history API가 막혀도 앱은 그대로 동작해야 한다 */}
+  }, [input, stored, action, pick]);
   return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Nav, null), /*#__PURE__*/React.createElement("main", null, /*#__PURE__*/React.createElement(Hero, null), /*#__PURE__*/React.createElement(Proof, null), /*#__PURE__*/React.createElement(ReadStep, {
     input: input,
     setInput: setInput,
     activeEx: activeEx,
     applyExample: applyExample,
-    parsed: parsed
+    parsed: parsed,
+    onRealResult: applyRealResult
   }), /*#__PURE__*/React.createElement(PolicyStep, {
     parsed: parsed,
     stored: stored,
     setStored: setStored,
     action: action,
     setAction: setAction
-  }), /*#__PURE__*/React.createElement(AuditStep, null)), /*#__PURE__*/React.createElement(Footer, null));
+  }), /*#__PURE__*/React.createElement(AuditStep, {
+    pick: pick,
+    choose: choose,
+    answers: answers,
+    setAnswers: setAnswers
+  }), /*#__PURE__*/React.createElement(ShareReport, {
+    input: input,
+    stored: stored,
+    action: action,
+    pick: pick,
+    answers: answers
+  })), /*#__PURE__*/React.createElement(Footer, null));
 }
 ReactDOM.createRoot(document.getElementById('root')).render(/*#__PURE__*/React.createElement(App, null));
