@@ -191,6 +191,9 @@ function Proof() {
     <section className="bg-mist" aria-labelledby="h-proof">
       <div className="mx-auto max-w-[980px] px-6 py-32 sm:py-40">
         <Fade as="h2" id="h-proof" className="text-center text-[14px] font-semibold text-sub">왜 이 점검이 필요한가</Fade>
+        <Fade as="p" className="mx-auto mt-3 max-w-[440px] text-center text-[12.5px] leading-[1.6] text-sub">
+          저자가 직접 측정·조사한 결과 · <a href={PAPER_URL} target="_blank" rel="noopener" className="underline underline-offset-4 hover:text-ink">연구 논문에서 방법 보기</a>
+        </Fade>
         <div className="mt-16 grid gap-16 sm:grid-cols-3 sm:gap-10">
           {items.map(([n, d, t]) => (
             <Fade key={t} className="text-center">
