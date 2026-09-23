@@ -361,65 +361,30 @@ function ThemeToggle() {
     className: "w-4 h-4"
   }));
 }
-function Nav() {
+
+// 탭으로 화면을 이동한다(스크롤이 아니라 뷰 전환) — 주소창(?view=)과도 맞춰 둔다.
+const NAV_TABS = [['dashboard', '대시보드'], ['check', '점검'], ['audit', '서버 진단'], ['history', '기록']];
+function Nav({
+  view,
+  setView
+}) {
   return /*#__PURE__*/React.createElement("nav", {
     className: "sticky top-0 z-50 border-b border-hair/60 bg-white/80 backdrop-blur-xl"
   }, /*#__PURE__*/React.createElement("div", {
     className: "mx-auto flex h-12 max-w-[980px] items-center justify-between px-6 text-[12px]"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#top",
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setView('dashboard'),
     className: "font-semibold tracking-tight text-ink"
   }, "BS Check"), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-5 text-sub"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#read",
-    className: "hover:text-ink"
-  }, "판독"), /*#__PURE__*/React.createElement("a", {
-    href: "#policy",
-    className: "hover:text-ink"
-  }, "판정"), /*#__PURE__*/React.createElement("a", {
-    href: "#audit",
-    className: "hover:text-ink"
-  }, "서버 진단"), /*#__PURE__*/React.createElement(ThemeToggle, null))));
-}
-function Hero() {
-  return /*#__PURE__*/React.createElement("header", {
-    id: "top",
-    className: "bg-white"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "mx-auto max-w-[1080px] px-6 pb-24 pt-20 text-center sm:pb-32 sm:pt-28"
-  }, /*#__PURE__*/React.createElement(Fade, {
-    as: "p",
-    className: "text-[14px] font-semibold text-sub"
-  }, "WebAuthn · 패스키"), /*#__PURE__*/React.createElement(Fade, {
-    as: "p",
-    className: "mx-auto mt-4 max-w-[520px] text-[13px] leading-[1.6] text-sub"
-  }, "기반 연구 · ", /*#__PURE__*/React.createElement("a", {
-    href: PAPER_URL,
-    target: "_blank",
-    rel: "noopener",
-    className: "text-ink underline-offset-4 hover:underline"
-  }, "「동기화 패스키의 백업 상태 전이는 서비스에 관측되는가」"), " 진혜정, 2026"), /*#__PURE__*/React.createElement(Fade, {
-    as: "h1",
-    className: "mt-6 text-[36px] font-extralight leading-[1.1] tracking-[-0.03em] sm:text-[52px] lg:text-[62px]"
-  }, "로그인 응답 하나로", /*#__PURE__*/React.createElement("br", null), "백업 상태 전이를 판정합니다."), /*#__PURE__*/React.createElement(Fade, {
-    as: "p",
-    className: "mx-auto mt-6 max-w-[640px] text-[17px] font-light leading-[1.6] text-sub sm:text-[19px]"
-  }, "이 앱은 패스키 로그인을 만드는 개발자를 돕습니다. 로그인 응답을 넣으면 백업 상태(BE·BS) 전이를 판정하고, 서버에 빠진 저장·대조 단계를 알려 줍니다."), /*#__PURE__*/React.createElement(Fade, {
-    className: "mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-4"
-  }, /*#__PURE__*/React.createElement("a", {
-    href: "#read",
-    className: "inline-flex min-h-[44px] items-center rounded-full bg-ink px-7 text-[15px] font-medium text-white hover:bg-inkhover"
-  }, "시작하기"), /*#__PURE__*/React.createElement("a", {
-    href: "#audit",
-    className: "inline-flex min-h-[44px] items-center gap-0.5 text-[17px] text-ink hover:underline underline-offset-4"
-  }, "내 서버 진단하기 ", /*#__PURE__*/React.createElement(Icon, {
-    name: "arrow",
-    className: "w-4 h-4"
-  }))), /*#__PURE__*/React.createElement(Fade, {
-    as: "p",
-    className: "mx-auto mt-14 max-w-[560px] text-[13px] leading-[1.7] text-sub"
-  }, "계산은 전부 이 브라우저 안에서 이뤄집니다. 값을 어디로도 보내지 않습니다.")));
+  }, NAV_TABS.map(([v, t]) => /*#__PURE__*/React.createElement("button", {
+    key: v,
+    type: "button",
+    onClick: () => setView(v),
+    "aria-current": view === v ? 'page' : undefined,
+    className: `hover:text-ink ${view === v ? 'text-ink font-medium' : ''}`
+  }, t)), /*#__PURE__*/React.createElement(ThemeToggle, null))));
 }
 function Proof() {
   const items = [['10', '/10', '전이를 줘도 서버 응답·저장 상태는 그대로였습니다.'], ['4', '/11', '보관값과 대조·갱신까지 구현한 라이브러리.'], ['0', '/3', '끝까지 신호를 지킨 실제 응용.']];
@@ -432,7 +397,7 @@ function Proof() {
     as: "h2",
     id: "h-proof",
     className: "text-center text-[14px] font-semibold text-sub"
-  }, "직접 측정하고 조사해서 확인한 문제"), /*#__PURE__*/React.createElement("div", {
+  }, "왜 이 점검이 필요한가"), /*#__PURE__*/React.createElement("div", {
     className: "mt-16 grid gap-16 sm:grid-cols-3 sm:gap-10"
   }, items.map(([n, d, t]) => /*#__PURE__*/React.createElement(Fade, {
     key: t,
@@ -553,6 +518,30 @@ function fmtWhen(iso) {
   } catch (e) {
     return iso;
   }
+}
+
+// ── 점검 기록 ────────────────────────────────────────────
+// 서버가 없으니 "다시 열어도 이전에 뭘 했는지 남아 있는" 역할을 이 브라우저의 localStorage가 대신한다.
+// 판정이 새로 나올 때마다 자동으로 쌓이고(같은 값 반복 입력은 다시 쌓지 않음), 목록에서 눌러 그 상태로 되돌릴 수 있다.
+const HISTORY_KEY = 'bscheck:history';
+const VISITED_KEY = 'bscheck:visited';
+const MAX_HISTORY = 30;
+function loadHistory() {
+  const list = safeGetJSON(HISTORY_KEY);
+  return Array.isArray(list) ? list : [];
+}
+function saveHistory(list) {
+  safeSetJSON(HISTORY_KEY, list.slice(0, MAX_HISTORY));
+}
+function pushHistory(entry) {
+  const id = Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const next = [{
+    id,
+    at: new Date().toISOString(),
+    ...entry
+  }, ...loadHistory()];
+  saveHistory(next);
+  return next;
 }
 function PasskeyDemo({
   onResult
@@ -814,27 +803,13 @@ function PolicyStep({
   stored,
   setStored,
   action,
-  setAction
+  setAction,
+  result
 }) {
   const set = k => v => setStored({
     ...stored,
     [k]: v
   });
-  const sel = v => v === '' ? null : v === '1';
-  const result = useMemo(() => {
-    if (!parsed.ok) return null;
-    try {
-      return B.evaluate(parsed.flags, {
-        be: sel(stored.be),
-        bs: sel(stored.bs),
-        ever: sel(stored.ever)
-      }, action);
-    } catch (e) {
-      return {
-        error: true
-      };
-    }
-  }, [parsed, stored, action]);
   let next = '';
   if (result && !result.error) {
     next = result.verdict === 'reject' ? `// ${result.next.note}` : JSON.stringify({
@@ -1124,6 +1099,140 @@ function AuditStep({
   }, "추가 왕복도 사용자 상호작용도 필요 없고, 컬럼 세 개와 코드 몇 줄이면 닫힙니다."))));
 }
 
+// ── 점검 화면 머리(대시보드 대신 여기서만 짧게) ───────────
+function CheckHeader() {
+  return /*#__PURE__*/React.createElement("header", {
+    className: "bg-white"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mx-auto max-w-[980px] px-6 pt-16 pb-2"
+  }, /*#__PURE__*/React.createElement(Fade, {
+    as: "p",
+    className: "text-[13px] font-semibold text-sub"
+  }, "점검"), /*#__PURE__*/React.createElement(Fade, {
+    as: "h1",
+    className: "mt-3 text-[32px] font-extralight leading-[1.15] tracking-[-0.02em] sm:text-[42px]"
+  }, "로그인 응답을 넣어 백업 상태 전이를 판정합니다.")));
+}
+
+// ── 기록 ────────────────────────────────────────────────
+function HistoryRow({
+  entry,
+  onRestore
+}) {
+  const vt = B.VERDICT_TEXT[entry.verdict];
+  const src = entry.source === 'passkey' ? '실제 패스키' : entry.source === 'example' ? '예시' : '직접 입력';
+  return /*#__PURE__*/React.createElement("li", {
+    className: "flex items-center justify-between gap-4 py-5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "min-w-0"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "truncate text-[16px]"
+  }, vt ? vt.label : entry.verdict), /*#__PURE__*/React.createElement("p", {
+    className: "mt-1 text-[12.5px] text-sub"
+  }, fmtWhen(entry.at), " · 플래그 ", entry.flagsHex, " · ", src)), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => onRestore(entry),
+    className: "shrink-0 text-[13px] text-sub hover:text-ink underline underline-offset-4"
+  }, "불러오기"));
+}
+function HistoryView({
+  historyList,
+  onRestore,
+  onClear
+}) {
+  return /*#__PURE__*/React.createElement(Section, {
+    id: "history",
+    eyebrow: "기록",
+    title: "지난 점검들.",
+    lead: "이 브라우저에 남아 있는 점검 기록입니다. 눌러서 그 상태로 다시 불러올 수 있습니다 — 서버에는 애초에 저장되지 않습니다."
+  }, historyList.length === 0 ? /*#__PURE__*/React.createElement("p", {
+    className: "text-[15px] text-sub"
+  }, "아직 기록이 없습니다. 점검을 하면 여기 쌓입니다.") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("ul", {
+    className: "divide-y divide-hair"
+  }, historyList.map(h => /*#__PURE__*/React.createElement(HistoryRow, {
+    key: h.id,
+    entry: h,
+    onRestore: onRestore
+  }))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: onClear,
+    className: "mt-8 text-[13px] text-sub hover:text-ink underline underline-offset-4"
+  }, "기록 전부 지우기")));
+}
+
+// ── 대시보드 ────────────────────────────────────────────
+function Dashboard({
+  historyList,
+  showIntro,
+  onStartExample,
+  onDismissIntro,
+  onStart,
+  onGoHistory,
+  onRestore
+}) {
+  const total = historyList.length;
+  const last = historyList[0];
+  return /*#__PURE__*/React.createElement(React.Fragment, null, showIntro && /*#__PURE__*/React.createElement("section", {
+    className: "bg-white"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mx-auto max-w-[980px] px-6 pt-20"
+  }, /*#__PURE__*/React.createElement(Fade, {
+    className: "rounded-3xl bg-mist px-8 py-10 sm:px-12 sm:py-14"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-[14px] font-semibold text-sub"
+  }, "WebAuthn · 패스키"), /*#__PURE__*/React.createElement("h1", {
+    className: "mt-3 text-[28px] font-extralight leading-[1.2] tracking-[-0.02em] sm:text-[38px]"
+  }, "로그인 응답 하나로", /*#__PURE__*/React.createElement("br", null), "백업 상태 전이를 판정합니다."), /*#__PURE__*/React.createElement("p", {
+    className: "mt-5 max-w-[560px] text-[15px] font-light leading-[1.6] text-sub"
+  }, "패스키 로그인을 만드는 개발자를 돕는 도구입니다. 계산은 전부 이 브라우저 안에서 이뤄지고, 값은 어디로도 나가지 않습니다."), /*#__PURE__*/React.createElement("div", {
+    className: "mt-8 flex flex-wrap items-center gap-x-8 gap-y-4"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: onStartExample,
+    className: "inline-flex min-h-[44px] items-center rounded-full bg-ink px-7 text-[15px] font-medium text-white hover:bg-inkhover"
+  }, "예시로 먼저 해보기"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: onDismissIntro,
+    className: "text-[15px] text-sub hover:text-ink"
+  }, "건너뛰기"))))), /*#__PURE__*/React.createElement(Proof, null), /*#__PURE__*/React.createElement("section", {
+    className: "bg-white"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "mx-auto max-w-[980px] px-6 py-24 sm:py-32"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-end justify-between gap-6"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+    className: "text-[14px] font-semibold text-sub"
+  }, "지금까지"), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-[40px] font-extralight tracking-[-0.02em]"
+  }, total, "번 점검함")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: onStart,
+    className: "inline-flex min-h-[44px] items-center rounded-full bg-ink px-7 text-[15px] font-medium text-white hover:bg-inkhover"
+  }, "새 점검 시작")), last && /*#__PURE__*/React.createElement("div", {
+    className: "mt-10 rounded-2xl bg-mist px-6 py-6"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-[13px] font-semibold text-sub"
+  }, "마지막 판정 · ", fmtWhen(last.at)), /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 text-[22px] font-light"
+  }, (B.VERDICT_TEXT[last.verdict] || {}).label || last.verdict)), total > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "mt-10"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-[13px] font-semibold text-sub"
+  }, "최근 기록"), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: onGoHistory,
+    className: "text-[13px] text-sub hover:text-ink underline underline-offset-4"
+  }, "전체 보기")), /*#__PURE__*/React.createElement("ul", {
+    className: "mt-4 divide-y divide-hair"
+  }, historyList.slice(0, 5).map(h => /*#__PURE__*/React.createElement(HistoryRow, {
+    key: h.id,
+    entry: h,
+    onRestore: onRestore
+  })))))));
+}
+
 // ── 바닥 ────────────────────────────────────────────────
 // ── 저장·공유 ────────────────────────────────────────────
 // 주소창의 쿼리스트링에 지금 상태를 실어 두면, 그 URL 자체가 "지금 이 화면" 공유 링크가 된다.
@@ -1226,7 +1335,7 @@ function Footer() {
     className: "inline-block transition-transform group-open:rotate-90"
   }, "›")), /*#__PURE__*/React.createElement("ul", {
     className: "mt-4 max-w-[640px] space-y-3"
-  }, /*#__PURE__*/React.createElement("li", null, "BE/BS는 인증장치가 스스로 신고하는 값입니다. 이 도구의 판정은 정직한 인증장치의 상태 변화를 놓치지 않기 위한 것이지, 값을 위장하는 공격자를 잡거나 전이 자체를 막기 위한 것이 아닙니다."), /*#__PURE__*/React.createElement("li", null, "Step 3의 라이브러리·응용 판정은 2026-09-11에 소스를 직접 읽어 얻은 것이며, 실행해 측정한 것은 제작자가 만든 시스템 하나뿐입니다."))), /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("li", null, "BE/BS는 인증장치가 스스로 신고하는 값입니다. 이 도구의 판정은 정직한 인증장치의 상태 변화를 놓치지 않기 위한 것이지, 값을 위장하는 공격자를 잡거나 전이 자체를 막기 위한 것이 아닙니다."), /*#__PURE__*/React.createElement("li", null, "Step 3의 라이브러리·응용 판정은 2026-09-11에 소스를 직접 읽어 얻은 것이며, 실행해 측정한 것은 제작자가 만든 시스템 하나뿐입니다."), /*#__PURE__*/React.createElement("li", null, "이 도구는 「동기화 패스키의 백업 상태 전이는 서비스에 관측되는가」(진혜정, 2026) 논문의 결과를 씁니다 — 위 \"연구 논문\" 링크에서 원문을 볼 수 있습니다."))), /*#__PURE__*/React.createElement("p", {
     className: "mt-8"
   }, "만든 사람 진혜정 · 예시 값은 모두 만든 값이며 실제 사용자 자료가 아닙니다.")));
 }
@@ -1249,6 +1358,42 @@ function App() {
   const [activeEx, setActiveEx] = useState(() => urlState ? null : first.key);
   const [pick, setPick] = useState(() => urlState ? urlState.pick : '');
   const [answers, setAnswers] = useState(() => answersForPick(urlState ? urlState.pick : ''));
+  const [view, setViewRaw] = useState(() => {
+    try {
+      const v = new URLSearchParams(location.search).get('view');
+      if (['dashboard', 'check', 'audit', 'history'].includes(v)) return v;
+    } catch (e) {/* 무시 */}
+    return urlState ? 'check' : 'dashboard';
+  });
+  const [showIntro, setShowIntro] = useState(() => {
+    try {
+      return !localStorage.getItem(VISITED_KEY);
+    } catch (e) {
+      return true;
+    }
+  });
+  const [historyList, setHistoryList] = useState(() => loadHistory());
+  const lastLoggedRef = useRef('');
+
+  // 화면(탭)을 옮긴다 — 대시보드를 벗어나면 첫 방문 안내는 다시 보이지 않게 접는다.
+  const goView = v => {
+    if (v !== 'dashboard') {
+      try {
+        localStorage.setItem(VISITED_KEY, '1');
+      } catch (e) {/* 무시 */}
+      setShowIntro(false);
+    }
+    setViewRaw(v);
+    try {
+      window.scrollTo(0, 0);
+    } catch (e) {/* 무시 */}
+  };
+  const dismissIntro = () => {
+    try {
+      localStorage.setItem(VISITED_KEY, '1');
+    } catch (e) {/* 무시 */}
+    setShowIntro(false);
+  };
   const parsed = useMemo(() => {
     try {
       return B.parseInput(input);
@@ -1259,6 +1404,21 @@ function App() {
       };
     }
   }, [input]);
+  const result = useMemo(() => {
+    if (!parsed.ok) return null;
+    const sel = v => v === '' ? null : v === '1';
+    try {
+      return B.evaluate(parsed.flags, {
+        be: sel(stored.be),
+        bs: sel(stored.bs),
+        ever: sel(stored.ever)
+      }, action);
+    } catch (e) {
+      return {
+        error: true
+      };
+    }
+  }, [parsed, stored, action]);
 
   // 손으로 바꾸면 예시 선택 표시를 끈다
   const setInput = v => {
@@ -1299,6 +1459,46 @@ function App() {
       setActionRaw('login');
     }
   };
+  const startExampleFromIntro = () => {
+    applyExample(first.key);
+    goView('check');
+  };
+  const restoreFromHistory = entry => {
+    setActiveEx(null);
+    setInputRaw(entry.input);
+    setStoredRaw(entry.stored);
+    setActionRaw(entry.action);
+    setPick(entry.pick || '');
+    setAnswers(answersForPick(entry.pick || ''));
+    goView('check');
+  };
+  const clearHistory = () => {
+    safeRemove(HISTORY_KEY);
+    setHistoryList([]);
+  };
+
+  // 판정이 새로 나오면(입력이 잠깐 멈춘 뒤) 이 브라우저의 점검 기록에 남긴다 — 같은 값을 반복해서 쌓지는 않는다.
+  useEffect(() => {
+    if (!parsed.ok || !result || result.error) return;
+    const dedupKey = `${B.hex2(parsed.flags)}|${stored.be}|${stored.bs}|${stored.ever}|${action}`;
+    if (lastLoggedRef.current === dedupKey) return;
+    const timer = setTimeout(() => {
+      lastLoggedRef.current = dedupKey;
+      setHistoryList(pushHistory({
+        flagsHex: B.hex2(parsed.flags),
+        verdict: result.verdict,
+        transition: result.transition,
+        action,
+        pick,
+        input,
+        stored: {
+          ...stored
+        },
+        source: activeEx ? 'example' : 'manual'
+      }));
+    }, 900);
+    return () => clearTimeout(timer);
+  }, [parsed, result, stored, action, pick, activeEx, input]);
 
   // 주소창을 지금 상태의 공유 링크로 유지한다 — 서버 왕복 없이 replaceState만 쓴다.
   useEffect(() => {
@@ -1310,11 +1510,23 @@ function App() {
       if (stored.ever) p.set('ev', stored.ever);
       if (action === 'irreversible') p.set('ac', action);
       if (pick) p.set('lib', pick);
+      if (view !== 'dashboard') p.set('view', view);
       const qs = p.toString();
       history.replaceState(null, '', qs ? `${location.pathname}?${qs}` : location.pathname);
     } catch (e) {/* 사생활 보호 모드 등에서 history API가 막혀도 앱은 그대로 동작해야 한다 */}
-  }, [input, stored, action, pick]);
-  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Nav, null), /*#__PURE__*/React.createElement("main", null, /*#__PURE__*/React.createElement(Hero, null), /*#__PURE__*/React.createElement(Proof, null), /*#__PURE__*/React.createElement(ReadStep, {
+  }, [input, stored, action, pick, view]);
+  return /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Nav, {
+    view: view,
+    setView: goView
+  }), /*#__PURE__*/React.createElement("main", null, view === 'dashboard' && /*#__PURE__*/React.createElement(Dashboard, {
+    historyList: historyList,
+    showIntro: showIntro,
+    onStartExample: startExampleFromIntro,
+    onDismissIntro: dismissIntro,
+    onStart: () => goView('check'),
+    onGoHistory: () => goView('history'),
+    onRestore: restoreFromHistory
+  }), view === 'check' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(CheckHeader, null), /*#__PURE__*/React.createElement(ReadStep, {
     input: input,
     setInput: setInput,
     activeEx: activeEx,
@@ -1326,12 +1538,17 @@ function App() {
     stored: stored,
     setStored: setStored,
     action: action,
-    setAction: setAction
-  }), /*#__PURE__*/React.createElement(AuditStep, {
+    setAction: setAction,
+    result: result
+  })), view === 'audit' && /*#__PURE__*/React.createElement(AuditStep, {
     pick: pick,
     choose: choose,
     answers: answers,
     setAnswers: setAnswers
+  }), view === 'history' && /*#__PURE__*/React.createElement(HistoryView, {
+    historyList: historyList,
+    onRestore: restoreFromHistory,
+    onClear: clearHistory
   }), /*#__PURE__*/React.createElement(ShareReport, {
     input: input,
     stored: stored,
