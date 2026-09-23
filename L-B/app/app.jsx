@@ -22,6 +22,9 @@ const PATHS = {
   copy: <><rect x="9" y="9" width="11" height="11" rx="2.5" /><path d="M5 15V6.5A2.5 2.5 0 0 1 7.5 4H15" /></>,
   arrow: <path d="M9 6l6 6-6 6" />,
   key: <><circle cx="7.5" cy="7.5" r="4" /><path d="M10.3 10.3L20.5 20.5M15 15l3-3M17.3 17.3l2.2-2.2" /></>,
+  sun: <><circle cx="12" cy="12" r="4.3" /><path d="M12 2.8v2.6M12 18.6v2.6M4.6 4.6l1.8 1.8M17.6 17.6l1.8 1.8M2.8 12h2.6M18.6 12h2.6M4.6 19.4l1.8-1.8M17.6 6.4l1.8-1.8" /></>,
+  moon: <path d="M20.2 14.6A8.6 8.6 0 1 1 9.4 3.8a7 7 0 0 0 10.8 10.8z" />,
+  auto: <><circle cx="12" cy="12" r="9" /><path d="M12 3a9 9 0 0 0 0 18z" fill="currentColor" stroke="none" /></>,
 };
 function Icon({ name, className = 'w-5 h-5' }) {
   return (
@@ -132,15 +135,41 @@ function Verdict({ kind, label, body, tone = 'white' }) {
 }
 
 // ── 머리 ────────────────────────────────────────────────
+// 기본은 시스템(다크/라이트) 설정을 따른다. 누르면 라이트→다크→시스템 순으로 돌고,
+// 고른 값은 localStorage(bscheck:theme)에 남아 다음에 열 때도 유지된다(index.html의
+// 머리글 스크립트가 그려지기 전에 미리 붙여서 화면이 번쩍이지 않는다).
+function ThemeToggle() {
+  const [theme, setTheme] = useState(() => {
+    try { const t = document.documentElement.getAttribute('data-theme'); return t === 'light' || t === 'dark' ? t : 'system'; }
+    catch (e) { return 'system'; }
+  });
+  useEffect(() => {
+    try {
+      if (theme === 'system') { document.documentElement.removeAttribute('data-theme'); localStorage.removeItem('bscheck:theme'); }
+      else { document.documentElement.setAttribute('data-theme', theme); localStorage.setItem('bscheck:theme', theme); }
+    } catch (e) { /* 사생활 보호 모드 등 — 이번 방문에서만 적용됨 */ }
+  }, [theme]);
+  const next = { system: 'light', light: 'dark', dark: 'system' };
+  const icon = { system: 'auto', light: 'sun', dark: 'moon' }[theme];
+  const label = { system: '시스템 설정을 따르는 중', light: '라이트 모드로 고정됨', dark: '다크 모드로 고정됨' }[theme];
+  return (
+    <button type="button" onClick={() => setTheme(next[theme])} title={`${label} — 눌러서 바꾸기`} aria-label={`테마: ${label}. 눌러서 바꾸기`}
+      className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sub hover:bg-mist hover:text-ink">
+      <Icon name={icon} className="w-4 h-4" />
+    </button>
+  );
+}
+
 function Nav() {
   return (
     <nav className="sticky top-0 z-50 border-b border-hair/60 bg-white/80 backdrop-blur-xl">
       <div className="mx-auto flex h-12 max-w-[980px] items-center justify-between px-6 text-[12px]">
         <a href="#top" className="font-semibold tracking-tight text-ink">BS Check</a>
-        <div className="flex gap-7 text-sub">
+        <div className="flex items-center gap-5 text-sub">
           <a href="#read" className="hover:text-ink">판독</a>
           <a href="#policy" className="hover:text-ink">판정</a>
           <a href="#audit" className="hover:text-ink">서버 진단</a>
+          <ThemeToggle />
         </div>
       </div>
     </nav>
