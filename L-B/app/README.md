@@ -5,11 +5,11 @@
 **패스키 로그인을 만드는 개발자가 로그인 응답을 넣으면, 규격 §7.2 단계 18·19와 적응형 인증 규칙으로 백업 상태(BE/BS) 전이를 판정하고 서버에 빠진 저장·대조 단계를 알려 줍니다. 계산은 전부 브라우저 안에서 이뤄지고, 값을 어디로도 보내지 않습니다.**
 
 - 공개 주소: https://aleph-bs-check.vercel.app
-- 설치할 것 없음. 서버·로그인·AI 호출·비밀값 없음. 화면은 React·Tailwind(CDN)로 만든 단일 파일입니다. 넣은 값은 브라우저 밖으로 나가지 않습니다.
+- 설치할 것 없음. 서버·로그인·AI 호출·비밀값 없음. 넣은 값은 브라우저 밖으로 나가지 않습니다.
 
 ## 여는 방법 (둘 중 하나)
 
-1. **그냥 열기** — 이 폴더의 `index.html`을 더블클릭합니다. 화면은 React·Tailwind를 CDN에서 불러오므로 인터넷 연결이 필요합니다(판정 규칙 `logic.js`와 `node test.cjs`는 오프라인으로 동작).
+1. **그냥 열기** — 이 폴더의 `index.html`을 더블클릭합니다. React·React DOM과 폰트만 CDN에서 불러오므로 인터넷 연결이 필요합니다(판정 규칙 `logic.js`와 `node test.cjs`는 오프라인으로 동작).
 2. **로컬 서버로 열기** — 이 폴더에서 아래를 실행하고 http://localhost:5180 을 엽니다.
    ```bash
    python -m http.server 5180
@@ -48,10 +48,50 @@ node test.cjs
 
 | 파일 | 내용 |
 |---|---|
-| `index.html` | 화면 전체 — React + Tailwind CSS 단일 파일(애플 톤: 흰색·#F5F5F7 배경, 얇은 산세리프, 스크롤 페이드인) |
+| `index.html` | 뼈대 화면(애플 톤: 흰색·#F5F5F7 배경, 얇은 산세리프, 스크롤 페이드인). `app.js`·`styles.css`를 불러다 씀 |
+| `app.jsx` | 화면의 원본 소스(React, JSX). 고칠 때는 이 파일을 고친다 |
+| `app.js` | `app.jsx`를 미리 컴파일한 결과. 브라우저가 실제로 읽는 파일 |
+| `styles.css` | Tailwind를 실제 쓰는 클래스만 담아 미리 빌드한 결과 |
 | `logic.js` | 판정 규칙(논문에서 옮긴 것). 브라우저·Node 양쪽에서 씀 |
 | `test.cjs` | 규칙 확인 29개 (잘못된 입력 12개 포함) |
 | `manifest.json`, `icons/` | 브라우저에서 "홈 화면에 추가·설치"가 뜨게 하는 선택 파일. 없어도 도구는 그대로 동작함 |
+
+`app.js`·`styles.css`는 `cdn.tailwindcss.com`(Play CDN)과 브라우저 안 Babel 변환을 뺀 것이다 —
+둘 다 "프로덕션에 쓰지 말라"고 자기 문서에 적어 두었고, 실제로 콘솔에 그 경고가 떴다.
+
+## app.jsx를 고쳤을 때 다시 빌드하는 법
+
+Node.js 18 이상이면 된다. 이 폴더 밖 아무 곳에서:
+
+```bash
+npm install -D tailwindcss@3 @babel/core @babel/cli @babel/preset-react
+```
+
+Tailwind 설정(`tailwind.config.js`, 이 저장소에는 없음 — 아래 값 그대로 새로 만든다):
+
+```js
+module.exports = {
+  content: ["<app.jsx 경로>", "<index.html 경로>"],
+  theme: { extend: {
+    colors: { ink: '#1d1d1f', sub: '#6e6e73', mist: '#f5f5f7', hair: '#d2d2d7' },
+    fontFamily: {
+      sans: ['-apple-system','BlinkMacSystemFont','"SF Pro Display"','"Pretendard Variable"','Pretendard','"Apple SD Gothic Neo"','"Malgun Gothic"','sans-serif'],
+      mono: ['"SF Mono"','ui-monospace','Menlo','Consolas','monospace'],
+    },
+  } },
+};
+```
+
+빌드:
+
+```bash
+npx tailwindcss -i input.css -o styles.css --minify   # input.css: @tailwind base; @tailwind components; @tailwind utilities;
+npx babel app.jsx --presets="[[\"@babel/preset-react\",{\"runtime\":\"classic\"}]]" -o app.js
+```
+
+`--presets` 인용부호가 셸에서 깨지면 `babel.config.json`에 `{"presets":[["@babel/preset-react",{"runtime":"classic"}]]}`를 적고
+`npx babel app.jsx --config-file ./babel.config.json -o app.js`로 대신한다. `runtime: classic`이 꼭 있어야
+CDN의 전역 `React`를 그대로 쓰는 코드가 나온다(기본값인 automatic은 모듈 import를 넣어서 브라우저에서 그냥 안 돌아간다).
 
 ## 데이터와 비밀값
 
@@ -65,4 +105,4 @@ node test.cjs
 
 ## 다시 배포할 때
 
-이 폴더는 저장소와 연결되지 않은 Vercel 프로젝트 `aleph-bs-check`로 올렸습니다(저장소 최상위가 배포되는 사고를 피하려고). 고친 뒤에는 이 폴더의 `index.html`·`logic.js`·`manifest.json`·`icons/`를 저장소 밖 임시 폴더에 복사하고, 그 폴더에서 `npx vercel --prod --yes`를 실행합니다. 생기는 `.vercel/`은 저장소에 넣지 않습니다.
+이 폴더는 저장소와 연결되지 않은 Vercel 프로젝트 `aleph-bs-check`로 올렸습니다(저장소 최상위가 배포되는 사고를 피하려고). 고친 뒤에는 이 폴더의 `index.html`·`app.js`·`styles.css`·`logic.js`·`manifest.json`·`icons/`를 저장소 밖 임시 폴더에 복사하고(`app.jsx`는 소스일 뿐이라 배포에는 필요 없음), 그 폴더에서 `npx vercel --prod --yes`를 실행합니다. 생기는 `.vercel/`은 저장소에 넣지 않습니다.
