@@ -10,7 +10,7 @@
 
 ## 여는 방법 (둘 중 하나)
 
-1. **그냥 열기** — 이 폴더의 `index.html`을 더블클릭합니다. React·React DOM과 폰트만 CDN에서 불러오므로 인터넷 연결이 필요합니다(판정 규칙 `logic.js`와 `node test.cjs`는 오프라인으로 동작). "내 브라우저로 직접 확인하기"(진짜 패스키 등록)는 WebAuthn 규격상 HTTPS나 localhost에서만 되므로, `file://`로 열면 버튼을 눌러도 안내 문구가 뜨고 만들어지지 않습니다 — 그때는 시나리오 예시를 씁니다.
+1. **그냥 열기** — 이 폴더의 `index.html`을 더블클릭합니다. React·React DOM은 `vendor/`에 같이 담겨 있어 인터넷 없이도 뜨고, 글꼴 하나만 CDN에서 불러옵니다(실패해도 시스템 글꼴로 대체됨). 판정 규칙 `logic.js`와 `node test.cjs`도 완전히 오프라인입니다. "내 브라우저로 직접 확인하기"(진짜 패스키 등록)는 WebAuthn 규격상 HTTPS나 localhost에서만 되므로, `file://`로 열면 버튼을 눌러도 안내 문구가 뜨고 만들어지지 않습니다 — 그때는 시나리오 예시를 씁니다.
 2. **로컬 서버로 열기** — 이 폴더에서 아래를 실행하고 http://localhost:5180 을 엽니다.
    ```bash
    python -m http.server 5180
@@ -30,7 +30,7 @@ node test.cjs
 |---|---|---|---|
 | 1 | 로그인 응답에서 BE·BS 읽기 | Step 1의 시나리오 예시를 누르거나 `authenticatorData`(base64url·16진수)·플래그 한 바이트(`0x1d` 등)를 직접 넣음 | 비트 8개와 BE·BS 뜻 |
 | 2 | 보관한 값과 비교해 대응 받기 | Step 2에서 서버가 저장한 BE·BS·"한 번이라도 백업된 적"과 지금 하려는 동작을 고름 | **통과 / 한 단계 더 확인 / 거부**, 근거 스펙 조항, 이번 로그인 뒤 저장할 값 |
-| 3 | 내 서버의 빠진 단계 찾기 | Step 3에서 빠른 선택 칩(Spring Security·Keycloak·SimpleWebAuthn 예제)이나 드롭다운으로 스택을 고르고 세 질문에 답함 | 조사한 판정, 빠진 단계, 고치는 SQL·JS |
+| 3 | 내 서버의 빠진 단계 찾기 | Step 3에서 빠른 선택 칩(Spring Security·Keycloak·SimpleWebAuthn 예제)이나 드롭다운으로 스택을 고르고 세 질문에 답함(질문마다 기억 대신 DB·코드에서 직접 확인하는 방법도 적혀 있음) | 조사한 판정, 빠진 단계, 고치는 SQL·JS |
 
 ## 논문의 어느 결과를 쓰나
 
@@ -55,6 +55,7 @@ node test.cjs
 | `styles.css` | Tailwind를 실제 쓰는 클래스만 담아 미리 빌드한 결과 |
 | `logic.js` | 판정 규칙(논문에서 옮긴 것). 브라우저·Node 양쪽에서 씀 |
 | `test.cjs` | 규칙 확인 29개 (잘못된 입력 12개 포함) |
+| `vendor/` | React·React DOM 18.2.0 UMD 빌드(그대로 내려받은 것, 라이선스 헤더 포함). CDN 대신 이 폴더에서 불러 인터넷 없이도 뜨게 함 |
 | `manifest.json`, `icons/` | 브라우저에서 "홈 화면에 추가·설치"가 뜨게 하는 선택 파일. 없어도 도구는 그대로 동작함 |
 
 `app.js`·`styles.css`는 `cdn.tailwindcss.com`(Play CDN)과 브라우저 안 Babel 변환을 뺀 것이다 —
@@ -106,4 +107,4 @@ CDN의 전역 `React`를 그대로 쓰는 코드가 나온다(기본값인 autom
 
 ## 다시 배포할 때
 
-이 폴더는 저장소와 연결되지 않은 Vercel 프로젝트 `aleph-bs-check`로 올렸습니다(저장소 최상위가 배포되는 사고를 피하려고). 고친 뒤에는 이 폴더의 `index.html`·`app.js`·`styles.css`·`logic.js`·`manifest.json`·`icons/`를 저장소 밖 임시 폴더에 복사하고(`app.jsx`는 소스일 뿐이라 배포에는 필요 없음), 그 폴더에서 `npx vercel --prod --yes`를 실행합니다. 생기는 `.vercel/`은 저장소에 넣지 않습니다.
+이 폴더는 저장소와 연결되지 않은 Vercel 프로젝트 `aleph-bs-check`로 올렸습니다(저장소 최상위가 배포되는 사고를 피하려고). 고친 뒤에는 이 폴더의 `index.html`·`app.js`·`styles.css`·`logic.js`·`manifest.json`·`icons/`·`vendor/`를 저장소 밖 임시 폴더에 복사하고(`app.jsx`는 소스일 뿐이라 배포에는 필요 없음), 그 폴더에서 `npx vercel --prod --yes`를 실행합니다. 생기는 `.vercel/`은 저장소에 넣지 않습니다.

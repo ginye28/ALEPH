@@ -742,6 +742,12 @@ const EMPTY_ANSWERS = {
   s2: 'unknown',
   s3: 'unknown'
 };
+// 기억으로 답하지 않고 바로 확인해 볼 수 있도록 — "예/아니오" 옆에 붙는 실제 확인 방법
+const STEP_CHECKS = {
+  s1: 'DB에서 스키마를 봅니다 — Postgres는 \\d credentials, MySQL은 DESCRIBE credentials; 로 backup_eligible·backup_state 컬럼이 있는지 봅니다.',
+  s2: '로그인 검증 코드에서 라이브러리의 검증 함수를 부르는 줄을 찾아, 그 인자로 저장해 둔 backup_eligible·backup_state를 실제로 넘기는지 봅니다.',
+  s3: '같은 계정으로 두 번 로그인한 뒤 SELECT backup_state, updated_at FROM credentials WHERE id = ...로 두 로그인 사이에 값이나 시각이 바뀌었는지 봅니다.'
+};
 function AuditStep() {
   const [pick, setPick] = useState('');
   const [answers, setAnswers] = useState(EMPTY_ANSWERS);
@@ -847,12 +853,17 @@ function AuditStep() {
     className: "mt-20 divide-y divide-hair border-y border-hair"
   }, B.STEPS.map((s, i) => /*#__PURE__*/React.createElement("div", {
     key: s.id,
-    className: "flex flex-col gap-4 py-8 sm:flex-row sm:items-center sm:justify-between sm:gap-10"
-  }, /*#__PURE__*/React.createElement("p", {
+    className: "flex flex-col gap-4 py-8 sm:flex-row sm:items-start sm:justify-between sm:gap-10"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "text-[17px] leading-[1.6]"
   }, /*#__PURE__*/React.createElement("span", {
     className: "mr-3 font-light text-sub"
-  }, i + 1), s.q), /*#__PURE__*/React.createElement("div", {
+  }, i + 1), s.q), STEP_CHECKS[s.id] && /*#__PURE__*/React.createElement("p", {
+    className: "mt-2 flex gap-2 text-[13px] leading-[1.6] text-sub sm:max-w-[520px]"
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: "info",
+    className: "mt-0.5 w-3.5 h-3.5 shrink-0"
+  }), /*#__PURE__*/React.createElement("span", null, "기억 대신 직접 확인하려면: ", STEP_CHECKS[s.id]))), /*#__PURE__*/React.createElement("div", {
     className: "shrink-0"
   }, /*#__PURE__*/React.createElement(Segmented, {
     name: s.q,
