@@ -309,18 +309,26 @@ function Hero() {
     id: "top",
     className: "bg-white"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "mx-auto max-w-[1080px] px-6 pb-40 pt-32 text-center sm:pb-56 sm:pt-48"
+    className: "mx-auto max-w-[1080px] px-6 pb-24 pt-20 text-center sm:pb-32 sm:pt-28"
   }, /*#__PURE__*/React.createElement(Fade, {
     as: "p",
     className: "text-[14px] font-semibold text-sub"
   }, "WebAuthn · 패스키"), /*#__PURE__*/React.createElement(Fade, {
+    as: "p",
+    className: "mx-auto mt-4 max-w-[520px] text-[13px] leading-[1.6] text-sub"
+  }, "기반 연구 · ", /*#__PURE__*/React.createElement("a", {
+    href: PAPER_URL,
+    target: "_blank",
+    rel: "noopener",
+    className: "text-ink underline-offset-4 hover:underline"
+  }, "「동기화 패스키의 백업 상태 전이는 서비스에 관측되는가」"), " 진혜정, 2026"), /*#__PURE__*/React.createElement(Fade, {
     as: "h1",
-    className: "mt-5 text-[40px] font-extralight leading-[1.1] tracking-[-0.03em] sm:text-[56px] lg:text-[68px]"
+    className: "mt-6 text-[36px] font-extralight leading-[1.1] tracking-[-0.03em] sm:text-[52px] lg:text-[62px]"
   }, "로그인 응답 하나로", /*#__PURE__*/React.createElement("br", null), "백업 상태 전이를 판정합니다."), /*#__PURE__*/React.createElement(Fade, {
     as: "p",
-    className: "mx-auto mt-8 max-w-[640px] text-[19px] font-light leading-[1.6] text-sub sm:text-[21px]"
+    className: "mx-auto mt-6 max-w-[640px] text-[17px] font-light leading-[1.6] text-sub sm:text-[19px]"
   }, "이 앱은 패스키 로그인을 만드는 개발자를 돕습니다. 로그인 응답을 넣으면 백업 상태(BE·BS) 전이를 판정하고, 서버에 빠진 저장·대조 단계를 알려 줍니다."), /*#__PURE__*/React.createElement(Fade, {
-    className: "mt-12 flex flex-wrap items-center justify-center gap-x-8 gap-y-4"
+    className: "mt-10 flex flex-wrap items-center justify-center gap-x-8 gap-y-4"
   }, /*#__PURE__*/React.createElement("a", {
     href: "#read",
     className: "inline-flex min-h-[44px] items-center rounded-full bg-ink px-7 text-[15px] font-medium text-white hover:bg-black"
@@ -332,13 +340,8 @@ function Hero() {
     className: "w-4 h-4"
   }))), /*#__PURE__*/React.createElement(Fade, {
     as: "p",
-    className: "mx-auto mt-20 max-w-[560px] text-[13px] leading-[1.7] text-sub"
-  }, "기반 연구 · ", /*#__PURE__*/React.createElement("a", {
-    href: PAPER_URL,
-    target: "_blank",
-    rel: "noopener",
-    className: "text-ink underline-offset-4 hover:underline"
-  }, "「동기화 패스키의 백업 상태 전이는 서비스에 관측되는가」"), " 진혜정, 2026", /*#__PURE__*/React.createElement("br", null), "계산은 전부 이 브라우저 안에서 이뤄집니다. 값을 어디로도 보내지 않습니다.")));
+    className: "mx-auto mt-14 max-w-[560px] text-[13px] leading-[1.7] text-sub"
+  }, "계산은 전부 이 브라우저 안에서 이뤄집니다. 값을 어디로도 보내지 않습니다.")));
 }
 function Proof() {
   const items = [['10', '/10', '전이를 줘도 서버 응답·저장 상태는 그대로였습니다.'], ['4', '/11', '보관값과 대조·갱신까지 구현한 라이브러리.'], ['0', '/3', '끝까지 신호를 지킨 실제 응용.']];
