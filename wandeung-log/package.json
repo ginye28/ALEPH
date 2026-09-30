@@ -1,0 +1,14 @@
+{
+    "name": "wandeung-log",
+    "private": true,
+    "version": "2.1.0",
+    "type": "module",
+    "description": "클라이밍 완등 기록 웹앱 — 난이도별 완등/실패 기록, 월별 성장 그래프, 완등 영상 공유 게시판",
+    "scripts": {
+        "build:artifact": "node tools/build-artifact.mjs",
+        "check": "node tools/check.mjs"
+    },
+    "dependencies": {
+        "@vercel/blob": "^1.1.1"
+    }
+}

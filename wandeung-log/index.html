@@ -1,3 +1,10 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="암장 방문마다 난이도별 완등·실패를 기록하고 월별 성장 그래프와 완등 영상을 공유하는 클라이밍 기록 앱">
+<meta name="color-scheme" content="dark light">
 <title>완등 로그</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -114,7 +121,8 @@ svg .hit{fill:transparent;cursor:crosshair}
   *{transition:none!important;animation:none!important}
 }
 </style>
-
+</head>
+<body>
 <script>
   (function () {
     var saved = null;
@@ -153,7 +161,7 @@ const L = window.LucideReact;
 const {
   Sun, Moon, Flame, TrendingUp, TrendingDown, Minus, MessageSquare, BookOpen,
   Calendar, MapPin, Trophy, X, Plus, Trash2, Clipboard, Target, Activity,
-  Mountain, Send, Filter, Sparkles
+  Mountain, Send, Filter, Sparkles, Video, Upload, Share2, Loader2
 } = L;
 
 /* ─────────── 난이도 눈금 ───────────
@@ -289,6 +297,133 @@ function topSend(records) {
 }
 
 const cssVar = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+/* ─────────── 영상 저장 ───────────
+   영상은 두 군데에 둔다.
+   - 내 브라우저(IndexedDB): 항상. 내 기록에 붙은 영상은 나만 본다.
+   - 공유 저장소(Vercel Blob): "게시판에 공유"를 켰을 때만. 그때만 남이 볼 수 있다.
+   localStorage를 안 쓴 이유는 용량(5~10MB)과 base64로 33% 불어나는 문제 때문이다. */
+const IDB_NAME = "wandeung-videos";
+const IDB_STORE = "clips";
+
+function idbOpen() {
+  return new Promise((res, rej) => {
+    if (typeof indexedDB === "undefined") return rej(new Error("no-idb"));
+    const req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = () => { req.result.createObjectStore(IDB_STORE); };
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+function idbRun(mode, fn) {
+  return idbOpen().then((db) => new Promise((res, rej) => {
+    const tx = db.transaction(IDB_STORE, mode);
+    const out = fn(tx.objectStore(IDB_STORE));
+    tx.oncomplete = () => res(out ? out.result : undefined);
+    tx.onerror = () => rej(tx.error);
+    tx.onabort = () => rej(tx.error);
+  }));
+}
+const idbPut = (k, v) => idbRun("readwrite", (st) => st.put(v, k));
+const idbGet = (k) => idbRun("readonly", (st) => st.get(k));
+const idbDel = (k) => idbRun("readwrite", (st) => st.delete(k));
+
+/* 공유 서버가 붙어 있는지 한 번만 확인한다.
+   Vercel 배포에서는 살아 있고, 아티팩트나 GitHub Pages에서는 없다 — 없으면 로컬 모드. */
+let feedProbe = null;
+function probeFeed() {
+  if (!feedProbe) {
+    feedProbe = fetch("api/feed", { headers: { accept: "application/json" } })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("no-api"))))
+      .then((d) => ({ ok: true, posts: Array.isArray(d.posts) ? d.posts : [] }))
+      .catch(() => ({ ok: false, posts: [] }));
+  }
+  return feedProbe;
+}
+
+const MAX_CLIP_BYTES = 50 * 1024 * 1024;
+const mb = (n) => (n / 1024 / 1024).toFixed(1) + "MB";
+
+/* 파일은 서버리스 함수를 거치지 않고 브라우저가 저장소로 직접 올린다.
+   서버리스 본문 한도가 4.5MB라 영상이 통과하지 못하기 때문. api/upload.js는 허가 토큰만 준다. */
+async function uploadClip(file, onPct) {
+  const mod = await import("https://cdn.jsdelivr.net/npm/@vercel/blob@1.1.1/client/+esm");
+  const ext = (String(file.name || "").match(/\.[a-z0-9]{1,5}$/i) || [".mp4"])[0];
+  const res = await mod.upload("videos/" + uid() + ext, file, {
+    access: "public",
+    handleUploadUrl: "api/upload",
+    contentType: file.type || "video/mp4",
+    onUploadProgress: onPct ? (p) => onPct(Math.round(p.percentage)) : undefined
+  });
+  return res.url;
+}
+
+/* 로컬(IndexedDB)이든 공유(URL)든 같은 모양으로 재생한다. */
+function Clip({ url, storeKey, className }) {
+  const [src, setSrc] = useState(url || "");
+  useEffect(() => {
+    if (url) { setSrc(url); return; }
+    if (!storeKey) { setSrc(""); return; }
+    let objUrl = null, alive = true;
+    idbGet(storeKey).then((blob) => {
+      if (!alive || !blob) return;
+      objUrl = URL.createObjectURL(blob);
+      setSrc(objUrl);
+    }).catch(() => {});
+    return () => { alive = false; if (objUrl) URL.revokeObjectURL(objUrl); };
+  }, [url, storeKey]);
+
+  if (!src) return null;
+  return (
+    <video src={src} controls playsInline preload="metadata"
+      className={"w-full rounded-xl bg-black max-h-[420px] " + (className || "")} />
+  );
+}
+
+/* 게시판 상태. 서버가 있으면 서버 글, 없으면 이 브라우저에 쌓인 글을 쓴다. */
+function useFeed() {
+  const [posts, setPosts] = useState([]);
+  const [mode, setMode] = useState("checking");
+
+  useEffect(() => {
+    let alive = true;
+    probeFeed().then((r) => {
+      if (!alive) return;
+      if (r.ok) { setMode("shared"); setPosts(r.posts); return; }
+      setMode("local");
+      try {
+        const a = JSON.parse(lsGet(TIP_KEY) || "[]");
+        setPosts(Array.isArray(a) ? a : []);
+      } catch (e) { setPosts([]); }
+    });
+    return () => { alive = false; };
+  }, []);
+
+  const addPost = useCallback(async (p) => {
+    const probe = await probeFeed();
+    if (probe.ok) {
+      const res = await fetch("api/feed", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(p)
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "글을 올리지 못했습니다.");
+      setPosts((cur) => [data.post].concat(cur));
+      return { shared: true };
+    }
+    // 서버가 없으면 이 브라우저에만 남긴다. 영상은 기록 쪽 IndexedDB 사본으로 본다.
+    const local = Object.assign({ id: uid(), createdAt: new Date().toISOString() }, p);
+    setPosts((cur) => {
+      const next = [local].concat(cur).slice(0, 100);
+      lsSet(TIP_KEY, JSON.stringify(next));
+      return next;
+    });
+    return { shared: false };
+  }, []);
+
+  return { posts, mode, addPost, canShare: mode === "shared" };
+}
 
 /* ─────────── 공용 조각 ─────────── */
 function Card({ children, className = "", railed = false }) {
@@ -628,7 +763,7 @@ function WelcomeBanner({ onClear }) {
   );
 }
 
-function QuickAdd({ gyms, onAdd, msg }) {
+function QuickAdd({ gyms, onAdd, feed, msg, setMsg }) {
   const today = iso(new Date());
   const yest = iso(new Date(Date.now() - 86400000));
   const [date, setDate] = useState(today);
@@ -638,16 +773,96 @@ function QuickAdd({ gyms, onAdd, msg }) {
   const [att, setAtt] = useState(1);
   const [note, setNote] = useState("");
   const [custom, setCustom] = useState(false);
+  const [file, setFile] = useState(null);
+  const [share, setShare] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [pct, setPct] = useState(0);
+  const fileRef = useRef(null);
 
-  const submit = () => {
-    const ok = onAdd({ date, gym: gym.trim(), grade: g, sent, attempts: Math.max(1, Number(att) || 1), note: note.trim() });
-    if (ok) { setNote(""); setAtt(1); }
+  const tooBig = file && file.size > MAX_CLIP_BYTES;
+
+  const pick = (e) => {
+    const f = e.target.files && e.target.files[0];
+    setFile(f || null);
+    setPct(0);
+    if (f && f.size > MAX_CLIP_BYTES) {
+      setMsg("영상이 " + mb(f.size) + "입니다. " + mb(MAX_CLIP_BYTES) + " 이하만 올릴 수 있습니다.");
+    } else setMsg("");
+  };
+
+  const clearFile = () => {
+    setFile(null);
+    setShare(false);
+    setPct(0);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const submit = async () => {
+    if (busy) return;
+    if (tooBig) { setMsg("영상 용량을 줄이거나 빼고 저장해 주세요."); return; }
+    if (!date) { setMsg("날짜를 골라 주세요."); return; }
+    if (!gym.trim()) { setMsg("암장 이름을 적어 주세요."); return; }
+
+    setBusy(true);
+    let videoKey = "", videoUrl = "";
+    try {
+      if (file) {
+        // 내 사본을 먼저 만든다. 공유 업로드가 실패해도 내 기록에는 영상이 남는다.
+        videoKey = "clip-" + uid();
+        try {
+          setMsg("영상을 이 브라우저에 담는 중...");
+          await idbPut(videoKey, file);
+        } catch (e) {
+          videoKey = "";
+          setMsg("이 브라우저에 영상을 담지 못했습니다. 기록만 저장합니다.");
+        }
+
+        if (share && feed.canShare) {
+          try {
+            setMsg("영상 올리는 중...");
+            videoUrl = await uploadClip(file, setPct);
+          } catch (e) {
+            setMsg("영상 업로드에 실패했습니다: " + (e.message || "알 수 없는 오류"));
+            setBusy(false);
+            return;
+          }
+        }
+      }
+
+      const ok = onAdd({
+        date, gym: gym.trim(), grade: g, sent,
+        attempts: Math.max(1, Number(att) || 1),
+        note: note.trim(), videoKey, videoUrl
+      });
+      if (!ok) { setBusy(false); return; }
+
+      if (share) {
+        try {
+          const r = await feed.addPost({
+            author: "", gym: gym.trim(), grade: g, sent,
+            title: grade(g).name + " " + grade(g).lv + " " + (sent ? "완등" : "도전"),
+            body: note.trim() || (sent ? "완등했습니다." : "다음에 다시 붙어 봅니다."),
+            videoUrl
+          });
+          setMsg(r.shared
+            ? "기록을 저장하고 게시판에 올렸습니다."
+            : "기록을 저장했습니다. 공유 서버가 없어 게시판 글은 이 브라우저에만 남았습니다.");
+        } catch (e) {
+          setMsg("기록은 저장했지만 게시판에 올리지 못했습니다: " + (e.message || ""));
+        }
+      }
+
+      setNote(""); setAtt(1); clearFile();
+    } finally {
+      setBusy(false);
+      setPct(0);
+    }
   };
 
   return (
     <Card railed className="p-5 sm:p-6">
       <SectionHead kicker="오늘의 세션" title="기록 추가" icon={Flame}
-        right="영상·사진 없이 난이도와 완등 여부만" />
+        right="난이도와 완등 여부만 있으면 됩니다" />
 
       <div className="grid gap-5">
         <div>
@@ -712,6 +927,57 @@ function QuickAdd({ gyms, onAdd, msg }) {
           </div>
         </div>
 
+        <div>
+          <StepLabel n="5" text="영상 (선택)" icon={Video} />
+          {!file ? (
+            <label htmlFor="f-clip"
+              className="flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[var(--line)] bg-[var(--surface-2)] py-6 text-[13.5px] font-bold text-[var(--muted)] cursor-pointer hover:border-[var(--ring)] hover:text-[var(--fg)] transition">
+              <Upload size={17} strokeWidth={2.5} />영상 고르기
+              <span className="font-medium opacity-70">· {mb(MAX_CLIP_BYTES)}까지</span>
+            </label>
+          ) : (
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface-2)] p-3.5 grid gap-3">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <Video size={16} strokeWidth={2.5} className="text-[var(--muted)] shrink-0" />
+                <span className="text-[13.5px] font-bold min-w-0 break-all">{file.name}</span>
+                <span className={"num text-[12px] font-bold " + (tooBig ? "text-[var(--fail)]" : "text-[var(--muted)]")}>
+                  {mb(file.size)}
+                </span>
+                <button onClick={clearFile} disabled={busy}
+                  className="ml-auto shrink-0 rounded-lg px-2.5 py-1 text-[12px] border border-[var(--line)] text-[var(--muted)] hover:text-[var(--fail)] hover:border-[var(--fail)] transition disabled:opacity-40">
+                  빼기
+                </button>
+              </div>
+
+              {tooBig ? (
+                <p className="text-[12.5px] font-bold" style={{ color: "var(--fail)" }}>
+                  {mb(MAX_CLIP_BYTES)}를 넘습니다. 더 짧게 자르거나 화질을 낮춰 주세요.
+                </p>
+              ) : (
+                <label className={"flex items-start gap-2.5 text-[13px] " + (feed.canShare ? "cursor-pointer" : "opacity-60")}>
+                  <input type="checkbox" checked={share} disabled={!feed.canShare || busy}
+                    onChange={(e) => setShare(e.target.checked)} className="mt-0.5 w-4 h-4 accent-[var(--neon-fill)]" />
+                  <span>
+                    <b className="font-bold">게시판에 공유</b>
+                    <span className="block text-[12px] text-[var(--muted)] mt-0.5">
+                      {feed.canShare
+                        ? "켜면 이 영상이 팁 게시판에 올라가 누구나 볼 수 있습니다. 끄면 내 브라우저에만 남습니다."
+                        : feed.mode === "checking" ? "공유 서버 확인 중..." : "이 주소에는 공유 서버가 없어 내 브라우저에만 저장됩니다."}
+                    </span>
+                  </span>
+                </label>
+              )}
+
+              {busy && pct > 0 ? (
+                <div className="h-1.5 rounded-full bg-[var(--line)] overflow-hidden">
+                  <div className="h-full rounded-full transition-all" style={{ width: pct + "%", background: "var(--neon-fill)" }} />
+                </div>
+              ) : null}
+            </div>
+          )}
+          <input ref={fileRef} id="f-clip" type="file" accept="video/*" onChange={pick} className="hidden" />
+        </div>
+
         <div className="grid sm:grid-cols-[130px_1fr] gap-3">
           <div>
             <label htmlFor="f-att" className="text-[12px] font-bold text-[var(--muted)] block mb-1.5">시도 횟수</label>
@@ -727,9 +993,10 @@ function QuickAdd({ gyms, onAdd, msg }) {
         </div>
 
         <div className="flex items-center gap-3 flex-wrap">
-          <button onClick={submit}
-            className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 font-black text-[15px] bg-[var(--neon-fill)] text-[var(--on-neon)] hover:brightness-95 transition">
-            <Plus size={18} strokeWidth={3} />기록 저장
+          <button onClick={submit} disabled={busy || tooBig}
+            className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 font-black text-[15px] bg-[var(--neon-fill)] text-[var(--on-neon)] hover:brightness-95 transition disabled:opacity-50">
+            {busy ? <Loader2 size={18} strokeWidth={3} className="animate-spin" /> : <Plus size={18} strokeWidth={3} />}
+            {busy ? "저장 중" : "기록 저장"}
           </button>
           <span className="text-[12.5px] text-[var(--muted)]" role="status" aria-live="polite">{msg}</span>
         </div>
@@ -777,6 +1044,11 @@ function SessionList({ sessions, canDelete, onDelete }) {
                     {r.sent ? "완등" : "실패"}
                   </span>
                   <span className="num text-[12px] text-[var(--muted)]">{r.attempts || 1}트</span>
+                  {r.videoUrl || r.videoKey ? (
+                    <span className="inline-flex items-center gap-1 text-[11.5px] font-bold text-[var(--muted)]">
+                      <Video size={12} strokeWidth={2.75} />{r.videoUrl ? "공유됨" : "영상"}
+                    </span>
+                  ) : null}
                   {r.note ? <span className="text-[13px] text-[var(--muted)] min-w-0 break-words flex-1">{r.note}</span> : <span className="flex-1" />}
                   {canDelete ? (
                     <button onClick={() => (armed === r.id ? onDelete(r.id) : setArmed(r.id))}
@@ -784,6 +1056,11 @@ function SessionList({ sessions, canDelete, onDelete }) {
                         (armed === r.id ? "border-[var(--fail)] text-[var(--fail)] font-bold" : "border-[var(--line)] text-[var(--muted)] hover:text-[var(--fail)]")}>
                       {armed === r.id ? "한 번 더" : "삭제"}
                     </button>
+                  ) : null}
+                  {r.videoUrl || r.videoKey ? (
+                    <div className="basis-full order-10 pt-1.5">
+                      <Clip url={r.videoUrl} storeKey={r.videoKey} className="max-h-[300px]" />
+                    </div>
                   ) : null}
                 </div>
               );
@@ -796,73 +1073,56 @@ function SessionList({ sessions, canDelete, onDelete }) {
 }
 
 /* ─────────── 팁 게시판 ─────────── */
-function Board({ gyms }) {
-  const [localTips, setLocalTips] = useState(() => {
-    try { const a = JSON.parse(lsGet(TIP_KEY) || "[]"); return Array.isArray(a) ? a : []; } catch (e) { return []; }
-  });
-  const [remote, setRemote] = useState([]);
-  const [mode, setMode] = useState("local");
+function Board({ gyms, feed }) {
   const [filter, setFilter] = useState("");
   const [msg, setMsg] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [pct, setPct] = useState(0);
+  const [file, setFile] = useState(null);
   const [form, setForm] = useState({ author: "", gym: HOME_GYM, grade: "", title: "", body: "" });
-  const dbRef = useRef(null);
+  const fileRef = useRef(null);
 
-  useEffect(() => {
-    let stop = null, alive = true;
-    if (!(window.claude && typeof window.claude.use === "function")) return;
-    window.claude.use("db").then((db) => {
-      if (!db || !alive) return;
-      dbRef.current = db;
-      stop = db.collection("tips").orderBy("createdAt", "desc").limit(50).onSnapshot(
-        (snap) => {
-          if (!alive) return;
-          setMode("shared");
-          setRemote(snap.docs.map((d) => Object.assign({ id: d.id }, d.data() || {})));
-        },
-        () => { if (alive) setMode("local"); }
-      );
-    }, () => {});
-    return () => { alive = false; if (stop) stop(); };
-  }, []);
+  const shown = feed.posts.filter((p) => !filter || p.gym === filter);
+  const tooBig = file && file.size > MAX_CLIP_BYTES;
+  const set = (k) => (e) => setForm(Object.assign({}, form, { [k]: e.target.value }));
 
-  const tips = mode === "shared" ? remote : localTips;
-  const shown = tips.filter((p) => !filter || p.gym === filter);
+  const clearFile = () => {
+    setFile(null); setPct(0);
+    if (fileRef.current) fileRef.current.value = "";
+  };
 
-  const saveLocal = (next) => { setLocalTips(next); lsSet(TIP_KEY, JSON.stringify(next.slice(0, 100))); };
-
-  const post = () => {
+  const post = async () => {
+    if (busy) return;
     if (!form.title.trim()) { setMsg("제목을 적어 주세요."); return; }
     if (!form.body.trim()) { setMsg("내용을 적어 주세요."); return; }
-    const p = {
-      id: uid(),
-      author: form.author.trim().slice(0, 20) || "익명",
-      gym: form.gym.trim().slice(0, 40),
-      grade: form.grade,
-      title: form.title.trim().slice(0, 60),
-      body: form.body.trim().slice(0, 800),
-      createdAt: new Date().toISOString()
-    };
-    setForm(Object.assign({}, form, { title: "", body: "" }));
-    if (mode === "shared" && dbRef.current) {
-      setMsg("올리는 중...");
-      dbRef.current.collection("tips").doc(p.id).set(p).then(
-        () => setMsg("팁을 올렸습니다. 이 앱을 여는 사람 모두가 볼 수 있습니다."),
-        (err) => {
-          saveLocal([p].concat(localTips));
-          setMode("local");
-          setMsg(err && err.code === "invalid_argument"
-            ? "공유 게시판에 쓸 권한이 없어 이 브라우저에만 저장했습니다."
-            : "공유 저장에 실패해 이 브라우저에만 저장했습니다.");
+    if (tooBig) { setMsg(mb(MAX_CLIP_BYTES) + " 이하 영상만 올릴 수 있습니다."); return; }
+
+    setBusy(true);
+    try {
+      let videoUrl = "";
+      if (file && feed.canShare) {
+        try {
+          setMsg("영상 올리는 중...");
+          videoUrl = await uploadClip(file, setPct);
+        } catch (e) {
+          setMsg("영상 업로드에 실패했습니다: " + (e.message || "알 수 없는 오류"));
+          return;
         }
-      );
-    } else {
-      saveLocal([p].concat(localTips));
-      setMsg("팁을 올렸습니다. (이 브라우저에만 저장)");
+      }
+      const r = await feed.addPost(Object.assign({}, form, { videoUrl }));
+      setForm(Object.assign({}, form, { title: "", body: "" }));
+      clearFile();
+      setMsg(r.shared
+        ? "올렸습니다. 이 주소를 여는 사람 모두가 볼 수 있습니다."
+        : "올렸습니다. (공유 서버가 없어 이 브라우저에만 저장)");
+    } catch (e) {
+      setMsg(e.message || "글을 올리지 못했습니다.");
+    } finally {
+      setBusy(false); setPct(0);
     }
   };
 
-  const set = (k) => (e) => setForm(Object.assign({}, form, { [k]: e.target.value }));
-  const live = mode === "shared";
+  const live = feed.canShare;
 
   return (
     <div className="grid gap-4">
@@ -871,7 +1131,9 @@ function Board({ gyms }) {
           right={
             <span className="inline-flex items-center gap-2">
               <i className="w-2 h-2 rounded-full inline-block" style={{ background: live ? "var(--send)" : "var(--muted)" }} />
-              {live ? "공유 게시판 · 글 " + remote.length + "개" : "이 브라우저에만 저장됩니다"}
+              {feed.mode === "checking" ? "확인 중"
+                : live ? "공유 게시판 · 글 " + feed.posts.length + "개"
+                : "이 브라우저에만 저장됩니다"}
             </span>
           } />
         <div className="grid gap-3">
@@ -898,7 +1160,7 @@ function Board({ gyms }) {
           <div>
             <label htmlFor="p-title" className="text-[12px] font-bold text-[var(--muted)] block mb-1.5">제목</label>
             <input id="p-title" value={form.title} onChange={set("title")} maxLength={60} autoComplete="off"
-              placeholder="예: 파랑 슬랩 구간 발 쓰는 법"
+              placeholder="예: 하늘 슬랩 구간 발 쓰는 법"
               className="w-full rounded-xl bg-[var(--surface-2)] border border-[var(--line)] px-3.5 py-2.5 text-[14px]" />
           </div>
           <div>
@@ -907,10 +1169,49 @@ function Board({ gyms }) {
               placeholder="어떤 무브가 통했는지, 어디서 막혔는지 적어 주세요."
               className="w-full rounded-xl bg-[var(--surface-2)] border border-[var(--line)] px-3.5 py-2.5 text-[14px] resize-y" />
           </div>
+
+          <div>
+            <span className="text-[12px] font-bold text-[var(--muted)] block mb-1.5">영상 (선택)</span>
+            {!live ? (
+              <p className="text-[12.5px] text-[var(--muted)] rounded-xl border border-dashed border-[var(--line)] px-3.5 py-3">
+                이 주소에는 공유 서버가 없어 영상을 올릴 수 없습니다. 영상 공유는 Vercel 배포 주소에서 됩니다.
+              </p>
+            ) : !file ? (
+              <label htmlFor="p-clip"
+                className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[var(--line)] bg-[var(--surface-2)] py-4 text-[13px] font-bold text-[var(--muted)] cursor-pointer hover:border-[var(--ring)] hover:text-[var(--fg)] transition">
+                <Upload size={16} strokeWidth={2.5} />완등 영상 붙이기
+                <span className="font-medium opacity-70">· {mb(MAX_CLIP_BYTES)}까지</span>
+              </label>
+            ) : (
+              <div className="rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-3 grid gap-2.5">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <Video size={15} strokeWidth={2.5} className="text-[var(--muted)] shrink-0" />
+                  <span className="text-[13px] font-bold min-w-0 break-all">{file.name}</span>
+                  <span className={"num text-[12px] font-bold " + (tooBig ? "text-[var(--fail)]" : "text-[var(--muted)]")}>{mb(file.size)}</span>
+                  <button onClick={clearFile} disabled={busy}
+                    className="ml-auto shrink-0 rounded-lg px-2.5 py-1 text-[12px] border border-[var(--line)] text-[var(--muted)] hover:text-[var(--fail)] hover:border-[var(--fail)] transition disabled:opacity-40">빼기</button>
+                </div>
+                {tooBig ? (
+                  <p className="text-[12.5px] font-bold" style={{ color: "var(--fail)" }}>
+                    {mb(MAX_CLIP_BYTES)}를 넘습니다. 더 짧게 잘라 주세요.
+                  </p>
+                ) : null}
+                {busy && pct > 0 ? (
+                  <div className="h-1.5 rounded-full bg-[var(--line)] overflow-hidden">
+                    <div className="h-full rounded-full transition-all" style={{ width: pct + "%", background: "var(--neon-fill)" }} />
+                  </div>
+                ) : null}
+              </div>
+            )}
+            <input ref={fileRef} id="p-clip" type="file" accept="video/*" className="hidden"
+              onChange={(e) => { const f = e.target.files && e.target.files[0]; setFile(f || null); setPct(0); }} />
+          </div>
+
           <div className="flex items-center gap-3 flex-wrap">
-            <button onClick={post}
-              className="inline-flex items-center gap-2 rounded-full px-5 py-3 font-black text-[14px] bg-[var(--neon-fill)] text-[var(--on-neon)] hover:brightness-95 transition">
-              <Send size={16} strokeWidth={2.75} />팁 올리기
+            <button onClick={post} disabled={busy || tooBig}
+              className="inline-flex items-center gap-2 rounded-full px-5 py-3 font-black text-[14px] bg-[var(--neon-fill)] text-[var(--on-neon)] hover:brightness-95 transition disabled:opacity-50">
+              {busy ? <Loader2 size={16} strokeWidth={2.75} className="animate-spin" /> : <Send size={16} strokeWidth={2.75} />}
+              {busy ? "올리는 중" : "팁 올리기"}
             </button>
             <span className="text-[12.5px] text-[var(--muted)]" role="status" aria-live="polite">{msg}</span>
           </div>
@@ -942,9 +1243,17 @@ function Board({ gyms }) {
                         <i className="swatch w-2.5 h-2.5 inline-block" style={{ background: g.hex }} />{g.name} {g.lv}
                       </span>
                     ) : null}
+                    {p.hasResult ? (
+                      <span className="text-[11.5px] font-extrabold rounded-full px-2.5 py-0.5 inline-flex items-center gap-1"
+                        style={p.sent ? { background: "var(--send)", color: "#fff" } : { border: "1px solid var(--fail)", color: "var(--fail)" }}>
+                        {p.sent ? <Trophy size={11} strokeWidth={3} /> : <X size={11} strokeWidth={3} />}
+                        {p.sent ? "완등" : "실패"}
+                      </span>
+                    ) : null}
                     <span className="ml-auto num text-[12px] text-[var(--muted)]">{p.author || "익명"} · {(p.createdAt || "").slice(0, 10)}</span>
                   </div>
                   <div className="text-[14px] whitespace-pre-wrap break-words">{p.body}</div>
+                  {p.videoUrl ? <div className="mt-3"><Clip url={p.videoUrl} /></div> : null}
                 </div>
               );
             })}
@@ -971,6 +1280,7 @@ function App() {
     return TABS.some((x) => x.id === t) ? t : "log";
   });
   const [msg, setMsg] = useState("");
+  const feed = useFeed();
 
   useEffect(() => {
     document.documentElement.classList.toggle("dark", dark);
@@ -1056,7 +1366,7 @@ function App() {
         {tab === "log" && (
           <>
             {demo ? <WelcomeBanner onClear={() => { commit([]); setMsg("예시를 지웠습니다. 첫 기록을 남겨 보세요."); }} /> : null}
-            <QuickAdd gyms={gyms} onAdd={addRecord} msg={msg} />
+            <QuickAdd gyms={gyms} onAdd={addRecord} feed={feed} msg={msg} setMsg={setMsg} />
             <Card className="p-5 sm:p-6">
               <SectionHead kicker="누적" title="내 기록" icon={Activity}
                 right={
@@ -1074,7 +1384,11 @@ function App() {
                   foot={<span className="text-[11.5px] text-[var(--muted)]">{total ? "전체 기록 기준" : "기록을 추가하면 계산됩니다"}</span>} />
               </div>
               <SessionList sessions={sessions} canDelete={!demo}
-                onDelete={(id) => commit(records.filter((r) => r.id !== id))} />
+                onDelete={(id) => {
+                  const gone = records.find((r) => r.id === id);
+                  if (gone && gone.videoKey) idbDel(gone.videoKey).catch(() => {});
+                  commit(records.filter((r) => r.id !== id));
+                }} />
             </Card>
           </>
         )}
@@ -1138,7 +1452,7 @@ function App() {
           </>
         )}
 
-        {tab === "board" && <Board gyms={gyms} />}
+        {tab === "board" && <Board gyms={gyms} feed={feed} />}
 
         {tab === "ref" && (
           <>
@@ -1222,3 +1536,5 @@ function App() {
 
 ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 </script>
+</body>
+</html>
