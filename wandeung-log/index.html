@@ -446,7 +446,9 @@ function SectionHead({ kicker, title, right, icon: Icon }) {
         </div>
         <h2 className="text-[19px] font-extrabold tracking-[-.02em] mt-0.5">{title}</h2>
       </div>
-      {right ? <div className="text-[12.5px] text-[var(--muted)] shrink-0">{right}</div> : null}
+      {/* shrink-0을 주면 안 된다 — 좁은 화면에서 이 글이 줄지 못해 카드 전체를 화면 밖으로 밀어낸다.
+          부모에 flex-wrap이 있으므로 자리가 모자라면 아랫줄로 내려간다. */}
+      {right ? <div className="text-[12.5px] text-[var(--muted)] min-w-0 max-w-full">{right}</div> : null}
     </div>
   );
 }
@@ -1125,7 +1127,7 @@ function Board({ gyms, feed }) {
   const live = feed.canShare;
 
   return (
-    <div className="grid gap-4">
+    <div className="grid grid-cols-[minmax(0,1fr)] gap-4">
       <Card railed className="p-5 sm:p-6">
         <SectionHead kicker="회원 간 공유" title="팁 남기기" icon={MessageSquare}
           right={
@@ -1362,7 +1364,10 @@ function App() {
         </nav>
       </header>
 
-      <main className="max-w-[940px] mx-auto px-4 pt-5 pb-14 grid gap-4">
+      {/* grid-cols-[minmax(0,1fr)]가 꼭 있어야 한다. 그냥 grid로 두면 칸 폭이 내용의
+          최소 폭까지 벌어져서, 열두 칸짜리 V등급 표 하나가 페이지 전체를 화면 밖으로 밀어낸다.
+          (표는 자기 안에서 가로로 스크롤되면 된다.) */}
+      <main className="max-w-[940px] mx-auto px-4 pt-5 pb-14 grid grid-cols-[minmax(0,1fr)] gap-4">
         {tab === "log" && (
           <>
             {demo ? <WelcomeBanner onClear={() => { commit([]); setMsg("예시를 지웠습니다. 첫 기록을 남겨 보세요."); }} /> : null}
@@ -1464,11 +1469,13 @@ function App() {
               </p>
               <div className="grid gap-1.5">
                 {GRADES.map((g) => (
-                  <div key={g.id} className="flex items-center gap-3 py-2 border-b border-[var(--line-soft)] last:border-0">
+                  <div key={g.id} className="flex items-center gap-x-3 gap-y-1 flex-wrap py-2.5 border-b border-[var(--line-soft)] last:border-0">
                     <i className="swatch w-6 h-6 inline-block shrink-0" style={{ background: g.hex }} />
                     <span className="font-extrabold text-[14px] min-w-[46px]">{g.name}</span>
                     <span className="num text-[12.5px] text-[var(--muted)] font-bold min-w-[48px]">{g.lv}</span>
-                    <span className="text-[13px] text-[var(--muted)] min-w-0">{g.desc}</span>
+                    {/* 좁은 화면에서는 설명이 아랫줄을 통째로 쓴다. 한 줄에 끼워 넣으면
+                        폭이 모자라 글자가 잘리거나 카드가 화면 밖으로 나간다. */}
+                    <span className="text-[13px] text-[var(--muted)] min-w-0 flex-1 basis-full sm:basis-0">{g.desc}</span>
                   </div>
                 ))}
               </div>
