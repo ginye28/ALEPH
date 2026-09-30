@@ -1,0 +1,18 @@
+node_modules
+
+# 비밀값은 저장소에 들어가지 않습니다.
+# BLOB_READ_WRITE_TOKEN 하나로 이 앱의 저장소를 전부 읽고 지울 수 있습니다.
+.env
+.env.*
+!.env.example
+
+.vercel
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor
+.vscode/*
+.idea
+.DS_Store

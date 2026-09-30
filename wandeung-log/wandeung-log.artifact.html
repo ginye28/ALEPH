@@ -1,0 +1,1530 @@
+<title>완등 로그</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800;900&family=Gothic+A1:wght@400;500;700;800;900&display=swap">
+
+<style>
+/* Layout: 풀블리드 스포츠 앱 셸 — 고정 헤더 + 아이콘 탭 레일, 940px 단일 컬럼.
+   Light는 오프화이트 지면 + 잉크 블랙, Dark는 안트라사이트 + 일렉트릭 라임. */
+:root{
+  --bg:#F4F5F2;
+  --surface:#FFFFFF;
+  --surface-2:#EDEFE9;
+  --elevated:#FFFFFF;
+  --fg:#0B0E11;
+  --muted:#5D6670;
+  --line:#DFE3DA;
+  --line-soft:#ECEEE7;
+  --neon:#5C7A0C;           /* 라이트에서 라임은 텍스트로 못 쓰므로 잉크 쪽으로 내린 값 */
+  --neon-fill:#C8F02A;      /* 칩·버튼 바탕용 원색 라임 */
+  --on-neon:#0B0E11;
+  --ink:#0B0E11;
+  --on-ink:#FFFFFF;
+  --send:#63920F;
+  --fail:#3D63E8;
+  --grid:#E4E7DF;
+  --ring:#63920F;
+  --shadow:0 1px 2px rgba(11,14,17,.06), 0 10px 26px rgba(11,14,17,.07);
+  --hold-ring:rgba(11,14,17,.22);
+  color-scheme:light;
+}
+:root.dark{
+  --bg:#07090B;
+  --surface:#101418;
+  --surface-2:#161C21;
+  --elevated:#1A2127;
+  --fg:#EDF2F5;
+  --muted:#8A97A3;
+  --line:#232B32;
+  --line-soft:#1A2127;
+  --neon:#D4FF3D;
+  --neon-fill:#D4FF3D;
+  --on-neon:#07090B;
+  --ink:#D4FF3D;
+  --on-ink:#07090B;
+  --send:#71A319;
+  --fail:#6688F0;
+  --grid:#1E262C;
+  --ring:#D4FF3D;
+  --shadow:0 1px 2px rgba(0,0,0,.5), 0 14px 34px rgba(0,0,0,.4);
+  --hold-ring:rgba(255,255,255,.28);
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+body{
+  background:var(--bg);
+  color:var(--fg);
+  margin:0;
+  font-family:'Gothic A1','Apple SD Gothic Neo','Malgun Gothic',system-ui,sans-serif;
+  font-size:15px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+.num{font-family:'Archivo','Gothic A1',system-ui,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.kick{font-family:'Archivo','Gothic A1',system-ui,sans-serif;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
+button{font:inherit;color:inherit}
+input,select,textarea{font:inherit;color:inherit}
+:is(button,a,input,select,textarea):focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+
+/* 홀드 칩 — 실물 홀드처럼 상단 하이라이트 + 얕은 입체감 */
+.hold{
+  position:relative;border-radius:14px;border:1px solid var(--hold-ring);
+  background-image:radial-gradient(circle at 32% 26%, rgba(255,255,255,.55), rgba(255,255,255,0) 58%);
+  box-shadow:inset 0 -2px 6px rgba(0,0,0,.28), 0 2px 5px rgba(0,0,0,.22);
+  transition:transform .12s ease, box-shadow .12s ease;
+}
+.hold:hover{transform:translateY(-2px)}
+.hold:active{transform:translateY(0) scale(.97)}
+.hold[data-on="1"]{box-shadow:inset 0 -2px 6px rgba(0,0,0,.3), 0 0 0 3px var(--ring), 0 6px 16px rgba(0,0,0,.3)}
+
+.swatch{
+  border-radius:8px;border:1px solid var(--hold-ring);
+  background-image:radial-gradient(circle at 34% 26%, rgba(255,255,255,.6), rgba(255,255,255,0) 60%);
+  box-shadow:inset 0 -1px 3px rgba(0,0,0,.3);
+}
+
+/* 스텝 카드 상단 라임 레일 */
+.railed{position:relative;overflow:hidden}
+.railed::before{
+  content:"";position:absolute;inset:0 auto auto 0;width:100%;height:3px;
+  background:linear-gradient(90deg,var(--neon-fill),transparent 62%);
+}
+
+.scroll-x{overflow-x:auto;scrollbar-width:none}
+.scroll-x::-webkit-scrollbar{display:none}
+
+.tipbox{
+  position:absolute;pointer-events:none;z-index:20;
+  transform:translate(-50%,-118%);
+  background:var(--fg);color:var(--bg);
+  border-radius:10px;padding:8px 11px;font-size:12.5px;line-height:1.45;
+  white-space:nowrap;font-variant-numeric:tabular-nums;
+  box-shadow:0 8px 20px rgba(0,0,0,.35);
+}
+svg .hit{fill:transparent;cursor:crosshair}
+/* 차트는 색을 JS로 읽지 않고 CSS 변수에 직접 묶는다 — 테마를 바꾸면 그대로 따라온다 */
+.f-send{fill:var(--send)} .f-fail{fill:var(--fail)}
+.f-muted{fill:var(--muted)} .f-fg{fill:var(--fg)}
+.s-send{stroke:var(--send)} .s-grid{stroke:var(--grid)}
+.s-surface{stroke:var(--surface)} .s-muted{stroke:var(--muted)}
+.stop-send{stop-color:var(--send)}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;animation:none!important}
+}
+</style>
+
+<script>
+  (function () {
+    var saved = null;
+    try { saved = localStorage.getItem("wandeung.theme.v2"); } catch (e) {}
+    if (saved !== "light") document.documentElement.classList.add("dark");
+  })();
+</script>
+
+<div id="root"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script>window.react = window.React;</script>
+<script src="https://unpkg.com/lucide-react@0.454.0/dist/umd/lucide-react.js"></script>
+<script src="https://cdn.tailwindcss.com/3.4.16"></script>
+<script>
+  tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        colors: {
+          bg: "var(--bg)", surface: "var(--surface)", surface2: "var(--surface-2)",
+          elevated: "var(--elevated)", ink: "var(--fg)", muted: "var(--muted)",
+          line: "var(--line)", lineSoft: "var(--line-soft)", neon: "var(--neon)",
+          send: "var(--send)", fail: "var(--fail)"
+        }
+      }
+    }
+  };
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.26.4/babel.min.js"></script>
+
+<script type="text/babel" data-presets="react">
+const { useState, useEffect, useMemo, useRef, useCallback } = React;
+const L = window.LucideReact;
+const {
+  Sun, Moon, Flame, TrendingUp, TrendingDown, Minus, MessageSquare, BookOpen,
+  Calendar, MapPin, Trophy, X, Plus, Trash2, Clipboard, Target, Activity,
+  Mountain, Send, Filter, Sparkles, Video, Upload, Share2, Loader2
+} = L;
+
+/* ─────────── 난이도 눈금 ───────────
+   웨이브락 색상 순서(빨·주·노·초·하·남·보·갈·검·흰). 앞이 쉽고 뒤로 갈수록 어렵다.
+   색 순서는 암장마다 다르므로 기록에는 항상 암장 이름이 함께 저장된다. */
+const GRADES = [
+  { id: "red",    name: "빨강", lv: "Lv.1",  hex: "#D23B32", desc: "입문. 홀드가 크고 발 디딜 곳이 분명합니다." },
+  { id: "orange", name: "주황", lv: "Lv.2",  hex: "#EE7B30", desc: "기본 무브. 팔 힘보다 발 순서를 먼저 봅니다." },
+  { id: "yellow", name: "노랑", lv: "Lv.3",  hex: "#F4C430", desc: "밸런스와 슬랩이 섞이기 시작합니다." },
+  { id: "green",  name: "초록", lv: "Lv.4",  hex: "#3FA34D", desc: "오버행 입문. 코어를 쓰기 시작합니다." },
+  { id: "sky",    name: "하늘", lv: "Lv.5",  hex: "#4FB3E8", desc: "주 2~3회 다니는 사람의 현실적인 목표 구간." },
+  { id: "navy",   name: "남색", lv: "Lv.6",  hex: "#1F3A93", desc: "홀드가 작아지고 리치가 길어집니다." },
+  { id: "purple", name: "보라", lv: "Lv.7",  hex: "#8455C7", desc: "다이나믹 무브와 힐훅이 필요합니다." },
+  { id: "brown",  name: "갈색", lv: "Lv.8",  hex: "#8A5A2B", desc: "손가락 힘이 승부를 가릅니다." },
+  { id: "black",  name: "검정", lv: "Lv.9",  hex: "#242A30", desc: "선수반 구간." },
+  { id: "white",  name: "흰색", lv: "Lv.10", hex: "#F2F2EF", desc: "암장 최상급. 세팅 주기마다 완등자가 손에 꼽힙니다." }
+];
+const GI = {};
+GRADES.forEach((g, i) => { GI[g.id] = i; g.idx = i; });
+const grade = (id) => GRADES[GI[id]] || GRADES[0];
+
+/* V등급 ↔ Font 등급은 국제 기준. 색상 단계와의 대응은 암장·세팅마다 달라 연결하지 않는다. */
+const VFONT = [
+  ["V0", "4~5"], ["V1", "5"], ["V2", "5+"], ["V3", "6A"], ["V4", "6B"], ["V5", "6C"],
+  ["V6", "7A"], ["V7", "7A+"], ["V8", "7B"], ["V9", "7B+"], ["V10", "7C"]
+];
+
+/* 웨이브락 클라이밍 부산 3개 지점 (공식 지점안내 기준) */
+const GYM_PRESETS = ["웨이브락 남천점", "웨이브락 서면점", "웨이브락 부산대점"];
+const HOME_GYM = GYM_PRESETS[0];
+
+const REC_KEY = "wandeung.records.v1";
+const TIP_KEY = "wandeung.tips.v1";
+const TAB_KEY = "wandeung.tab.v2";
+const THEME_KEY = "wandeung.theme.v2";
+
+const lsGet = (k) => { try { return localStorage.getItem(k); } catch (e) { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} };
+
+const iso = (d) =>
+  d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+const pct = (n, d) => (d ? Math.round((n / d) * 100) : 0);
+const monthLabel = (key) => Number(key.split("-")[1]) + "월";
+
+/* ─────────── 예시 데이터 ───────────
+   최근 4개월, 하늘 → 남색 → 보라로 한 칸씩 올라가는 흐름. */
+function demoRecords() {
+  const today = new Date();
+  const back = (m, day) => iso(new Date(today.getFullYear(), today.getMonth() - m, day));
+  const raw = [
+    [3,  6, "웨이브락 남천점", "green",  1, 1, "워밍업"],
+    [3,  6, "웨이브락 남천점", "sky",    0, 4, "마지막 홀드에서 발이 밀림"],
+    [3,  6, "웨이브락 남천점", "sky",    0, 3, ""],
+    [3, 18, "웨이브락 남천점", "green",  1, 1, ""],
+    [3, 18, "웨이브락 남천점", "sky",    0, 5, "오버행에서 펌핑"],
+    [2,  4, "웨이브락 서면점", "green",  1, 1, ""],
+    [2,  4, "웨이브락 서면점", "sky",    1, 3, "발 순서 바꾸니 풀림"],
+    [2,  4, "웨이브락 서면점", "navy",   0, 4, ""],
+    [2, 21, "웨이브락 남천점", "sky",    1, 2, ""],
+    [2, 21, "웨이브락 남천점", "navy",   0, 6, "크림프 버티기가 안 됨"],
+    [1,  9, "웨이브락 남천점", "sky",    1, 1, "플래시"],
+    [1,  9, "웨이브락 남천점", "navy",   1, 4, "첫 남색 완등"],
+    [1,  9, "웨이브락 남천점", "purple", 0, 5, ""],
+    [1, 23, "웨이브락 서면점", "navy",   1, 2, ""],
+    [1, 23, "웨이브락 서면점", "purple", 0, 4, "다이노 실패"],
+    [0,  5, "웨이브락 남천점", "navy",   1, 1, "플래시"],
+    [0,  5, "웨이브락 남천점", "navy",   1, 3, ""],
+    [0,  5, "웨이브락 남천점", "purple", 0, 4, "힐훅 연습 필요"],
+    [0, 16, "웨이브락 남천점", "navy",   1, 2, ""],
+    [0, 16, "웨이브락 남천점", "purple", 1, 5, "첫 보라 완등"]
+  ];
+  return raw.map((r) => ({
+    id: uid(), date: back(r[0], r[1]), gym: r[2], grade: r[3],
+    sent: !!r[4], attempts: r[5], note: r[6]
+  }));
+}
+
+const validRec = (r) => r && typeof r.date === "string" && typeof r.gym === "string" && GI[r.grade] !== undefined;
+
+function initialRecords() {
+  const raw = lsGet(REC_KEY);
+  if (raw) {
+    try {
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr)) return { records: arr.filter(validRec), demo: false };
+    } catch (e) {}
+  }
+  return { records: demoRecords(), demo: true };
+}
+
+/* ─────────── 집계 ─────────── */
+function toSessions(records) {
+  const map = {};
+  records.forEach((r) => {
+    const k = r.date + "|" + r.gym;
+    if (!map[k]) map[k] = { key: k, date: r.date, gym: r.gym, items: [] };
+    map[k].items.push(r);
+  });
+  return Object.values(map).sort((a, b) =>
+    a.date < b.date ? 1 : a.date > b.date ? -1 : a.gym < b.gym ? -1 : 1
+  );
+}
+
+function toMonthly(records) {
+  const map = {};
+  records.forEach((r) => {
+    const k = r.date.slice(0, 7);
+    if (!map[k]) map[k] = { key: k, total: 0, send: 0, fail: 0, visits: {} };
+    map[k].total++;
+    r.sent ? map[k].send++ : map[k].fail++;
+    map[k].visits[r.date + "|" + r.gym] = 1;
+  });
+  return Object.keys(map).sort().map((k) => {
+    const m = map[k];
+    m.visitCount = Object.keys(m.visits).length;
+    m.rate = pct(m.send, m.total);
+    return m;
+  });
+}
+
+function toGradeRows(records) {
+  return GRADES.map((g) => {
+    const rs = records.filter((r) => r.grade === g.id);
+    return { g, total: rs.length, send: rs.filter((r) => r.sent).length };
+  }).filter((x) => x.total > 0);
+}
+
+function topSend(records) {
+  let best = -1;
+  records.forEach((r) => { if (r.sent && GI[r.grade] > best) best = GI[r.grade]; });
+  return best < 0 ? null : GRADES[best];
+}
+
+const cssVar = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+/* ─────────── 영상 저장 ───────────
+   영상은 두 군데에 둔다.
+   - 내 브라우저(IndexedDB): 항상. 내 기록에 붙은 영상은 나만 본다.
+   - 공유 저장소(Vercel Blob): "게시판에 공유"를 켰을 때만. 그때만 남이 볼 수 있다.
+   localStorage를 안 쓴 이유는 용량(5~10MB)과 base64로 33% 불어나는 문제 때문이다. */
+const IDB_NAME = "wandeung-videos";
+const IDB_STORE = "clips";
+
+function idbOpen() {
+  return new Promise((res, rej) => {
+    if (typeof indexedDB === "undefined") return rej(new Error("no-idb"));
+    const req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = () => { req.result.createObjectStore(IDB_STORE); };
+    req.onsuccess = () => res(req.result);
+    req.onerror = () => rej(req.error);
+  });
+}
+function idbRun(mode, fn) {
+  return idbOpen().then((db) => new Promise((res, rej) => {
+    const tx = db.transaction(IDB_STORE, mode);
+    const out = fn(tx.objectStore(IDB_STORE));
+    tx.oncomplete = () => res(out ? out.result : undefined);
+    tx.onerror = () => rej(tx.error);
+    tx.onabort = () => rej(tx.error);
+  }));
+}
+const idbPut = (k, v) => idbRun("readwrite", (st) => st.put(v, k));
+const idbGet = (k) => idbRun("readonly", (st) => st.get(k));
+const idbDel = (k) => idbRun("readwrite", (st) => st.delete(k));
+
+/* 공유 서버가 붙어 있는지 한 번만 확인한다.
+   Vercel 배포에서는 살아 있고, 아티팩트나 GitHub Pages에서는 없다 — 없으면 로컬 모드. */
+let feedProbe = null;
+function probeFeed() {
+  if (!feedProbe) {
+    feedProbe = fetch("api/feed", { headers: { accept: "application/json" } })
+      .then((r) => (r.ok ? r.json() : Promise.reject(new Error("no-api"))))
+      .then((d) => ({ ok: true, posts: Array.isArray(d.posts) ? d.posts : [] }))
+      .catch(() => ({ ok: false, posts: [] }));
+  }
+  return feedProbe;
+}
+
+const MAX_CLIP_BYTES = 50 * 1024 * 1024;
+const mb = (n) => (n / 1024 / 1024).toFixed(1) + "MB";
+
+/* 파일은 서버리스 함수를 거치지 않고 브라우저가 저장소로 직접 올린다.
+   서버리스 본문 한도가 4.5MB라 영상이 통과하지 못하기 때문. api/upload.js는 허가 토큰만 준다. */
+async function uploadClip(file, onPct) {
+  const mod = await import("https://cdn.jsdelivr.net/npm/@vercel/blob@1.1.1/client/+esm");
+  const ext = (String(file.name || "").match(/\.[a-z0-9]{1,5}$/i) || [".mp4"])[0];
+  const res = await mod.upload("videos/" + uid() + ext, file, {
+    access: "public",
+    handleUploadUrl: "api/upload",
+    contentType: file.type || "video/mp4",
+    onUploadProgress: onPct ? (p) => onPct(Math.round(p.percentage)) : undefined
+  });
+  return res.url;
+}
+
+/* 로컬(IndexedDB)이든 공유(URL)든 같은 모양으로 재생한다. */
+function Clip({ url, storeKey, className }) {
+  const [src, setSrc] = useState(url || "");
+  useEffect(() => {
+    if (url) { setSrc(url); return; }
+    if (!storeKey) { setSrc(""); return; }
+    let objUrl = null, alive = true;
+    idbGet(storeKey).then((blob) => {
+      if (!alive || !blob) return;
+      objUrl = URL.createObjectURL(blob);
+      setSrc(objUrl);
+    }).catch(() => {});
+    return () => { alive = false; if (objUrl) URL.revokeObjectURL(objUrl); };
+  }, [url, storeKey]);
+
+  if (!src) return null;
+  return (
+    <video src={src} controls playsInline preload="metadata"
+      className={"w-full rounded-xl bg-black max-h-[420px] " + (className || "")} />
+  );
+}
+
+/* 게시판 상태. 서버가 있으면 서버 글, 없으면 이 브라우저에 쌓인 글을 쓴다. */
+function useFeed() {
+  const [posts, setPosts] = useState([]);
+  const [mode, setMode] = useState("checking");
+
+  useEffect(() => {
+    let alive = true;
+    probeFeed().then((r) => {
+      if (!alive) return;
+      if (r.ok) { setMode("shared"); setPosts(r.posts); return; }
+      setMode("local");
+      try {
+        const a = JSON.parse(lsGet(TIP_KEY) || "[]");
+        setPosts(Array.isArray(a) ? a : []);
+      } catch (e) { setPosts([]); }
+    });
+    return () => { alive = false; };
+  }, []);
+
+  const addPost = useCallback(async (p) => {
+    const probe = await probeFeed();
+    if (probe.ok) {
+      const res = await fetch("api/feed", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(p)
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "글을 올리지 못했습니다.");
+      setPosts((cur) => [data.post].concat(cur));
+      return { shared: true };
+    }
+    // 서버가 없으면 이 브라우저에만 남긴다. 영상은 기록 쪽 IndexedDB 사본으로 본다.
+    const local = Object.assign({ id: uid(), createdAt: new Date().toISOString() }, p);
+    setPosts((cur) => {
+      const next = [local].concat(cur).slice(0, 100);
+      lsSet(TIP_KEY, JSON.stringify(next));
+      return next;
+    });
+    return { shared: false };
+  }, []);
+
+  return { posts, mode, addPost, canShare: mode === "shared" };
+}
+
+/* ─────────── 공용 조각 ─────────── */
+function Card({ children, className = "", railed = false }) {
+  return (
+    <div className={
+      "rounded-2xl border border-[var(--line)] bg-[var(--surface)] shadow-[var(--shadow)] " +
+      (railed ? "railed " : "") + className
+    }>
+      {children}
+    </div>
+  );
+}
+
+function SectionHead({ kicker, title, right, icon: Icon }) {
+  return (
+    <div className="flex items-start justify-between gap-3 flex-wrap mb-4">
+      <div className="min-w-0">
+        <div className="kick text-[10.5px] text-[var(--muted)] flex items-center gap-1.5">
+          {Icon ? <Icon size={12} strokeWidth={2.75} /> : null}{kicker}
+        </div>
+        <h2 className="text-[19px] font-extrabold tracking-[-.02em] mt-0.5">{title}</h2>
+      </div>
+      {right ? <div className="text-[12.5px] text-[var(--muted)] shrink-0">{right}</div> : null}
+    </div>
+  );
+}
+
+function StepLabel({ n, text, icon: Icon }) {
+  return (
+    <div className="flex items-center gap-2 mb-2.5">
+      <span className="num inline-flex items-center justify-center w-[22px] h-[22px] rounded-md bg-[var(--neon-fill)] text-[var(--on-neon)] text-[11px] font-extrabold shrink-0">
+        {n}
+      </span>
+      <span className="text-[13px] font-bold flex items-center gap-1.5">
+        {Icon ? <Icon size={14} strokeWidth={2.5} className="text-[var(--muted)]" /> : null}{text}
+      </span>
+    </div>
+  );
+}
+
+function Chip({ on, onClick, children, title }) {
+  return (
+    <button
+      type="button" onClick={onClick} title={title} aria-pressed={on}
+      className={
+        "px-3.5 py-2 rounded-full text-[13px] font-bold border transition whitespace-nowrap " +
+        (on
+          ? "bg-[var(--neon-fill)] text-[var(--on-neon)] border-transparent"
+          : "bg-[var(--surface-2)] text-[var(--muted)] border-[var(--line)] hover:text-[var(--fg)]")
+      }>
+      {children}
+    </button>
+  );
+}
+
+function Trend({ delta }) {
+  if (delta === null) return <span className="text-[11.5px] text-[var(--muted)]">비교할 지난달 없음</span>;
+  const up = delta > 0, flat = delta === 0;
+  const Icon = flat ? Minus : up ? TrendingUp : TrendingDown;
+  return (
+    <span className="inline-flex items-center gap-1 text-[11.5px] font-bold"
+      style={{ color: flat ? "var(--muted)" : up ? "var(--send)" : "var(--fail)" }}>
+      <Icon size={13} strokeWidth={3} />
+      {flat ? "지난달과 같음" : (up ? "+" : "") + delta + "%p"}
+    </span>
+  );
+}
+
+function StatCard({ kicker, value, unit, foot, icon: Icon, accent }) {
+  return (
+    <div className="relative overflow-hidden rounded-2xl border border-[var(--line)] bg-[var(--surface)] p-4 shadow-[var(--shadow)]">
+      <div className="absolute inset-0 pointer-events-none opacity-[.10]"
+        style={{ background: "radial-gradient(120% 90% at 100% 0%, " + (accent || "var(--neon-fill)") + ", transparent 62%)" }} />
+      <div className="relative">
+        <div className="flex items-center justify-between gap-2">
+          <span className="kick text-[10px] text-[var(--muted)]">{kicker}</span>
+          {Icon ? <Icon size={15} strokeWidth={2.5} style={{ color: accent || "var(--neon)" }} /> : null}
+        </div>
+        <div className="num font-black text-[34px] leading-[1.05] mt-1.5">
+          {value}
+          {unit ? <span className="text-[15px] font-bold text-[var(--muted)] ml-1">{unit}</span> : null}
+        </div>
+        <div className="mt-1.5 min-h-[18px]">{foot}</div>
+      </div>
+    </div>
+  );
+}
+
+function Empty({ children }) {
+  return (
+    <div className="rounded-xl border border-dashed border-[var(--line)] px-5 py-8 text-center text-[13.5px] text-[var(--muted)]">
+      {children}
+    </div>
+  );
+}
+
+/* ─────────── 차트 ─────────── */
+function useTip() {
+  const [tip, setTip] = useState(null);
+  return [tip, setTip];
+}
+
+function TipBox({ tip, W, H }) {
+  if (!tip) return null;
+  const left = Math.max(8, Math.min(W - 8, tip.x));
+  return (
+    <div className="tipbox" style={{ left: (left / W) * 100 + "%", top: (tip.y / H) * 100 + "%" }}>
+      {tip.lines.map((l, i) => (
+        <div key={i} className={i === 0 ? "font-bold" : "opacity-80"}>{l}</div>
+      ))}
+    </div>
+  );
+}
+
+/* 차트는 컨테이너 실측 폭을 viewBox 폭으로 써서 1:1로 그린다.
+   그래야 축 글자가 화면 폭에 따라 줄어들지 않는다. */
+function useWidth(fallback) {
+  const ref = useRef(null);
+  const [w, setW] = useState(fallback);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const measure = () => setW(Math.max(280, Math.round(el.clientWidth)));
+    measure();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", measure);
+      return () => window.removeEventListener("resize", measure);
+    }
+    const ro = new ResizeObserver(measure);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
+  return [ref, w];
+}
+
+function RateChart({ ms }) {
+  const [tip, setTip] = useTip();
+  const [box, W] = useWidth(720);
+
+  const H = 250, PL = 40, PR = 24, PT = 20, PB = 36;
+  const iw = W - PL - PR, ih = H - PT - PB, n = ms.length;
+  const xs = (i) => (n <= 1 ? PL + iw / 2 : PL + (iw * i) / (n - 1));
+  const ys = (v) => PT + ih * (1 - v / 100);
+  const d = ms.map((m, i) => (i ? "L" : "M") + xs(i).toFixed(1) + " " + ys(m.rate).toFixed(1)).join(" ");
+  const area = n > 1 ? d + " L" + xs(n - 1).toFixed(1) + " " + (PT + ih) + " L" + xs(0).toFixed(1) + " " + (PT + ih) + " Z" : "";
+  const at = (m, i) => ({
+    x: xs(i), y: ys(m.rate),
+    lines: [monthLabel(m.key) + " · " + m.rate + "%",
+            "완등 " + m.send + " / 기록 " + m.total + " · 방문 " + m.visitCount + "회"]
+  });
+
+  return (
+    <div ref={box} className="relative min-w-0">
+      {!n ? <Empty>기록을 추가하면 월별 완등률 곡선이 그려집니다.</Empty> : (
+        <>
+          <svg viewBox={"0 0 " + W + " " + H} className="block w-full h-auto max-w-full" role="img"
+            aria-label="월별 완등 성공률 꺾은선 그래프">
+            <defs>
+              <linearGradient id="rateFill" x1="0" y1="0" x2="0" y2="1">
+                <stop className="stop-send" offset="0%" stopOpacity="0.28" />
+                <stop className="stop-send" offset="100%" stopOpacity="0" />
+              </linearGradient>
+            </defs>
+            {[0, 25, 50, 75, 100].map((v) => (
+              <g key={v}>
+                <line className="s-grid" x1={PL} y1={ys(v)} x2={W - PR} y2={ys(v)} strokeWidth="1" />
+                <text className="f-muted" x={PL - 8} y={ys(v) + 4} textAnchor="end" fontSize="11" fontFamily="Archivo, monospace">{v}</text>
+              </g>
+            ))}
+            {n > 1 ? <path d={area} fill="url(#rateFill)" /> : null}
+            {n > 1 ? <path className="s-send" d={d} fill="none" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" /> : null}
+            {ms.map((m, i) => (
+              <g key={m.key}>
+                <circle className="f-send s-surface" cx={xs(i)} cy={ys(m.rate)} r={i === n - 1 ? 6 : 4.5} strokeWidth="2.5" />
+                <text className="f-muted" x={xs(i)} y={H - PB + 20} textAnchor="middle" fontSize="12">{monthLabel(m.key)}</text>
+                <rect className="hit" x={xs(i) - Math.min(22, iw / (n * 2))} y={PT} width={Math.min(44, iw / n)} height={ih} tabIndex={0}
+                  onMouseEnter={() => setTip(at(m, i))} onFocus={() => setTip(at(m, i))}
+                  onMouseLeave={() => setTip(null)} onBlur={() => setTip(null)} />
+              </g>
+            ))}
+            <text className="f-fg" x={xs(n - 1) + (n === 1 ? 0 : -10)} y={ys(ms[n - 1].rate) - 14}
+              textAnchor={n === 1 ? "middle" : "end"} fontSize="15" fontWeight="800" fontFamily="Archivo, sans-serif">
+              {ms[n - 1].rate}%
+            </text>
+          </svg>
+          <TipBox tip={tip} W={W} H={H} />
+        </>
+      )}
+    </div>
+  );
+}
+
+function Legend() {
+  return (
+    <div className="flex gap-4 flex-wrap text-[12.5px] text-[var(--muted)] mb-3">
+      <span className="inline-flex items-center gap-1.5">
+        <i className="w-3 h-3 rounded-[4px] inline-block" style={{ background: "var(--send)" }} />완등
+      </span>
+      <span className="inline-flex items-center gap-1.5">
+        <i className="w-3 h-3 rounded-[4px] inline-block" style={{ background: "var(--fail)" }} />실패
+      </span>
+    </div>
+  );
+}
+
+function VolumeChart({ ms }) {
+  const [tip, setTip] = useTip();
+  const [box, W] = useWidth(720);
+
+  const H = 220, PL = 40, PR = 16, PT = 14, PB = 36;
+  const iw = W - PL - PR, ih = H - PT - PB;
+  const max = ms.length ? Math.max(...ms.map((m) => m.total)) : 1;
+  const step = Math.max(1, Math.ceil(max / 4));
+  const top = step * Math.ceil(max / step);
+  const band = ms.length ? iw / ms.length : iw;
+  const bw = Math.min(56, band * 0.54);
+  const ticks = [];
+  for (let v = 0; v <= top; v += step) ticks.push(v);
+
+  return (
+    <div ref={box} className="relative min-w-0">
+      {!ms.length ? <Empty>기록을 추가하면 월별 기록 수가 그려집니다.</Empty> : (
+        <>
+          <svg viewBox={"0 0 " + W + " " + H} className="block w-full h-auto max-w-full" role="img"
+            aria-label="월별 기록 수 누적 막대그래프">
+            {ticks.map((v) => {
+              const y = PT + ih * (1 - v / top);
+              return (
+                <g key={v}>
+                  <line className="s-grid" x1={PL} y1={y} x2={W - PR} y2={y} strokeWidth="1" />
+                  <text className="f-muted" x={PL - 8} y={y + 4} textAnchor="end" fontSize="11" fontFamily="Archivo, monospace">{v}</text>
+                </g>
+              );
+            })}
+            {ms.map((m, i) => {
+              const cx = PL + band * (i + 0.5), x = cx - bw / 2;
+              const hS = ih * (m.send / top), hF = ih * (m.fail / top);
+              const yF = PT + ih - hF, yS = yF - hS - (m.fail && m.send ? 2 : 0);
+              const t = {
+                x: cx, y: yS,
+                lines: [monthLabel(m.key) + " · 기록 " + m.total + "건",
+                        "완등 " + m.send + " · 실패 " + m.fail + " · 완등률 " + m.rate + "%"]
+              };
+              return (
+                <g key={m.key}>
+                  {m.fail > 0 ? <rect className="f-fail" x={x} y={yF} width={bw} height={Math.max(2, hF)} rx="3" /> : null}
+                  {m.send > 0 ? <rect className="f-send" x={x} y={yS} width={bw} height={Math.max(2, hS)} rx="5" /> : null}
+                  <text className="f-muted" x={cx} y={H - PB + 20} textAnchor="middle" fontSize="12">{monthLabel(m.key)}</text>
+                  <rect className="hit" x={cx - band / 2} y={PT} width={band} height={ih} tabIndex={0}
+                    onMouseEnter={() => setTip(t)} onFocus={() => setTip(t)}
+                    onMouseLeave={() => setTip(null)} onBlur={() => setTip(null)} />
+                </g>
+              );
+            })}
+            <line className="s-muted" x1={PL} y1={PT + ih} x2={W - PR} y2={PT + ih} strokeWidth="1" opacity=".45" />
+          </svg>
+          <TipBox tip={tip} W={W} H={H} />
+        </>
+      )}
+    </div>
+  );
+}
+
+function GradeChart({ rows }) {
+  const [tip, setTip] = useTip();
+  const [box, W] = useWidth(720);
+
+  const narrow = W < 480;
+  const rowH = 32, gap = 9, PT = 6;
+  const PL = narrow ? 84 : 104, PR = narrow ? 46 : 62;
+  const H = PT * 2 + Math.max(1, rows.length) * rowH + (Math.max(1, rows.length) - 1) * gap;
+  const iw = W - PL - PR;
+  const max = rows.length ? Math.max(...rows.map((r) => r.total)) : 1;
+
+  return (
+    <div ref={box} className="relative min-w-0">
+      {!rows.length ? <Empty>기록을 추가하면 난이도 분포가 그려집니다.</Empty> : (
+        <>
+          <svg viewBox={"0 0 " + W + " " + H} className="block w-full h-auto max-w-full" role="img"
+            aria-label="난이도별 완등과 실패 가로 누적 막대그래프">
+            {rows.map((r, i) => {
+              const y = PT + i * (rowH + gap);
+              const wS = iw * (r.send / max), fail = r.total - r.send, wF = iw * (fail / max);
+              const t = {
+                x: PL + iw / 2, y,
+                lines: [r.g.name + " " + r.g.lv + " · " + pct(r.send, r.total) + "%", "완등 " + r.send + " / 기록 " + r.total]
+              };
+              return (
+                <g key={r.g.id}>
+                  <rect className="s-muted" x="0" y={y + rowH / 2 - 8} width="16" height="16" rx="5"
+                    fill={r.g.hex} strokeOpacity=".5" />
+                  <text className="f-fg" x="24" y={y + rowH / 2 + 5} fontSize="13" fontWeight="700">{r.g.name}</text>
+                  <text className="f-muted" x={PL - 10} y={y + rowH / 2 + 5} textAnchor="end" fontSize="11.5" fontFamily="Archivo, monospace">{r.g.lv}</text>
+                  {r.send > 0 ? <rect className="f-send" x={PL} y={y + 4} width={Math.max(3, wS)} height={rowH - 8} rx="5" /> : null}
+                  {fail > 0 ? <rect className="f-fail" x={PL + wS + (r.send ? 2 : 0)} y={y + 4} width={Math.max(3, wF)} height={rowH - 8} rx="5" /> : null}
+                  <text className="f-fg" x={W - PR + 8} y={y + rowH / 2 + 5} fontSize="13" fontWeight="700" fontFamily="Archivo, sans-serif">{pct(r.send, r.total)}%</text>
+                  <rect className="hit" x={PL} y={y} width={iw} height={rowH} tabIndex={0}
+                    onMouseEnter={() => setTip(t)} onFocus={() => setTip(t)}
+                    onMouseLeave={() => setTip(null)} onBlur={() => setTip(null)} />
+                </g>
+              );
+            })}
+          </svg>
+          <TipBox tip={tip} W={W} H={H} />
+        </>
+      )}
+    </div>
+  );
+}
+
+/* ─────────── 기록 탭 ─────────── */
+function WelcomeBanner({ onClear }) {
+  return (
+    <div className="relative overflow-hidden rounded-2xl p-5 sm:p-6"
+      style={{ background: "var(--neon-fill)", color: "var(--on-neon)" }}>
+      <div aria-hidden="true" className="absolute inset-0 pointer-events-none opacity-[.16]"
+        style={{ background: "repeating-linear-gradient(118deg, rgba(0,0,0,.6) 0 2px, transparent 2px 16px)" }} />
+      <div className="relative flex items-start justify-between gap-4 flex-wrap">
+        <div className="min-w-0 max-w-[46ch]">
+          <div className="kick text-[10.5px] flex items-center gap-1.5 opacity-70">
+            <Sparkles size={12} strokeWidth={3} />예시 세션
+          </div>
+          <h2 className="text-[22px] sm:text-[26px] font-black tracking-[-.03em] leading-[1.18] mt-1.5">
+            지금 보이는 건 샘플입니다
+          </h2>
+          <p className="text-[13.5px] opacity-75 mt-1.5">
+            아래에서 첫 기록을 저장하면 예시는 사라지고 내 기록만 남습니다.
+          </p>
+        </div>
+        <button onClick={onClear}
+          className="shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2.5 text-[13px] font-bold transition hover:brightness-110"
+          style={{ background: "var(--on-neon)", color: "var(--neon-fill)" }}>
+          <Trash2 size={14} strokeWidth={2.5} />예시 지우기
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function QuickAdd({ gyms, onAdd, feed, msg, setMsg }) {
+  const today = iso(new Date());
+  const yest = iso(new Date(Date.now() - 86400000));
+  const [date, setDate] = useState(today);
+  const [gym, setGym] = useState(HOME_GYM);
+  const [g, setG] = useState("sky");
+  const [sent, setSent] = useState(true);
+  const [att, setAtt] = useState(1);
+  const [note, setNote] = useState("");
+  const [custom, setCustom] = useState(false);
+  const [file, setFile] = useState(null);
+  const [share, setShare] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [pct, setPct] = useState(0);
+  const fileRef = useRef(null);
+
+  const tooBig = file && file.size > MAX_CLIP_BYTES;
+
+  const pick = (e) => {
+    const f = e.target.files && e.target.files[0];
+    setFile(f || null);
+    setPct(0);
+    if (f && f.size > MAX_CLIP_BYTES) {
+      setMsg("영상이 " + mb(f.size) + "입니다. " + mb(MAX_CLIP_BYTES) + " 이하만 올릴 수 있습니다.");
+    } else setMsg("");
+  };
+
+  const clearFile = () => {
+    setFile(null);
+    setShare(false);
+    setPct(0);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const submit = async () => {
+    if (busy) return;
+    if (tooBig) { setMsg("영상 용량을 줄이거나 빼고 저장해 주세요."); return; }
+    if (!date) { setMsg("날짜를 골라 주세요."); return; }
+    if (!gym.trim()) { setMsg("암장 이름을 적어 주세요."); return; }
+
+    setBusy(true);
+    let videoKey = "", videoUrl = "";
+    try {
+      if (file) {
+        // 내 사본을 먼저 만든다. 공유 업로드가 실패해도 내 기록에는 영상이 남는다.
+        videoKey = "clip-" + uid();
+        try {
+          setMsg("영상을 이 브라우저에 담는 중...");
+          await idbPut(videoKey, file);
+        } catch (e) {
+          videoKey = "";
+          setMsg("이 브라우저에 영상을 담지 못했습니다. 기록만 저장합니다.");
+        }
+
+        if (share && feed.canShare) {
+          try {
+            setMsg("영상 올리는 중...");
+            videoUrl = await uploadClip(file, setPct);
+          } catch (e) {
+            setMsg("영상 업로드에 실패했습니다: " + (e.message || "알 수 없는 오류"));
+            setBusy(false);
+            return;
+          }
+        }
+      }
+
+      const ok = onAdd({
+        date, gym: gym.trim(), grade: g, sent,
+        attempts: Math.max(1, Number(att) || 1),
+        note: note.trim(), videoKey, videoUrl
+      });
+      if (!ok) { setBusy(false); return; }
+
+      if (share) {
+        try {
+          const r = await feed.addPost({
+            author: "", gym: gym.trim(), grade: g, sent,
+            title: grade(g).name + " " + grade(g).lv + " " + (sent ? "완등" : "도전"),
+            body: note.trim() || (sent ? "완등했습니다." : "다음에 다시 붙어 봅니다."),
+            videoUrl
+          });
+          setMsg(r.shared
+            ? "기록을 저장하고 게시판에 올렸습니다."
+            : "기록을 저장했습니다. 공유 서버가 없어 게시판 글은 이 브라우저에만 남았습니다.");
+        } catch (e) {
+          setMsg("기록은 저장했지만 게시판에 올리지 못했습니다: " + (e.message || ""));
+        }
+      }
+
+      setNote(""); setAtt(1); clearFile();
+    } finally {
+      setBusy(false);
+      setPct(0);
+    }
+  };
+
+  return (
+    <Card railed className="p-5 sm:p-6">
+      <SectionHead kicker="오늘의 세션" title="기록 추가" icon={Flame}
+        right="난이도와 완등 여부만 있으면 됩니다" />
+
+      <div className="grid gap-5">
+        <div>
+          <StepLabel n="1" text="날짜" icon={Calendar} />
+          <div className="flex gap-2 flex-wrap items-center">
+            <Chip on={date === today && !custom} onClick={() => { setDate(today); setCustom(false); }}>오늘</Chip>
+            <Chip on={date === yest && !custom} onClick={() => { setDate(yest); setCustom(false); }}>어제</Chip>
+            <Chip on={custom} onClick={() => setCustom(true)}>직접 선택</Chip>
+            {custom ? (
+              <input id="f-date" type="date" value={date} onChange={(e) => setDate(e.target.value)}
+                className="rounded-full bg-[var(--surface-2)] border border-[var(--line)] px-3.5 py-2 text-[13px]" />
+            ) : (
+              <span className="num text-[13px] text-[var(--muted)] ml-1">{date}</span>
+            )}
+          </div>
+        </div>
+
+        <div>
+          <StepLabel n="2" text="암장" icon={MapPin} />
+          <div className="flex gap-2 flex-wrap">
+            {gyms.map((name) => (
+              <Chip key={name} on={gym === name} onClick={() => setGym(name)}>{name}</Chip>
+            ))}
+          </div>
+          <input id="f-gym" type="text" value={gym} onChange={(e) => setGym(e.target.value)}
+            placeholder="다른 암장은 여기에 직접 적으세요" autoComplete="off"
+            className="mt-2.5 w-full rounded-xl bg-[var(--surface-2)] border border-[var(--line)] px-3.5 py-2.5 text-[14px]" />
+        </div>
+
+        <div>
+          <StepLabel n="3" text="난이도" icon={Target} />
+          <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
+            {GRADES.map((x) => (
+              <button key={x.id} type="button" onClick={() => setG(x.id)} data-on={g === x.id ? "1" : "0"}
+                aria-pressed={g === x.id} title={x.name + " " + x.lv}
+                className="hold aspect-square w-full flex flex-col items-center justify-center gap-0.5"
+                style={{ backgroundColor: x.hex }}>
+                <span className="text-[11px] font-extrabold leading-none"
+                  style={{ color: x.idx >= 7 && x.id !== "white" ? "#fff" : "#12161A" }}>{x.name}</span>
+                <span className="num text-[9.5px] font-bold leading-none opacity-70"
+                  style={{ color: x.idx >= 7 && x.id !== "white" ? "#fff" : "#12161A" }}>{x.lv}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div>
+          <StepLabel n="4" text="결과" icon={Trophy} />
+          <div className="grid grid-cols-2 gap-3">
+            <button type="button" onClick={() => setSent(true)} aria-pressed={sent}
+              className={"rounded-2xl py-5 font-black text-[17px] flex flex-col items-center gap-1.5 border-2 transition " +
+                (sent ? "text-white border-transparent" : "border-[var(--line)] bg-[var(--surface-2)] text-[var(--muted)] hover:border-[var(--send)]")}
+              style={sent ? { background: "var(--send)" } : undefined}>
+              <Trophy size={24} strokeWidth={2.5} />완등
+            </button>
+            <button type="button" onClick={() => setSent(false)} aria-pressed={!sent}
+              className={"rounded-2xl py-5 font-black text-[17px] flex flex-col items-center gap-1.5 border-2 transition " +
+                (!sent ? "text-white border-transparent" : "border-[var(--line)] bg-[var(--surface-2)] text-[var(--muted)] hover:border-[var(--fail)]")}
+              style={!sent ? { background: "var(--fail)" } : undefined}>
+              <X size={24} strokeWidth={2.5} />실패
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <StepLabel n="5" text="영상 (선택)" icon={Video} />
+          {!file ? (
+            <label htmlFor="f-clip"
+              className="flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-[var(--line)] bg-[var(--surface-2)] py-6 text-[13.5px] font-bold text-[var(--muted)] cursor-pointer hover:border-[var(--ring)] hover:text-[var(--fg)] transition">
+              <Upload size={17} strokeWidth={2.5} />영상 고르기
+              <span className="font-medium opacity-70">· {mb(MAX_CLIP_BYTES)}까지</span>
+            </label>
+          ) : (
+            <div className="rounded-2xl border border-[var(--line)] bg-[var(--surface-2)] p-3.5 grid gap-3">
+              <div className="flex items-center gap-2.5 flex-wrap">
+                <Video size={16} strokeWidth={2.5} className="text-[var(--muted)] shrink-0" />
+                <span className="text-[13.5px] font-bold min-w-0 break-all">{file.name}</span>
+                <span className={"num text-[12px] font-bold " + (tooBig ? "text-[var(--fail)]" : "text-[var(--muted)]")}>
+                  {mb(file.size)}
+                </span>
+                <button onClick={clearFile} disabled={busy}
+                  className="ml-auto shrink-0 rounded-lg px-2.5 py-1 text-[12px] border border-[var(--line)] text-[var(--muted)] hover:text-[var(--fail)] hover:border-[var(--fail)] transition disabled:opacity-40">
+                  빼기
+                </button>
+              </div>
+
+              {tooBig ? (
+                <p className="text-[12.5px] font-bold" style={{ color: "var(--fail)" }}>
+                  {mb(MAX_CLIP_BYTES)}를 넘습니다. 더 짧게 자르거나 화질을 낮춰 주세요.
+                </p>
+              ) : (
+                <label className={"flex items-start gap-2.5 text-[13px] " + (feed.canShare ? "cursor-pointer" : "opacity-60")}>
+                  <input type="checkbox" checked={share} disabled={!feed.canShare || busy}
+                    onChange={(e) => setShare(e.target.checked)} className="mt-0.5 w-4 h-4 accent-[var(--neon-fill)]" />
+                  <span>
+                    <b className="font-bold">게시판에 공유</b>
+                    <span className="block text-[12px] text-[var(--muted)] mt-0.5">
+                      {feed.canShare
+                        ? "켜면 이 영상이 팁 게시판에 올라가 누구나 볼 수 있습니다. 끄면 내 브라우저에만 남습니다."
+                        : feed.mode === "checking" ? "공유 서버 확인 중..." : "이 주소에는 공유 서버가 없어 내 브라우저에만 저장됩니다."}
+                    </span>
+                  </span>
+                </label>
+              )}
+
+              {busy && pct > 0 ? (
+                <div className="h-1.5 rounded-full bg-[var(--line)] overflow-hidden">
+                  <div className="h-full rounded-full transition-all" style={{ width: pct + "%", background: "var(--neon-fill)" }} />
+                </div>
+              ) : null}
+            </div>
+          )}
+          <input ref={fileRef} id="f-clip" type="file" accept="video/*" onChange={pick} className="hidden" />
+        </div>
+
+        <div className="grid sm:grid-cols-[130px_1fr] gap-3">
+          <div>
+            <label htmlFor="f-att" className="text-[12px] font-bold text-[var(--muted)] block mb-1.5">시도 횟수</label>
+            <input id="f-att" type="number" min="1" max="99" value={att} onChange={(e) => setAtt(e.target.value)}
+              className="w-full rounded-xl bg-[var(--surface-2)] border border-[var(--line)] px-3.5 py-2.5 text-[14px] num" />
+          </div>
+          <div>
+            <label htmlFor="f-note" className="text-[12px] font-bold text-[var(--muted)] block mb-1.5">메모 (선택)</label>
+            <input id="f-note" type="text" value={note} onChange={(e) => setNote(e.target.value)}
+              placeholder="예: 마지막 홀드에서 발이 밀림" autoComplete="off"
+              className="w-full rounded-xl bg-[var(--surface-2)] border border-[var(--line)] px-3.5 py-2.5 text-[14px]" />
+          </div>
+        </div>
+
+        <div className="flex items-center gap-3 flex-wrap">
+          <button onClick={submit} disabled={busy || tooBig}
+            className="inline-flex items-center gap-2 rounded-full px-6 py-3.5 font-black text-[15px] bg-[var(--neon-fill)] text-[var(--on-neon)] hover:brightness-95 transition disabled:opacity-50">
+            {busy ? <Loader2 size={18} strokeWidth={3} className="animate-spin" /> : <Plus size={18} strokeWidth={3} />}
+            {busy ? "저장 중" : "기록 저장"}
+          </button>
+          <span className="text-[12.5px] text-[var(--muted)]" role="status" aria-live="polite">{msg}</span>
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function SessionList({ sessions, canDelete, onDelete }) {
+  const [armed, setArmed] = useState(null);
+  useEffect(() => {
+    if (!armed) return;
+    const t = setTimeout(() => setArmed(null), 3000);
+    return () => clearTimeout(t);
+  }, [armed]);
+
+  if (!sessions.length) {
+    return <Empty>아직 기록이 없습니다.<br />위에서 날짜·암장·난이도를 고르고 저장하면 여기에 세션이 쌓입니다.</Empty>;
+  }
+  return (
+    <div className="grid gap-3">
+      {sessions.map((s) => {
+        const sn = s.items.filter((r) => r.sent).length;
+        return (
+          <div key={s.key} className="rounded-xl border border-[var(--line-soft)] overflow-hidden bg-[var(--surface)]">
+            <div className="flex items-baseline gap-2.5 flex-wrap bg-[var(--surface-2)] px-4 py-2.5 border-b border-[var(--line-soft)]">
+              <span className="num text-[13px] font-bold">{s.date}</span>
+              <span className="text-[14px] font-extrabold">{s.gym}</span>
+              <span className="ml-auto num text-[12px] text-[var(--muted)]">
+                {s.items.length}건 · 완등 {sn} · {pct(sn, s.items.length)}%
+              </span>
+            </div>
+            {s.items.map((r) => {
+              const g = grade(r.grade);
+              return (
+                <div key={r.id} className="flex items-center gap-2.5 px-4 py-2.5 border-b border-[var(--line-soft)] last:border-0 flex-wrap">
+                  <span className="inline-flex items-center gap-2 text-[13.5px] font-bold min-w-[100px]">
+                    <i className="swatch w-3.5 h-3.5 inline-block shrink-0" style={{ background: g.hex }} />
+                    {g.name}<span className="num text-[11px] text-[var(--muted)] font-semibold">{g.lv}</span>
+                  </span>
+                  <span className={"text-[11.5px] font-extrabold rounded-full px-2.5 py-0.5 inline-flex items-center gap-1 " +
+                    (r.sent ? "text-white" : "")}
+                    style={r.sent ? { background: "var(--send)" } : { border: "1px solid var(--fail)", color: "var(--fail)" }}>
+                    {r.sent ? <Trophy size={11} strokeWidth={3} /> : <X size={11} strokeWidth={3} />}
+                    {r.sent ? "완등" : "실패"}
+                  </span>
+                  <span className="num text-[12px] text-[var(--muted)]">{r.attempts || 1}트</span>
+                  {r.videoUrl || r.videoKey ? (
+                    <span className="inline-flex items-center gap-1 text-[11.5px] font-bold text-[var(--muted)]">
+                      <Video size={12} strokeWidth={2.75} />{r.videoUrl ? "공유됨" : "영상"}
+                    </span>
+                  ) : null}
+                  {r.note ? <span className="text-[13px] text-[var(--muted)] min-w-0 break-words flex-1">{r.note}</span> : <span className="flex-1" />}
+                  {canDelete ? (
+                    <button onClick={() => (armed === r.id ? onDelete(r.id) : setArmed(r.id))}
+                      className={"shrink-0 rounded-lg px-2.5 py-1 text-[11.5px] border transition " +
+                        (armed === r.id ? "border-[var(--fail)] text-[var(--fail)] font-bold" : "border-[var(--line)] text-[var(--muted)] hover:text-[var(--fail)]")}>
+                      {armed === r.id ? "한 번 더" : "삭제"}
+                    </button>
+                  ) : null}
+                  {r.videoUrl || r.videoKey ? (
+                    <div className="basis-full order-10 pt-1.5">
+                      <Clip url={r.videoUrl} storeKey={r.videoKey} className="max-h-[300px]" />
+                    </div>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/* ─────────── 팁 게시판 ─────────── */
+function Board({ gyms, feed }) {
+  const [filter, setFilter] = useState("");
+  const [msg, setMsg] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [pct, setPct] = useState(0);
+  const [file, setFile] = useState(null);
+  const [form, setForm] = useState({ author: "", gym: HOME_GYM, grade: "", title: "", body: "" });
+  const fileRef = useRef(null);
+
+  const shown = feed.posts.filter((p) => !filter || p.gym === filter);
+  const tooBig = file && file.size > MAX_CLIP_BYTES;
+  const set = (k) => (e) => setForm(Object.assign({}, form, { [k]: e.target.value }));
+
+  const clearFile = () => {
+    setFile(null); setPct(0);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const post = async () => {
+    if (busy) return;
+    if (!form.title.trim()) { setMsg("제목을 적어 주세요."); return; }
+    if (!form.body.trim()) { setMsg("내용을 적어 주세요."); return; }
+    if (tooBig) { setMsg(mb(MAX_CLIP_BYTES) + " 이하 영상만 올릴 수 있습니다."); return; }
+
+    setBusy(true);
+    try {
+      let videoUrl = "";
+      if (file && feed.canShare) {
+        try {
+          setMsg("영상 올리는 중...");
+          videoUrl = await uploadClip(file, setPct);
+        } catch (e) {
+          setMsg("영상 업로드에 실패했습니다: " + (e.message || "알 수 없는 오류"));
+          return;
+        }
+      }
+      const r = await feed.addPost(Object.assign({}, form, { videoUrl }));
+      setForm(Object.assign({}, form, { title: "", body: "" }));
+      clearFile();
+      setMsg(r.shared
+        ? "올렸습니다. 이 주소를 여는 사람 모두가 볼 수 있습니다."
+        : "올렸습니다. (공유 서버가 없어 이 브라우저에만 저장)");
+    } catch (e) {
+      setMsg(e.message || "글을 올리지 못했습니다.");
+    } finally {
+      setBusy(false); setPct(0);
+    }
+  };
+
+  const live = feed.canShare;
+
+  return (
+    <div className="grid gap-4">
+      <Card railed className="p-5 sm:p-6">
+        <SectionHead kicker="회원 간 공유" title="팁 남기기" icon={MessageSquare}
+          right={
+            <span className="inline-flex items-center gap-2">
+              <i className="w-2 h-2 rounded-full inline-block" style={{ background: live ? "var(--send)" : "var(--muted)" }} />
+              {feed.mode === "checking" ? "확인 중"
+                : live ? "공유 게시판 · 글 " + feed.posts.length + "개"
+                : "이 브라우저에만 저장됩니다"}
+            </span>
+          } />
+        <div className="grid gap-3">
+          <div className="grid sm:grid-cols-3 gap-3">
+            <div>
+              <label htmlFor="p-author" className="text-[12px] font-bold text-[var(--muted)] block mb-1.5">닉네임</label>
+              <input id="p-author" value={form.author} onChange={set("author")} maxLength={20} placeholder="예: 슬랩러" autoComplete="off"
+                className="w-full rounded-xl bg-[var(--surface-2)] border border-[var(--line)] px-3.5 py-2.5 text-[14px]" />
+            </div>
+            <div>
+              <label htmlFor="p-gym" className="text-[12px] font-bold text-[var(--muted)] block mb-1.5">암장</label>
+              <input id="p-gym" value={form.gym} onChange={set("gym")} maxLength={40} autoComplete="off"
+                className="w-full rounded-xl bg-[var(--surface-2)] border border-[var(--line)] px-3.5 py-2.5 text-[14px]" />
+            </div>
+            <div>
+              <label htmlFor="p-grade" className="text-[12px] font-bold text-[var(--muted)] block mb-1.5">난이도</label>
+              <select id="p-grade" value={form.grade} onChange={set("grade")}
+                className="w-full rounded-xl bg-[var(--surface-2)] border border-[var(--line)] px-3.5 py-2.5 text-[14px]">
+                <option value="">난이도 없음</option>
+                {GRADES.map((g) => <option key={g.id} value={g.id}>{g.name} {g.lv}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label htmlFor="p-title" className="text-[12px] font-bold text-[var(--muted)] block mb-1.5">제목</label>
+            <input id="p-title" value={form.title} onChange={set("title")} maxLength={60} autoComplete="off"
+              placeholder="예: 하늘 슬랩 구간 발 쓰는 법"
+              className="w-full rounded-xl bg-[var(--surface-2)] border border-[var(--line)] px-3.5 py-2.5 text-[14px]" />
+          </div>
+          <div>
+            <label htmlFor="p-body" className="text-[12px] font-bold text-[var(--muted)] block mb-1.5">내용</label>
+            <textarea id="p-body" value={form.body} onChange={set("body")} maxLength={800} rows={4}
+              placeholder="어떤 무브가 통했는지, 어디서 막혔는지 적어 주세요."
+              className="w-full rounded-xl bg-[var(--surface-2)] border border-[var(--line)] px-3.5 py-2.5 text-[14px] resize-y" />
+          </div>
+
+          <div>
+            <span className="text-[12px] font-bold text-[var(--muted)] block mb-1.5">영상 (선택)</span>
+            {!live ? (
+              <p className="text-[12.5px] text-[var(--muted)] rounded-xl border border-dashed border-[var(--line)] px-3.5 py-3">
+                이 주소에는 공유 서버가 없어 영상을 올릴 수 없습니다. 영상 공유는 Vercel 배포 주소에서 됩니다.
+              </p>
+            ) : !file ? (
+              <label htmlFor="p-clip"
+                className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[var(--line)] bg-[var(--surface-2)] py-4 text-[13px] font-bold text-[var(--muted)] cursor-pointer hover:border-[var(--ring)] hover:text-[var(--fg)] transition">
+                <Upload size={16} strokeWidth={2.5} />완등 영상 붙이기
+                <span className="font-medium opacity-70">· {mb(MAX_CLIP_BYTES)}까지</span>
+              </label>
+            ) : (
+              <div className="rounded-xl border border-[var(--line)] bg-[var(--surface-2)] p-3 grid gap-2.5">
+                <div className="flex items-center gap-2.5 flex-wrap">
+                  <Video size={15} strokeWidth={2.5} className="text-[var(--muted)] shrink-0" />
+                  <span className="text-[13px] font-bold min-w-0 break-all">{file.name}</span>
+                  <span className={"num text-[12px] font-bold " + (tooBig ? "text-[var(--fail)]" : "text-[var(--muted)]")}>{mb(file.size)}</span>
+                  <button onClick={clearFile} disabled={busy}
+                    className="ml-auto shrink-0 rounded-lg px-2.5 py-1 text-[12px] border border-[var(--line)] text-[var(--muted)] hover:text-[var(--fail)] hover:border-[var(--fail)] transition disabled:opacity-40">빼기</button>
+                </div>
+                {tooBig ? (
+                  <p className="text-[12.5px] font-bold" style={{ color: "var(--fail)" }}>
+                    {mb(MAX_CLIP_BYTES)}를 넘습니다. 더 짧게 잘라 주세요.
+                  </p>
+                ) : null}
+                {busy && pct > 0 ? (
+                  <div className="h-1.5 rounded-full bg-[var(--line)] overflow-hidden">
+                    <div className="h-full rounded-full transition-all" style={{ width: pct + "%", background: "var(--neon-fill)" }} />
+                  </div>
+                ) : null}
+              </div>
+            )}
+            <input ref={fileRef} id="p-clip" type="file" accept="video/*" className="hidden"
+              onChange={(e) => { const f = e.target.files && e.target.files[0]; setFile(f || null); setPct(0); }} />
+          </div>
+
+          <div className="flex items-center gap-3 flex-wrap">
+            <button onClick={post} disabled={busy || tooBig}
+              className="inline-flex items-center gap-2 rounded-full px-5 py-3 font-black text-[14px] bg-[var(--neon-fill)] text-[var(--on-neon)] hover:brightness-95 transition disabled:opacity-50">
+              {busy ? <Loader2 size={16} strokeWidth={2.75} className="animate-spin" /> : <Send size={16} strokeWidth={2.75} />}
+              {busy ? "올리는 중" : "팁 올리기"}
+            </button>
+            <span className="text-[12.5px] text-[var(--muted)]" role="status" aria-live="polite">{msg}</span>
+          </div>
+        </div>
+      </Card>
+
+      <Card className="p-5 sm:p-6">
+        <SectionHead kicker="최근 글" title="팁 게시판" icon={Filter}
+          right={
+            <select value={filter} onChange={(e) => setFilter(e.target.value)} aria-label="암장 필터"
+              className="rounded-full bg-[var(--surface-2)] border border-[var(--line)] px-3.5 py-2 text-[13px]">
+              <option value="">전체 암장</option>
+              {gyms.map((g) => <option key={g} value={g}>{g}</option>)}
+            </select>
+          } />
+        {!shown.length ? (
+          <Empty>{filter ? "이 암장으로 올라온 팁이 아직 없습니다." : <>아직 올라온 팁이 없습니다.<br />막혔던 구간을 어떻게 풀었는지 첫 글로 남겨 보세요.</>}</Empty>
+        ) : (
+          <div className="grid gap-2.5">
+            {shown.map((p) => {
+              const g = p.grade ? grade(p.grade) : null;
+              return (
+                <div key={p.id} className="rounded-xl border border-[var(--line-soft)] bg-[var(--surface)] px-4 py-3.5">
+                  <div className="flex gap-2 items-baseline flex-wrap mb-1.5">
+                    <span className="text-[15px] font-extrabold">{p.title}</span>
+                    {p.gym ? <span className="text-[11.5px] font-bold rounded-full px-2.5 py-0.5 bg-[var(--surface-2)] border border-[var(--line)] text-[var(--muted)]">{p.gym}</span> : null}
+                    {g ? (
+                      <span className="text-[11.5px] font-bold rounded-full px-2.5 py-0.5 bg-[var(--surface-2)] border border-[var(--line)] text-[var(--muted)] inline-flex items-center gap-1.5">
+                        <i className="swatch w-2.5 h-2.5 inline-block" style={{ background: g.hex }} />{g.name} {g.lv}
+                      </span>
+                    ) : null}
+                    {p.hasResult ? (
+                      <span className="text-[11.5px] font-extrabold rounded-full px-2.5 py-0.5 inline-flex items-center gap-1"
+                        style={p.sent ? { background: "var(--send)", color: "#fff" } : { border: "1px solid var(--fail)", color: "var(--fail)" }}>
+                        {p.sent ? <Trophy size={11} strokeWidth={3} /> : <X size={11} strokeWidth={3} />}
+                        {p.sent ? "완등" : "실패"}
+                      </span>
+                    ) : null}
+                    <span className="ml-auto num text-[12px] text-[var(--muted)]">{p.author || "익명"} · {(p.createdAt || "").slice(0, 10)}</span>
+                  </div>
+                  <div className="text-[14px] whitespace-pre-wrap break-words">{p.body}</div>
+                  {p.videoUrl ? <div className="mt-3"><Clip url={p.videoUrl} /></div> : null}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </Card>
+    </div>
+  );
+}
+
+/* ─────────── 앱 ─────────── */
+const TABS = [
+  { id: "log",   label: "기록",       icon: Flame },
+  { id: "stats", label: "성장 그래프", icon: TrendingUp },
+  { id: "board", label: "팁 게시판",   icon: MessageSquare },
+  { id: "ref",   label: "난이도 안내", icon: BookOpen }
+];
+
+function App() {
+  const [dark, setDark] = useState(() => lsGet(THEME_KEY) !== "light");
+  const [{ records, demo }, setData] = useState(initialRecords);
+  const [tab, setTab] = useState(() => {
+    const t = lsGet(TAB_KEY);
+    return TABS.some((x) => x.id === t) ? t : "log";
+  });
+  const [msg, setMsg] = useState("");
+  const feed = useFeed();
+
+  useEffect(() => {
+    document.documentElement.classList.toggle("dark", dark);
+    document.body.style.background = cssVar("--bg");
+    lsSet(THEME_KEY, dark ? "dark" : "light");
+  }, [dark]);
+
+  useEffect(() => { lsSet(TAB_KEY, tab); }, [tab]);
+
+  const sessions = useMemo(() => toSessions(records), [records]);
+  const monthly = useMemo(() => toMonthly(records), [records]);
+  const gradeRows = useMemo(() => toGradeRows(records), [records]);
+  const gyms = useMemo(() => {
+    const seen = {}, out = [];
+    GYM_PRESETS.forEach((g) => { seen[g] = 1; out.push(g); });
+    records.forEach((r) => { if (!seen[r.gym]) { seen[r.gym] = 1; out.push(r.gym); } });
+    return out;
+  }, [records]);
+
+  const total = records.length;
+  const send = records.filter((r) => r.sent).length;
+  const best = topSend(records);
+  const last = monthly.length ? monthly[monthly.length - 1] : null;
+  const prev = monthly.length > 1 ? monthly[monthly.length - 2] : null;
+  const delta = last && prev ? last.rate - prev.rate : null;
+
+  const commit = (next) => { lsSet(REC_KEY, JSON.stringify(next)); setData({ records: next, demo: false }); };
+
+  const addRecord = (r) => {
+    if (!r.date) { setMsg("날짜를 골라 주세요."); return false; }
+    if (!r.gym) { setMsg("암장 이름을 적어 주세요."); return false; }
+    const base = demo ? [] : records;
+    const next = base.concat([Object.assign({ id: uid() }, r)]);
+    commit(next);
+    setMsg(grade(r.grade).name + " · " + (r.sent ? "완등" : "실패") + " 저장했습니다. (총 " + next.length + "건)");
+    return true;
+  };
+
+  const copyJson = () => {
+    const text = JSON.stringify(records, null, 2);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(
+        () => setMsg("기록 " + records.length + "건을 클립보드에 복사했습니다."),
+        () => setMsg("복사가 막혔습니다. 브라우저에서 직접 선택해 복사해 주세요.")
+      );
+    } else setMsg("이 브라우저에서는 복사를 지원하지 않습니다.");
+  };
+
+  return (
+    <div className="min-h-screen">
+      <header className="sticky z-30 bg-[var(--surface)] border-b border-[var(--line)]"
+        style={{ top: "env(safe-area-inset-top, 0px)" }}>
+        <div className="max-w-[940px] mx-auto px-4 pt-3.5 pb-2 flex items-center gap-3 flex-wrap">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="inline-flex items-center justify-center w-8 h-8 rounded-xl bg-[var(--neon-fill)] text-[var(--on-neon)] shrink-0">
+              <Mountain size={18} strokeWidth={2.75} />
+            </span>
+            <span className="text-[21px] font-black tracking-[-.035em] leading-none">완등 로그</span>
+          </div>
+          <p className="text-[12.5px] text-[var(--muted)] min-w-0 hidden sm:block">
+            주 2~3회 암장을 가는 사람의 난이도별 완등 기록
+          </p>
+          <button onClick={() => setDark(!dark)} aria-label={dark ? "라이트 모드로" : "다크 모드로"}
+            className="ml-auto shrink-0 inline-flex items-center justify-center w-10 h-10 rounded-xl border border-[var(--line)] bg-[var(--surface-2)] hover:border-[var(--ring)] transition">
+            {dark ? <Sun size={17} strokeWidth={2.5} /> : <Moon size={17} strokeWidth={2.5} />}
+          </button>
+        </div>
+        <nav className="max-w-[940px] mx-auto px-4 flex gap-1 scroll-x" role="tablist" aria-label="화면 이동">
+          {TABS.map((t) => {
+            const on = tab === t.id, Icon = t.icon;
+            return (
+              <button key={t.id} role="tab" aria-selected={on} onClick={() => setTab(t.id)}
+                className={"inline-flex items-center gap-1.5 px-3 pt-2 pb-2.5 text-[13.5px] font-bold whitespace-nowrap border-b-2 transition " +
+                  (on ? "border-[var(--neon-fill)] text-[var(--fg)]" : "border-transparent text-[var(--muted)] hover:text-[var(--fg)]")}>
+                <Icon size={15} strokeWidth={2.5} />{t.label}
+              </button>
+            );
+          })}
+        </nav>
+      </header>
+
+      <main className="max-w-[940px] mx-auto px-4 pt-5 pb-14 grid gap-4">
+        {tab === "log" && (
+          <>
+            {demo ? <WelcomeBanner onClear={() => { commit([]); setMsg("예시를 지웠습니다. 첫 기록을 남겨 보세요."); }} /> : null}
+            <QuickAdd gyms={gyms} onAdd={addRecord} feed={feed} msg={msg} setMsg={setMsg} />
+            <Card className="p-5 sm:p-6">
+              <SectionHead kicker="누적" title="내 기록" icon={Activity}
+                right={
+                  <button onClick={copyJson}
+                    className="inline-flex items-center gap-1.5 rounded-full px-3.5 py-2 text-[12.5px] font-bold border border-[var(--line)] bg-[var(--surface-2)] hover:border-[var(--ring)] transition">
+                    <Clipboard size={13} strokeWidth={2.5} />JSON 복사
+                  </button>
+                } />
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-5">
+                <StatCard kicker="방문" value={sessions.length} unit="회" icon={MapPin}
+                  foot={<span className="text-[11.5px] text-[var(--muted)]">날짜+암장 묶음</span>} />
+                <StatCard kicker="기록" value={total} unit="건" icon={Flame}
+                  foot={<span className="text-[11.5px] text-[var(--muted)]">완등 {send} · 실패 {total - send}</span>} />
+                <StatCard kicker="완등률" value={pct(send, total)} unit="%" icon={Trophy} accent="var(--send)"
+                  foot={<span className="text-[11.5px] text-[var(--muted)]">{total ? "전체 기록 기준" : "기록을 추가하면 계산됩니다"}</span>} />
+              </div>
+              <SessionList sessions={sessions} canDelete={!demo}
+                onDelete={(id) => {
+                  const gone = records.find((r) => r.id === id);
+                  if (gone && gone.videoKey) idbDel(gone.videoKey).catch(() => {});
+                  commit(records.filter((r) => r.id !== id));
+                }} />
+            </Card>
+          </>
+        )}
+
+        {tab === "stats" && (
+          <>
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+              <StatCard kicker="방문" value={sessions.length} unit="회" icon={MapPin}
+                foot={<span className="text-[11.5px] text-[var(--muted)]">기록이 있는 세션 수</span>} />
+              <StatCard kicker="기록" value={total} unit="건" icon={Flame}
+                foot={<span className="text-[11.5px] text-[var(--muted)]">완등 {send} · 실패 {total - send}</span>} />
+              <StatCard kicker="이번 달 완등률" value={last ? last.rate : 0} unit="%" icon={Trophy} accent="var(--send)"
+                foot={<Trend delta={delta} />} />
+              <StatCard kicker="최고 완등" value={best ? best.name : "—"} unit={best ? best.lv : ""} icon={Target} accent="var(--fail)"
+                foot={<span className="text-[11.5px] text-[var(--muted)]">{best ? "가장 높은 난이도 완등" : "완등 기록이 없습니다"}</span>} />
+            </div>
+
+            <Card railed className="p-5 sm:p-6">
+              <SectionHead kicker="성장 곡선" title="월별 완등 성공률" icon={TrendingUp} right="완등 ÷ 전체 기록 · 월 단위" />
+              <RateChart ms={monthly} />
+            </Card>
+
+            <Card className="p-5 sm:p-6">
+              <SectionHead kicker="볼륨" title="월별 기록 수" icon={Activity} />
+              <Legend />
+              <VolumeChart ms={monthly} />
+            </Card>
+
+            <Card className="p-5 sm:p-6">
+              <SectionHead kicker="난이도 분포" title="난이도별 완등과 실패" icon={Target} />
+              <Legend />
+              <GradeChart rows={gradeRows} />
+            </Card>
+
+            <Card className="p-5 sm:p-6">
+              <SectionHead kicker="같은 데이터, 표로" title="월별 집계표" icon={BookOpen} />
+              {!monthly.length ? <Empty>집계할 기록이 없습니다.</Empty> : (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-[13.5px]">
+                    <thead>
+                      <tr className="text-[11.5px] text-[var(--muted)] kick">
+                        {["월", "방문", "기록", "완등", "실패", "완등률"].map((h, i) => (
+                          <th key={h} className={"py-2 px-2.5 border-b border-[var(--line)] " + (i ? "text-right" : "text-left")}>{h}</th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {monthly.map((m) => (
+                        <tr key={m.key}>
+                          <td className="py-2 px-2.5 border-b border-[var(--line-soft)] num">{m.key}</td>
+                          {[m.visitCount, m.total, m.send, m.fail, m.rate + "%"].map((v, i) => (
+                            <td key={i} className="py-2 px-2.5 border-b border-[var(--line-soft)] num text-right">{v}</td>
+                          ))}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </Card>
+          </>
+        )}
+
+        {tab === "board" && <Board gyms={gyms} feed={feed} />}
+
+        {tab === "ref" && (
+          <>
+            <Card railed className="p-5 sm:p-6">
+              <SectionHead kicker="기준표" title="웨이브락 색상 단계" icon={Target} right="위가 쉽고 아래로 갈수록 어렵습니다" />
+              <p className="text-[13px] text-[var(--muted)] mb-4">
+                빨강 · 주황 · 노랑 · 초록 · 하늘 · 남색 · 보라 · 갈색 · 검정 · 흰색 순서입니다.
+                색 순서는 암장마다 다르므로, 기록에는 난이도와 함께 암장 이름이 항상 저장됩니다.
+              </p>
+              <div className="grid gap-1.5">
+                {GRADES.map((g) => (
+                  <div key={g.id} className="flex items-center gap-3 py-2 border-b border-[var(--line-soft)] last:border-0">
+                    <i className="swatch w-6 h-6 inline-block shrink-0" style={{ background: g.hex }} />
+                    <span className="font-extrabold text-[14px] min-w-[46px]">{g.name}</span>
+                    <span className="num text-[12.5px] text-[var(--muted)] font-bold min-w-[48px]">{g.lv}</span>
+                    <span className="text-[13px] text-[var(--muted)] min-w-0">{g.desc}</span>
+                  </div>
+                ))}
+              </div>
+            </Card>
+
+            <Card className="p-5 sm:p-6">
+              <SectionHead kicker="참고" title="V등급과 Font 등급" icon={BookOpen} />
+              <p className="text-[13px] text-[var(--muted)] mb-4">
+                국제적으로 쓰는 볼더링 등급 체계입니다. 어떤 색이 몇 V인지는 암장과 세팅에 따라 달라서
+                이 앱은 색상 단계와 V등급을 연결하지 않습니다. 다른 암장이나 해외 자료를 볼 때 참고하세요.
+              </p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-[13px]">
+                  <thead>
+                    <tr>
+                      <th className="text-left py-2 px-2.5 border-b border-[var(--line)] text-[11.5px] text-[var(--muted)] kick">V등급</th>
+                      {VFONT.map((x) => <th key={x[0]} className="num py-2 px-2.5 border-b border-[var(--line)] text-right font-bold">{x[0]}</th>)}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td className="py-2 px-2.5 text-[11.5px] text-[var(--muted)] kick">Font</td>
+                      {VFONT.map((x) => <td key={x[0]} className="num py-2 px-2.5 text-right">{x[1]}</td>)}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+
+            <Card className="p-5 sm:p-6">
+              <SectionHead kicker="용어" title="기록에 쓰는 말" icon={BookOpen} />
+              <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 text-[13.5px]">
+                {[
+                  ["완등", "출발 홀드에서 시작해 마지막 홀드를 두 손으로 잡고 버틴 상태. 이 앱의 성공률 분자입니다."],
+                  ["실패", "그 세션에서 끝내지 못하고 내려온 문제. 기록해야 성공률이 의미를 가집니다."],
+                  ["시도 횟수", "그 문제를 붙잡은 횟수. 1이면 플래시에 가깝고, 숫자가 크면 난이도가 몸에 맞지 않는다는 신호입니다."],
+                  ["세션", "같은 날 같은 암장에서 남긴 기록 묶음. 방문 횟수는 세션 수로 셉니다."]
+                ].map(([k, v]) => (
+                  <React.Fragment key={k}>
+                    <dt className="font-extrabold whitespace-nowrap">{k}</dt>
+                    <dd className="m-0 text-[var(--muted)]">{v}</dd>
+                  </React.Fragment>
+                ))}
+              </dl>
+            </Card>
+
+            <Card className="p-5 sm:p-6">
+              <SectionHead kicker="데이터" title="저장되는 곳" icon={Activity} />
+              <p className="text-[13.5px] text-[var(--muted)]">
+                완등 기록은 이 브라우저 안에만 저장됩니다. 다른 기기나 다른 사람에게 넘어가지 않고,
+                기록 탭의 <b className="text-[var(--fg)]">JSON 복사</b>로 언제든 내보낼 수 있습니다.
+                팁 게시판 글은 이 앱을 함께 여는 사람들과 공유됩니다.
+              </p>
+            </Card>
+          </>
+        )}
+
+        <p className="text-center text-[12px] text-[var(--muted)] mt-2">
+          완등 로그 · 난이도와 완등 여부만으로 성장을 확인하는 기록 앱
+        </p>
+      </main>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
