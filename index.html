@@ -43,25 +43,25 @@
   nav.site .brand{font-weight:700; letter-spacing:.02em; display:flex; align-items:center; gap:10px; white-space:nowrap}
   nav.site .brand::before{content:""; width:9px; height:9px; border-radius:50%; background:var(--accent); box-shadow:0 0 12px var(--accent)}
   nav.site ul{list-style:none; display:flex; gap:4px; margin:0 auto 0 0; padding:0; font-size:14px}
-  nav.site ul a{display:block; padding:6px 11px; border-radius:100px; color:var(--text-dim); white-space:nowrap; transition:color .2s,background .2s}
+  nav.site ul a{display:block; padding:9px 12px; border-radius:100px; color:var(--text-dim); white-space:nowrap; transition:color .2s,background .2s}
   nav.site ul a:hover{color:var(--accent); background:var(--accent-dim); text-decoration:none}
   .nav-cta{
-    font-size:13px; font-weight:600; color:#04100e; background:var(--accent); padding:7px 16px; border-radius:100px;
+    font-size:13px; font-weight:600; color:#04100e; background:var(--accent); padding:0 18px; min-height:40px; display:inline-flex; align-items:center; border-radius:100px;
     white-space:nowrap; transition:box-shadow .2s,translate .2s;
   }
   .nav-cta:hover{text-decoration:none; box-shadow:0 6px 20px -4px var(--accent-glow); translate:0 -1px}
 
   /* ---------- typography / sections ---------- */
-  section{padding:64px 0; scroll-margin-top:56px}
+  section{padding:72px 0; scroll-margin-top:56px}
   section:first-of-type{padding-top:80px}
   h1{font-size:clamp(28px,5vw,44px); line-height:1.25; margin:0 0 14px; letter-spacing:-.015em}
   h1 em{font-style:normal; background:linear-gradient(90deg,var(--accent),#7cc4ff); -webkit-background-clip:text; background-clip:text; color:transparent}
   h2{font-size:26px; margin:0 0 10px; letter-spacing:-.01em}
-  h2.sub{margin-top:44px; font-size:18px}
+  h2.sub{margin-top:52px; font-size:18px}
   .section-head{margin-bottom:6px}
   .kicker{color:var(--accent); font-family:var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase}
   .kicker::before{content:"// "; opacity:.55}
-  p{color:var(--text-dim); margin:0 0 14px}
+  p{color:var(--text-dim); margin:0 0 18px}
   .lede{color:var(--text); font-size:17.5px}
   .lede b{color:var(--accent); font-weight:600}
 
@@ -110,13 +110,19 @@
   /* ---------- projects ---------- */
   .proj{margin-bottom:44px; padding-bottom:44px; border-bottom:1px solid rgba(255,255,255,.08)}
   #p10{margin-bottom:36px; padding-bottom:0; border-bottom:0}
-  .proj-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 16px; margin-bottom:6px}
+  .proj-head{display:flex; flex-wrap:wrap; align-items:center; gap:4px 16px; margin-bottom:6px}
+  .proj-head h3 a{color:inherit}
+  .proj-head h3 a:hover{color:var(--accent); text-decoration:none}
+  .proj-links a{display:inline-flex; align-items:center; min-height:44px; padding:0 18px; border:1px solid var(--accent-line); border-radius:100px; transition:background .2s}
+  .proj-links a:hover{background:var(--accent-dim); text-decoration:none}
+  .tldr{margin:14px 0 22px; padding:12px 16px; border-left:3px solid var(--accent); border-radius:0 10px 10px 0; color:var(--text); font-size:16.5px; font-weight:600; line-height:1.6; background:linear-gradient(90deg,rgba(94,234,212,.09),transparent 80%)}
+  .proj p{line-height:1.8}
   .proj-head h3{margin:0; font-size:20px; line-height:1.4; color:var(--text)}
   .proj-links{font-family:var(--mono); font-size:13px}
   .proj-stack{color:var(--text-dim); font-size:13px; font-family:var(--mono); margin:2px 0 16px; line-height:1.6}
 
   /* ---------- tables ---------- */
-  .table-wrap{margin:18px 0 22px; overflow-x:auto}
+  .table-wrap{margin:22px 0 28px; overflow-x:auto}
   table{width:100%; border-collapse:separate; border-spacing:0; font-size:14px}
   th,td{text-align:left; padding:13px 16px; vertical-align:top; line-height:1.6}
   th{
@@ -142,8 +148,8 @@
   }
 
   /* ---------- lists ---------- */
-  ul.tick{list-style:none; padding:0; margin:0 0 16px}
-  ul.tick li{position:relative; padding-left:22px; margin-bottom:11px; font-size:14.5px; color:var(--text-dim)}
+  ul.tick{list-style:none; padding:0; margin:0 0 22px}
+  ul.tick li{position:relative; padding-left:22px; margin-bottom:14px; font-size:14.5px; color:var(--text-dim)}
   ul.tick li::before{content:""; position:absolute; left:0; top:.78em; width:10px; height:2px; background:var(--accent); border-radius:2px}
   ul.tick li b{color:var(--text)}
 
@@ -190,6 +196,12 @@
   .roadmap .no::after{content:""; display:inline-block; width:28px; height:1px; background:var(--accent-line); vertical-align:middle; margin-left:10px}
 
   .caption{font-size:12.5px; color:var(--text-dim); margin-top:6px}
+
+  /* ---------- 카드 전체를 누를 수 있는 링크(stretched link) ---------- */
+  .card{position:relative}
+  .card .meta a::after,.otherlist .card a.idx::after{content:""; position:absolute; inset:0; border-radius:var(--radius)}
+  .card:has(.meta a),.card:has(a.idx){cursor:pointer}
+  footer a{display:inline-block; padding:8px 2px}
 
   /* ---------- highlights / why / troubleshooting / architecture ---------- */
   .hl{margin:14px 0 6px}
@@ -450,10 +462,11 @@
 
     <div class="proj" id="p7">
       <div class="proj-head">
-        <h3>과제 7 · 플랜두씨 다이어리 2 — 인증과 격리</h3>
+        <h3><a href="https://aleph-pds-auth.vercel.app" target="_blank" rel="noopener">과제 7 · 플랜두씨 다이어리 2 — 인증과 격리</a></h3>
         <span class="proj-links"><a href="https://aleph-pds-auth.vercel.app" target="_blank" rel="noopener">배포 주소 ↗</a></span>
       </div>
       <div class="proj-stack">2026-09-02 ~ 09-08 · React · Vite · Supabase Auth · PostgreSQL RLS · Vercel</div>
+      <p class="tldr">로그아웃 후에도 통하던 토큰을 DB 정책으로 막고, 자동 검사 40/40을 통과했습니다.</p>
       <p>로그아웃한 토큰이 계속 통한다는 JWT의 구조적 약점을 자동 검사로 발견해 DB 정책으로 막았고, 최종 자동 검사 40/40을 통과했습니다. Supabase는 브라우저가 DB REST API를 직접 호출해 공개 키가 번들에 그대로 드러나므로, 계정 간 격리(IDOR)를 화면이 아니라 DB 정책으로 강제했습니다.</p>
       <div class="flow" role="img" aria-label="과제 7 요청 흐름: React 앱에서 Supabase Auth·REST를 거쳐 PostgreSQL RLS가 소유자와 세션 생존을 검사">
         <div class="node"><i>Client</i><b>React + Vite 앱</b><span>공개 키(anon key)만 번들에 포함</span></div>
@@ -482,10 +495,11 @@
 
     <div class="proj" id="p8">
       <div class="proj-head">
-        <h3>과제 8 · 내 소개 페이지에 패스키 달기</h3>
+        <h3><a href="https://aleph-passkey.vercel.app" target="_blank" rel="noopener">과제 8 · 내 소개 페이지에 패스키 달기</a></h3>
         <span class="proj-links"><a href="https://aleph-passkey.vercel.app" target="_blank" rel="noopener">배포 주소 ↗</a></span>
       </div>
       <div class="proj-stack">2026-09-03 ~ 09-09 · WebAuthn/FIDO2 · SimpleWebAuthn · Vercel Serverless · Neon Postgres</div>
+      <p class="tldr">비밀번호 없는 패스키 로그인을 만들고, 삭제 경합과 계정 무한 생성 결함을 재현해 고쳐 43/43을 통과했습니다.</p>
       <p>비밀번호 없이 패스키로만 여는 비공개 영역을 만들고, 실사용 중 발견한 삭제 경합과 계정 무한 생성 결함을 재현해 고친 뒤 회귀 검사로 남겼습니다. 최종 자동 검사는 43/43 통과입니다. 패스키가 유일한 자격증명이라 과제 7의 토큰 재사용 문제를 반복하지 않도록 처음부터 JWT 대신 서버 세션 테이블을 택했습니다.</p>
       <div class="flow" role="img" aria-label="과제 8 요청 흐름: 브라우저의 WebAuthn 패스키가 Vercel 서버리스 함수에서 속도 제한과 challenge 검증을 거쳐 Neon Postgres 세션 테이블에 기록">
         <div class="node"><i>Client</i><b>브라우저 · WebAuthn</b><span>비밀번호 없이 패스키로만 로그인</span></div>
@@ -516,6 +530,7 @@
         <h3>과제 10 · 논문 — 동기화 패스키의 백업 상태 전이는 서비스에 관측되는가</h3>
       </div>
       <div class="proj-stack">2026-09-10 · Chrome DevTools Protocol 가상 authenticator · Node.js 측정 스크립트 · 오픈소스 코드 리뷰</div>
+      <p class="tldr">백업 상태(BS) 신호가 서비스에서 버려지는 지점을 40회 반복 측정으로 입증하고, 논문 1편과 재현 패키지로 남겼습니다.</p>
       <p>패스키 시스템이 "자격증명이 클라우드로 넘어갔다"는 신호(BS 플래그)를 받고도 버리고 있음을 40회 반복 측정으로 입증했고, 신호가 사라지는 지점이 라이브러리가 아니라 그것을 쓰는 응용 쪽임을 소스 조사로 밝혔습니다. 산출물은 논문 1편(표 23개·그림 2개·참고문헌 21건)과 재현 패키지입니다.</p>
       <div class="table-wrap">
       <table class="stack">
@@ -555,6 +570,7 @@
   <section id="florography" class="reveal">
     <div class="section-head"><span class="kicker">Team Project</span></div>
     <h2>Florography · 정서 케어 플랫폼</h2>
+    <p class="tldr">Spring Security 기반 JWT 무상태 인증과 Google·Kakao·Naver OAuth2 로그인을 맡아 구현했습니다.</p>
     <p>과제 밖에서 진행한 팀 프로젝트입니다. 감정 저널링과 가드닝을 결합해, 감정을 담은 편지를 쓰면 정원에 꽃이 자라는 방식으로 기록을 시각화하는 정서 케어 웹 서비스를 만들었습니다. React 프론트엔드와 Spring Boot 백엔드로 나뉜 풀스택 구조입니다.</p>
     <div class="badge-row">
       <span class="badge b-soft">React 19</span><span class="badge b-soft">Vite</span><span class="badge b-soft">Zustand</span><span class="badge b-soft">TanStack Query</span><span class="badge b-soft">Emotion</span>
@@ -582,7 +598,11 @@
     <ul class="tick">
       <li><b>협업:</b> GitHub Flow(기능 브랜치 → PR → 최소 1인 리뷰 승인 후 병합, 셀프 머지 금지)와 Conventional Commits 규칙을 따랐고, GitHub Actions로 CI를 구성했습니다.</li>
     </ul>
-    <p>레포: <a href="https://github.com/Florography/florography-web" target="_blank" rel="noopener">florography-web</a> · <a href="https://github.com/Florography/florography-api" target="_blank" rel="noopener">florography-api</a></p>
+    <div class="contact-row" style="margin-top:6px">
+      <span class="contact-label">Repo</span>
+      <a class="btn" href="https://github.com/Florography/florography-web" target="_blank" rel="noopener">florography-web ↗</a>
+      <a class="btn" href="https://github.com/Florography/florography-api" target="_blank" rel="noopener">florography-api ↗</a>
+    </div>
   </section>
 
   <section id="other" class="reveal">
