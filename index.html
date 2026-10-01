@@ -5,126 +5,238 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>진혜정 · 보안 엔지니어 포트폴리오</title>
 <meta name="description" content="인증·접근통제를 설계하고 자동 검사로 검증하는 보안 엔지니어 진혜정의 포트폴리오">
+<script>document.documentElement.classList.add('js');</script>
 <style>
   :root{
-    --bg:#0a0d10; --bg2:#10151a; --panel:#12181f; --border:#232b33;
-    --text:#e9edf1; --text-dim:#9aa7b2; --accent:#5eead4; --accent-dim:#2b3e3c;
+    --bg:#080b0e; --bg2:#0e1318; --panel:#12181f; --border:#232b33;
+    --glass:linear-gradient(145deg,rgba(255,255,255,.055),rgba(255,255,255,.015));
+    --glass-line:rgba(255,255,255,.09);
+    --text:#e9edf1; --text-dim:#a0acb7; --accent:#5eead4; --accent-dim:rgba(94,234,212,.12);
+    --accent-line:rgba(94,234,212,.45); --accent-glow:rgba(94,234,212,.22);
     --mono:'SFMono-Regular',Consolas,'Liberation Mono',Menlo,monospace;
     --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Pretendard,Roboto,'Noto Sans KR',sans-serif;
-    --radius:10px;
-    --maxw:920px;
+    --radius:12px;
+    --maxw:960px;
   }
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
   body{
-    margin:0; background:var(--bg); color:var(--text); font-family:var(--sans);
-    line-height:1.65; -webkit-font-smoothing:antialiased;
+    margin:0; color:var(--text); font-family:var(--sans); line-height:1.7; -webkit-font-smoothing:antialiased;
+    word-break:keep-all; overflow-wrap:break-word;
+    background:
+      radial-gradient(900px 480px at 85% -120px,rgba(94,234,212,.10),transparent 70%),
+      radial-gradient(700px 400px at -10% 30%,rgba(124,196,255,.05),transparent 70%),
+      var(--bg);
+    background-repeat:no-repeat;
   }
   a{color:var(--accent); text-decoration:none}
   a:hover{text-decoration:underline}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--accent); outline-offset:3px; border-radius:6px}
   .wrap{max-width:var(--maxw); margin:0 auto; padding:0 24px}
+
+  /* ---------- header ---------- */
   header.site{
-    position:sticky; top:0; z-index:10; backdrop-filter:blur(10px);
-    background:rgba(10,13,16,.85); border-bottom:1px solid var(--border);
+    position:sticky; top:0; z-index:10; backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px);
+    background:rgba(8,11,14,.78); border-bottom:1px solid var(--glass-line);
   }
-  nav.site{display:flex; align-items:center; justify-content:space-between; max-width:var(--maxw); margin:0 auto; padding:14px 24px}
-  nav.site .brand{font-weight:700; letter-spacing:.02em}
-  nav.site ul{list-style:none; display:flex; flex-wrap:wrap; gap:10px 20px; margin:0; padding:0; font-size:14px; justify-content:flex-end}
-  nav.site ul a{color:var(--text-dim)}
-  nav.site ul a:hover{color:var(--accent); text-decoration:none}
+  nav.site{display:flex; align-items:center; gap:12px 24px; max-width:var(--maxw); margin:0 auto; padding:12px 24px}
+  nav.site .brand{font-weight:700; letter-spacing:.02em; display:flex; align-items:center; gap:10px; white-space:nowrap}
+  nav.site .brand::before{content:""; width:9px; height:9px; border-radius:50%; background:var(--accent); box-shadow:0 0 12px var(--accent)}
+  nav.site ul{list-style:none; display:flex; gap:4px; margin:0 auto 0 0; padding:0; font-size:14px}
+  nav.site ul a{display:block; padding:6px 11px; border-radius:100px; color:var(--text-dim); white-space:nowrap; transition:color .2s,background .2s}
+  nav.site ul a:hover{color:var(--accent); background:var(--accent-dim); text-decoration:none}
+  .nav-cta{
+    font-size:13px; font-weight:600; color:#04100e; background:var(--accent); padding:7px 16px; border-radius:100px;
+    white-space:nowrap; transition:box-shadow .2s,translate .2s;
+  }
+  .nav-cta:hover{text-decoration:none; box-shadow:0 6px 20px -4px var(--accent-glow); translate:0 -1px}
 
-  section{padding:64px 0}
-  section:first-of-type{padding-top:72px}
-  h1{font-size:clamp(28px,5vw,42px); margin:0 0 10px; letter-spacing:-.01em}
-  h2{font-size:24px; margin:0 0 8px; padding-top:8px; border-top:1px solid var(--border); padding-top:0; border:none}
-  .section-head{display:flex; align-items:baseline; gap:10px; margin-bottom:28px}
-  .section-head h2{margin:0}
-  .kicker{color:var(--accent); font-family:var(--mono); font-size:12px; letter-spacing:.08em; text-transform:uppercase}
+  /* ---------- typography / sections ---------- */
+  section{padding:64px 0; scroll-margin-top:56px}
+  section:first-of-type{padding-top:80px}
+  h1{font-size:clamp(28px,5vw,44px); line-height:1.25; margin:0 0 14px; letter-spacing:-.015em}
+  h1 em{font-style:normal; background:linear-gradient(90deg,var(--accent),#7cc4ff); -webkit-background-clip:text; background-clip:text; color:transparent}
+  h2{font-size:26px; margin:0 0 10px; letter-spacing:-.01em}
+  h2.sub{margin-top:44px; font-size:18px}
+  .section-head{margin-bottom:6px}
+  .kicker{color:var(--accent); font-family:var(--mono); font-size:12px; letter-spacing:.1em; text-transform:uppercase}
+  .kicker::before{content:"// "; opacity:.55}
   p{color:var(--text-dim); margin:0 0 14px}
-  .lede{color:var(--text); font-size:17px}
+  .lede{color:var(--text); font-size:17.5px}
+  .lede b{color:var(--accent); font-weight:600}
 
-  .badge-row{display:flex; flex-wrap:wrap; gap:8px; margin:16px 0}
+  /* ---------- badges ---------- */
+  .badge-row{display:flex; flex-wrap:wrap; gap:8px 8px; margin:16px 0}
   .badge{
-    font-family:var(--mono); font-size:12.5px; color:var(--accent); background:var(--accent-dim);
-    border:1px solid #315451; padding:4px 10px; border-radius:100px;
+    --c:94,234,212;
+    font-family:var(--mono); font-size:12.5px; line-height:1.4; color:rgb(var(--c));
+    background:rgba(var(--c),.10); border:1px solid rgba(var(--c),.30);
+    padding:5px 12px; border-radius:100px; white-space:nowrap;
+    transition:background .2s,border-color .2s;
+  }
+  .badge:hover{background:rgba(var(--c),.18); border-color:rgba(var(--c),.6)}
+  .b-blue{--c:124,196,255}
+  .b-amber{--c:252,211,77}
+  .b-violet{--c:196,181,253}
+  .b-gray{--c:176,188,199}
+
+  /* ---------- glass surfaces (card / stat / table / diagram) ---------- */
+  .card,.stat,.table-wrap,.quote,.role{
+    background:var(--glass); border:1px solid var(--glass-line); border-radius:var(--radius);
+    backdrop-filter:blur(8px); -webkit-backdrop-filter:blur(8px);
+    box-shadow:0 1px 0 rgba(255,255,255,.05) inset,0 12px 30px -22px rgba(0,0,0,.9);
+    transition:translate .25s ease,border-color .25s ease,box-shadow .25s ease;
+  }
+  .card:hover,.stat:hover,.table-wrap:hover,.role:hover{
+    translate:0 -2px; border-color:var(--accent-line);
+    box-shadow:0 1px 0 rgba(255,255,255,.07) inset,0 18px 36px -20px var(--accent-glow);
   }
 
-  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
-  .grid2{display:grid; grid-template-columns:1fr 1fr; gap:16px}
-  @media (max-width:720px){ .grid3{grid-template-columns:1fr} .grid2{grid-template-columns:1fr} }
+  .grid3{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px}
+  .grid2{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px}
+  @media (max-width:760px){ .grid3,.grid2{grid-template-columns:1fr} }
 
-  .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius); padding:20px}
-  .card h3{margin:0 0 8px; font-size:15px; color:var(--text)}
+  .card{padding:20px 22px}
+  .card h3{margin:0 0 8px; font-size:15.5px; line-height:1.45; color:var(--text)}
   .card .meta{font-family:var(--mono); font-size:12px; color:var(--accent); margin-bottom:8px}
   .card p{margin:0; font-size:14px}
+  .card .badge-row{margin:12px 0 0}
 
-  .proj{margin-bottom:56px}
-  .proj-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:10px 16px; margin-bottom:6px}
-  .proj-head h3{margin:0; font-size:20px; color:var(--text)}
+  /* ---------- projects ---------- */
+  .proj{margin-bottom:60px}
+  .proj-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 16px; margin-bottom:6px}
+  .proj-head h3{margin:0; font-size:20px; line-height:1.4; color:var(--text)}
   .proj-links{font-family:var(--mono); font-size:13px}
-  .proj-stack{color:var(--text-dim); font-size:13px; font-family:var(--mono); margin:2px 0 16px}
+  .proj-stack{color:var(--text-dim); font-size:13px; font-family:var(--mono); margin:2px 0 16px; line-height:1.6}
 
-  table{width:100%; border-collapse:collapse; margin:16px 0 20px; font-size:13.5px}
-  th,td{text-align:left; padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:top}
-  th{color:var(--accent); font-weight:600; font-size:12px; text-transform:uppercase; letter-spacing:.04em; font-family:var(--mono)}
-  td{color:var(--text-dim)}
-  .table-wrap{overflow-x:auto}
+  /* ---------- tables ---------- */
+  .table-wrap{margin:18px 0 22px; overflow-x:auto}
+  table{width:100%; border-collapse:separate; border-spacing:0; font-size:14px}
+  th,td{text-align:left; padding:13px 16px; vertical-align:top; line-height:1.6}
+  th{
+    color:var(--accent); font-weight:600; font-size:11.5px; text-transform:uppercase; letter-spacing:.06em; font-family:var(--mono);
+    background:rgba(94,234,212,.06); border-bottom:1px solid var(--accent-line); white-space:nowrap;
+  }
+  td{color:var(--text-dim); border-bottom:1px solid rgba(255,255,255,.07); word-break:keep-all; overflow-wrap:anywhere}
+  td:first-child{color:var(--text)}
+  tbody tr:last-child td{border-bottom:0}
+  tbody tr{transition:background .2s}
+  tbody tr:hover{background:rgba(94,234,212,.045)}
 
+  @media (max-width:720px){
+    table.stack,table.stack tbody,table.stack tr,table.stack td{display:block}
+    table.stack thead{position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0)}
+    table.stack tr{padding:14px 16px; border-bottom:1px solid rgba(255,255,255,.09)}
+    table.stack tbody tr:last-child{border-bottom:0}
+    table.stack td{padding:5px 0; border:0; font-size:14px}
+    table.stack td::before{
+      content:attr(data-label); display:block; font-family:var(--mono); font-size:11px; letter-spacing:.06em;
+      text-transform:uppercase; color:var(--accent); opacity:.85; margin-bottom:1px;
+    }
+  }
+
+  /* ---------- lists ---------- */
   ul.tick{list-style:none; padding:0; margin:0 0 16px}
-  ul.tick li{position:relative; padding-left:20px; margin-bottom:10px; font-size:14px; color:var(--text-dim)}
-  ul.tick li::before{content:"—"; position:absolute; left:0; color:var(--accent)}
+  ul.tick li{position:relative; padding-left:22px; margin-bottom:11px; font-size:14.5px; color:var(--text-dim)}
+  ul.tick li::before{content:""; position:absolute; left:0; top:.78em; width:10px; height:2px; background:var(--accent); border-radius:2px}
   ul.tick li b{color:var(--text)}
 
-  .stat-row{display:flex; flex-wrap:wrap; gap:14px; margin:18px 0 8px}
-  .stat{background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:14px 18px; min-width:120px}
-  .stat .n{font-family:var(--mono); font-size:22px; color:var(--accent); font-weight:700}
-  .stat .l{font-size:12px; color:var(--text-dim); margin-top:2px}
+  /* ---------- hero: stats & contact ---------- */
+  .stat-row{display:flex; flex-wrap:wrap; gap:14px; margin:22px 0 8px}
+  .stat{padding:14px 20px; min-width:130px}
+  .stat .n{font-family:var(--mono); font-size:24px; color:var(--accent); font-weight:700; line-height:1.3}
+  .stat .l{font-size:12.5px; color:var(--text-dim); margin-top:2px}
 
-  .quote{border-left:2px solid var(--accent); padding:4px 0 4px 16px; color:var(--text); font-style:italic; margin:24px 0}
+  .contact-row{display:flex; flex-wrap:wrap; align-items:center; gap:10px 12px; margin:20px 0 0}
+  .contact-label{font-family:var(--mono); font-size:12px; color:var(--text-dim); letter-spacing:.08em; text-transform:uppercase; margin-right:4px}
+  .btn{
+    display:inline-flex; align-items:center; gap:9px; min-height:44px; padding:10px 18px; border-radius:100px;
+    font-size:14px; font-weight:600; color:var(--text); background:var(--glass); border:1px solid var(--glass-line);
+    transition:translate .2s,border-color .2s,box-shadow .2s,color .2s;
+  }
+  .btn svg{width:18px; height:18px; flex:none}
+  .btn:hover{text-decoration:none; translate:0 -2px; border-color:var(--accent-line); color:var(--accent); box-shadow:0 12px 26px -14px var(--accent-glow)}
+  .btn.primary{background:var(--accent); border-color:var(--accent); color:#04100e}
+  .btn.primary:hover{color:#04100e; box-shadow:0 12px 26px -10px var(--accent-glow)}
 
-  .otherlist{display:grid; grid-template-columns:1fr 1fr; gap:14px}
-  @media (max-width:720px){ .otherlist{grid-template-columns:1fr} }
+  /* ---------- misc blocks ---------- */
+  .quote{border-left:3px solid var(--accent); padding:14px 18px; color:var(--text); font-style:italic; margin:26px 0}
+  .quote:hover{translate:0 0}
+
+  .role{padding:20px 22px; margin:20px 0; border-color:var(--accent-line); background:linear-gradient(145deg,rgba(94,234,212,.09),rgba(94,234,212,.02))}
+  .role .meta{font-family:var(--mono); font-size:12px; color:var(--accent); letter-spacing:.08em; text-transform:uppercase; margin-bottom:10px}
+  .role ul.tick{margin:0}
+  .role ul.tick li:last-child{margin-bottom:0}
+  .role ul.tick li{font-size:15px}
+
+  .otherlist{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px}
+  @media (max-width:760px){ .otherlist{grid-template-columns:1fr} }
   .otherlist .card h3{display:flex; justify-content:space-between; gap:8px}
   .otherlist .card .idx{color:var(--accent); font-family:var(--mono)}
 
-  footer{padding:48px 0 80px; border-top:1px solid var(--border); margin-top:40px}
-  footer p{font-size:13px}
+  .wg .card h3{display:flex; align-items:center; gap:8px; margin:0}
+  .wg .card h3 i{font-style:normal; font-family:var(--mono); font-size:11px; color:var(--accent); border:1px solid var(--accent-line); border-radius:6px; padding:1px 7px; letter-spacing:.06em}
 
-  .diagram{background:var(--bg2); border:1px solid var(--border); border-radius:var(--radius); padding:20px; margin:20px 0; font-family:var(--mono); font-size:13px; color:var(--text-dim); overflow-x:auto; white-space:pre}
-  .caption{font-size:12px; color:var(--text-dim); margin-top:6px}
+  .roadmap{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; margin:20px 0 0}
+  @media (max-width:760px){ .roadmap{grid-template-columns:1fr} }
+  .roadmap .card{position:relative; padding-top:46px}
+  .roadmap .no{position:absolute; top:16px; left:22px; font-family:var(--mono); font-size:13px; color:var(--accent); letter-spacing:.08em}
+  .roadmap .no::after{content:""; display:inline-block; width:28px; height:1px; background:var(--accent-line); vertical-align:middle; margin-left:10px}
 
-  @media (max-width:640px){
-    nav.site{flex-direction:column; align-items:flex-start; gap:8px}
-    nav.site ul{justify-content:flex-start; font-size:13px}
+  .caption{font-size:12.5px; color:var(--text-dim); margin-top:6px}
+
+  footer{padding:48px 0 80px; border-top:1px solid var(--glass-line); margin-top:40px}
+  footer .wrap{display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px 24px}
+  footer p{font-size:13.5px; margin:0}
+
+  /* ---------- responsive header ---------- */
+  @media (max-width:820px){
+    nav.site{flex-wrap:wrap; padding:10px 20px 8px}
+    nav.site .brand{flex:1}
+    nav.site ul{order:3; width:100%; margin:0 -4px; overflow-x:auto; flex-wrap:nowrap; padding-bottom:4px; scrollbar-width:none; font-size:13.5px}
+    nav.site ul::-webkit-scrollbar{display:none}
+    section{scroll-margin-top:88px}
+  }
+  @media (max-width:480px){
+    .wrap{padding:0 18px}
+    section{padding:48px 0}
+    section:first-of-type{padding-top:56px}
+    .stat{flex:1 1 calc(50% - 7px); min-width:0}
+    .contact-label{width:100%}
+    .btn{flex:1 1 auto; justify-content:center}
   }
 
-  /* entrance animation */
+  /* ---------- entrance animation ---------- */
   @media (prefers-reduced-motion: no-preference){
     header.site{opacity:0; animation:fadeSlideUp .5s ease-out forwards}
-    .reveal{opacity:0; transform:translateY(18px)}
-    .reveal.in{animation:fadeSlideUp .7s cubic-bezier(.16,.8,.24,1) forwards}
+    .js .reveal{opacity:0; transform:translateY(18px)}
+    .js .reveal.in{animation:fadeSlideUp .7s cubic-bezier(.16,.8,.24,1) forwards}
     #about .kicker{opacity:0; animation:fadeSlideUp .5s ease-out .05s forwards}
     #about h1{opacity:0; animation:fadeSlideUp .6s ease-out .12s forwards}
     #about .lede{opacity:0; animation:fadeSlideUp .6s ease-out .2s forwards}
     #about > p:nth-of-type(2){opacity:0; animation:fadeSlideUp .6s ease-out .28s forwards}
     #about .stat-row{opacity:0; animation:fadeSlideUp .6s ease-out .36s forwards}
-    .grid3.reveal.in .card:nth-child(1),.otherlist.reveal.in .card:nth-child(1){animation-delay:0s}
-    .grid3.reveal.in .card:nth-child(2),.otherlist.reveal.in .card:nth-child(2){animation-delay:.08s}
-    .grid3.reveal.in .card:nth-child(3),.otherlist.reveal.in .card:nth-child(3){animation-delay:.16s}
-    .otherlist.reveal.in .card:nth-child(4){animation-delay:.24s}
-    .otherlist.reveal.in .card:nth-child(5){animation-delay:.32s}
-    .otherlist.reveal.in .card:nth-child(6){animation-delay:.4s}
-    .otherlist.reveal.in .card:nth-child(7){animation-delay:.48s}
-    .grid3.reveal .card,.otherlist.reveal .card{opacity:0; transform:translateY(14px)}
-    .grid3.reveal.in .card,.otherlist.reveal.in .card{animation:fadeSlideUp .6s cubic-bezier(.16,.8,.24,1) forwards}
+    #about .contact-row{opacity:0; animation:fadeSlideUp .6s ease-out .44s forwards}
+    .js .grid3.reveal .card,.js .otherlist.reveal .card,.js .roadmap.reveal .card{opacity:0; transform:translateY(14px)}
+    .js .grid3.reveal.in .card,.js .otherlist.reveal.in .card,.js .roadmap.reveal.in .card{animation:fadeSlideUp .6s cubic-bezier(.16,.8,.24,1) forwards}
+    .reveal.in .card:nth-child(2){animation-delay:.08s}
+    .reveal.in .card:nth-child(3){animation-delay:.16s}
+    .reveal.in .card:nth-child(4){animation-delay:.24s}
+    .reveal.in .card:nth-child(5){animation-delay:.32s}
+    .reveal.in .card:nth-child(6){animation-delay:.4s}
+    .reveal.in .card:nth-child(7){animation-delay:.48s}
   }
   @keyframes fadeSlideUp{to{opacity:1; transform:translateY(0)}}
+  @media (prefers-reduced-motion: reduce){
+    html{scroll-behavior:auto}
+    .card,.stat,.table-wrap,.role,.btn,.nav-cta{transition:none}
+  }
 </style>
 </head>
 <body>
 
 <header class="site">
-  <nav class="site">
+  <nav class="site" aria-label="주요 메뉴">
     <div class="brand">진혜정</div>
     <ul>
       <li><a href="#about">소개</a></li>
@@ -132,7 +244,9 @@
       <li><a href="#work">대표 프로젝트</a></li>
       <li><a href="#florography">Florography</a></li>
       <li><a href="#other">그 밖의 과제</a></li>
+      <li><a href="#next">로드맵</a></li>
     </ul>
+    <a class="nav-cta" href="mailto:bisjiness@gmail.com">Contact</a>
   </nav>
 </header>
 
@@ -140,14 +254,25 @@
 
   <section id="about">
     <span class="kicker">Portfolio · 2026</span>
-    <h1>보안 엔지니어를 준비하는 진혜정입니다.</h1>
-    <p class="lede">인증·인가 구조를 직접 만들고, 무너뜨려 보고, "막았습니다"라는 말 대신 <b style="color:var(--text)">막히는 장면</b>으로 증명하는 일을 반복해 왔습니다.</p>
+    <h1><em>보안 엔지니어</em>를 준비하는 진혜정입니다.</h1>
+    <p class="lede">인증·인가 구조를 직접 만들고, 무너뜨려 보고, "막았습니다"라는 말 대신 <b>막히는 장면</b>으로 증명하는 일을 반복해 왔습니다.</p>
     <p>게임, 제작 도구, 정보판에서 출발해 인증(Supabase Auth·RLS), 패스키(WebAuthn), 패스키 보안에 관한 실증 논문, 그리고 그 논문을 실제로 쓰는 진단 앱과 자기소개 사이트까지 총 13개 과제를 거치며 한 걸음씩 보안 쪽으로 깊어졌습니다. 모든 과제에 자동 검사 스크립트, 공개 배포 주소, 재현 명령을 함께 남겼고, 검사가 실패한 기록도 지우지 않았습니다.</p>
     <p>부당한 상황에서도 감정적으로 반응하지 않고 원인을 끝까지 추적하는 침착함, 흔들려도 하루 안에 제자리로 돌아오는 회복력이 제가 일하는 방식입니다.</p>
     <div class="stat-row">
       <div class="stat"><div class="n">13</div><div class="l">과제 + 팀 프로젝트 1건</div></div>
       <div class="stat"><div class="n">177</div><div class="l">자동 검사 통과 (과제 4·5·6·7·8·13)</div></div>
       <div class="stat"><div class="n">7</div><div class="l">DreamHack 워게임 문제</div></div>
+    </div>
+    <div class="contact-row" id="contact">
+      <span class="contact-label">Contact</span>
+      <a class="btn primary" href="mailto:bisjiness@gmail.com">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        bisjiness@gmail.com
+      </a>
+      <a class="btn" href="https://github.com/ginye28" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2c-3.2.7-3.87-1.37-3.87-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.19-3.08-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.8 1.19 1.82 1.19 3.08 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5Z"/></svg>
+        github.com/ginye28
+      </a>
     </div>
   </section>
 
@@ -173,7 +298,7 @@
       </div>
     </div>
 
-    <h2 style="margin-top:40px; font-size:18px">일하는 방식</h2>
+    <h2 class="sub">일하는 방식</h2>
     <ul class="tick">
       <li><b>"막았다"는 상태 코드가 아니라 전후 데이터로 판정합니다.</b> RLS 거절이 200 + 빈 배열로 오고, 스키마 오류가 거절처럼 보이는 경우를 둘 다 겪은 뒤 정한 원칙입니다 (과제 7).</li>
       <li><b>실사용에서 나온 제보를 회귀 검사로 바꿉니다.</b> 순차 검사가 잡지 못한 삭제 경합을 연타 재현 검사로 남겼습니다 (과제 8).</li>
@@ -181,28 +306,30 @@
       <li><b>검사를 숫자로 남깁니다.</b> 과제 4·5·6·7·8·13의 자동 검사만 합쳐도 177건(35+10+17+40+43+32)이 모두 통과 상태로 제출되어 있고, 각 과제 상세에 재현 명령을 그대로 남겼습니다.</li>
     </ul>
 
-    <h2 style="margin-top:40px; font-size:18px">기술 스택</h2>
+    <h2 class="sub">기술 스택</h2>
     <div class="badge-row">
-      <span class="badge">JavaScript</span><span class="badge">Java</span><span class="badge">Spring Boot</span><span class="badge">SQL (PostgreSQL)</span>
-      <span class="badge">React 19</span><span class="badge">Vite</span><span class="badge">Emotion</span><span class="badge">Canvas API</span>
-      <span class="badge">Supabase (Auth·RLS)</span><span class="badge">Neon Postgres</span><span class="badge">Vercel Functions</span><span class="badge">Node.js</span>
-      <span class="badge">WebAuthn / FIDO2</span><span class="badge">JWT</span><span class="badge">bcrypt</span><span class="badge">IDOR 방어</span>
-      <span class="badge">Chrome DevTools Protocol</span><span class="badge">Git</span>
+      <span class="badge">JavaScript</span><span class="badge">Java</span><span class="badge">SQL (PostgreSQL)</span><span class="badge">Node.js</span>
+      <span class="badge b-blue">React 19</span><span class="badge b-blue">Vite</span><span class="badge b-blue">Emotion</span><span class="badge b-blue">Canvas API</span>
+      <span class="badge b-amber">Spring Boot</span><span class="badge b-amber">Supabase (Auth·RLS)</span><span class="badge b-amber">Neon Postgres</span><span class="badge b-amber">Vercel Functions</span>
+      <span class="badge b-violet">WebAuthn / FIDO2</span><span class="badge b-violet">JWT</span><span class="badge b-violet">bcrypt</span><span class="badge b-violet">IDOR 방어</span>
+      <span class="badge b-gray">Chrome DevTools Protocol</span><span class="badge b-gray">Git</span>
     </div>
 
-    <h2 style="margin-top:40px; font-size:18px">보안 취약점 유형별 대응 (OWASP Top 10 · CWE)</h2>
+    <h2 class="sub">보안 취약점 유형별 대응 (OWASP Top 10 · CWE)</h2>
     <p>프로젝트에서 막은 결함과 워게임에서 익힌 공격 기법을 업계 표준 분류로 정리했습니다. 방어(제 프로젝트)와 공격(DreamHack) 양쪽 관점을 함께 다뤘습니다.</p>
     <div class="table-wrap">
-    <table>
-      <tr><th>OWASP Top 10</th><th>CWE</th><th>다룬 과제</th><th>무엇을 했나</th></tr>
-      <tr><td>A01 · 취약한 접근 통제</td><td>CWE-639 IDOR</td><td>과제 6·7·8</td><td>DB RLS로 소유자만 접근하도록 강제, 남의 자료는 403 대신 404로 존재 자체를 감춤</td></tr>
-      <tr><td>A02 · 암호화 실패</td><td>CWE-798 하드코딩된 자격증명</td><td>과제 4·6·7</td><td>공개 키(anon key)만 브라우저에 두고, service_role 문자열을 빌드 산출물에서 자동 검사</td></tr>
-      <tr><td>A03 · 인젝션</td><td>CWE-79 XSS · CWE-78 OS 커맨드 인젝션</td><td>과제 6(방어) · DreamHack(공격)</td><td>React 자동 이스케이프로 저장형 XSS 차단, 필터 우회와 와일드카드를 이용한 커맨드 인젝션을 공격자 관점에서 재현</td></tr>
-      <tr><td>A04 · 안전하지 않은 설계</td><td>CWE-362 경쟁 조건</td><td>과제 8</td><td>삭제 확인 중 목록 전체 잠금과 연타 재현 검사로 동시 삭제 요청을 막음</td></tr>
-      <tr><td>A05 · 보안 설정 오류</td><td>—</td><td>과제 6·8</td><td>DELETE 정책을 아예 두지 않아 하드 삭제를 구조적으로 차단, 배포 후 검사로 운영 DB 마이그레이션 누락을 발견</td></tr>
-      <tr><td>A07 · 식별 및 인증 실패</td><td>CWE-613 세션 조기 미만료 · CWE-294 재전송 공격 · CWE-307 무차별 대입 방지 미흡</td><td>과제 7·8</td><td>서버 세션 생존 검사, WebAuthn challenge 1회용 소진, IP당 계정 생성 속도 제한</td></tr>
-      <tr><td>A08 · 소프트웨어·데이터 무결성 오류</td><td>CWE-345</td><td>과제 4</td><td>공개 테스트 자료 17개를 SHA-256으로 대조해 변조 여부 확인</td></tr>
-      <tr><td>A09 · 보안 로깅·모니터링 실패</td><td>CWE-778</td><td>과제 10</td><td>패스키 백업 상태 전이가 서버에 기록되지 않는 현상을 40회 측정으로 입증하고 관측 방법을 제안</td></tr>
+    <table class="stack">
+      <thead><tr><th>OWASP Top 10</th><th>CWE</th><th>다룬 과제</th><th>무엇을 했나</th></tr></thead>
+      <tbody>
+      <tr><td data-label="OWASP Top 10">A01 · 취약한 접근 통제</td><td data-label="CWE">CWE-639 IDOR</td><td data-label="다룬 과제">과제 6·7·8</td><td data-label="무엇을 했나">DB RLS로 소유자만 접근하도록 강제, 남의 자료는 403 대신 404로 존재 자체를 감춤</td></tr>
+      <tr><td data-label="OWASP Top 10">A02 · 암호화 실패</td><td data-label="CWE">CWE-798 하드코딩된 자격증명</td><td data-label="다룬 과제">과제 4·6·7</td><td data-label="무엇을 했나">공개 키(anon key)만 브라우저에 두고, service_role 문자열을 빌드 산출물에서 자동 검사</td></tr>
+      <tr><td data-label="OWASP Top 10">A03 · 인젝션</td><td data-label="CWE">CWE-79 XSS · CWE-78 OS 커맨드 인젝션</td><td data-label="다룬 과제">과제 6(방어) · DreamHack(공격)</td><td data-label="무엇을 했나">React 자동 이스케이프로 저장형 XSS 차단, 필터 우회와 와일드카드를 이용한 커맨드 인젝션을 공격자 관점에서 재현</td></tr>
+      <tr><td data-label="OWASP Top 10">A04 · 안전하지 않은 설계</td><td data-label="CWE">CWE-362 경쟁 조건</td><td data-label="다룬 과제">과제 8</td><td data-label="무엇을 했나">삭제 확인 중 목록 전체 잠금과 연타 재현 검사로 동시 삭제 요청을 막음</td></tr>
+      <tr><td data-label="OWASP Top 10">A05 · 보안 설정 오류</td><td data-label="CWE">—</td><td data-label="다룬 과제">과제 6·8</td><td data-label="무엇을 했나">DELETE 정책을 아예 두지 않아 하드 삭제를 구조적으로 차단, 배포 후 검사로 운영 DB 마이그레이션 누락을 발견</td></tr>
+      <tr><td data-label="OWASP Top 10">A07 · 식별 및 인증 실패</td><td data-label="CWE">CWE-613 세션 조기 미만료 · CWE-294 재전송 공격 · CWE-307 무차별 대입 방지 미흡</td><td data-label="다룬 과제">과제 7·8</td><td data-label="무엇을 했나">서버 세션 생존 검사, WebAuthn challenge 1회용 소진, IP당 계정 생성 속도 제한</td></tr>
+      <tr><td data-label="OWASP Top 10">A08 · 소프트웨어·데이터 무결성 오류</td><td data-label="CWE">CWE-345</td><td data-label="다룬 과제">과제 4</td><td data-label="무엇을 했나">공개 테스트 자료 17개를 SHA-256으로 대조해 변조 여부 확인</td></tr>
+      <tr><td data-label="OWASP Top 10">A09 · 보안 로깅·모니터링 실패</td><td data-label="CWE">CWE-778</td><td data-label="다룬 과제">과제 10</td><td data-label="무엇을 했나">패스키 백업 상태 전이가 서버에 기록되지 않는 현상을 40회 측정으로 입증하고 관측 방법을 제안</td></tr>
+      </tbody>
     </table>
     </div>
     <p style="color:var(--text)">이 표를 관통하는 원칙은 하나입니다 — 판단은 클라이언트가 아니라 서버(또는 DB 정책)가 내리고, 실패는 안전한 쪽으로 떨어지게 합니다.</p>
@@ -221,11 +348,13 @@
       <div class="proj-stack">2026-09-02 ~ 09-08 · React · Vite · Supabase Auth · PostgreSQL RLS · Vercel</div>
       <p>로그아웃한 토큰이 계속 통한다는 JWT의 구조적 약점을 자동 검사로 발견해 DB 정책으로 막았고, 최종 자동 검사 40/40을 통과했습니다. Supabase는 브라우저가 DB REST API를 직접 호출해 공개 키가 번들에 그대로 드러나므로, 계정 간 격리(IDOR)를 화면이 아니라 DB 정책으로 강제했습니다.</p>
       <div class="table-wrap">
-      <table>
-        <tr><th>문제</th><th>원인</th><th>조치</th><th>검증 결과</th></tr>
-        <tr><td>로그아웃 후에도 같은 토큰으로 자료 조회</td><td>JWT는 stateless라 signOut()은 리프레시 토큰만 무효화</td><td>모든 RLS 정책에 서버 쪽 세션 생존 검사 session_is_active() 추가</td><td>200 + 내 자료 → 200 + 0건</td></tr>
-        <tr><td>격리 검사가 스키마 오류(400)를 "거절 성공"으로 오인할 뻔함</td><td>존재하지 않는 칼럼을 수정 대상으로 지정</td><td>실제 칼럼으로 교체, 판정 기준을 상태 코드에서 반영 행 수·전후 건수로 강화</td><td>양방향 0행 반영, 건수 불변</td></tr>
-        <tr><td>비밀값 탐지 룰 오탐</td><td>라이브러리 안의 sb_secret_ 접두어 리터럴</td><td>접두어 + 20자 이상 실제 키 형태만 잡는 정규식으로 정밀화</td><td>오탐 0건, 탐지 범위 유지</td></tr>
+      <table class="stack">
+        <thead><tr><th>문제</th><th>원인</th><th>조치</th><th>검증 결과</th></tr></thead>
+        <tbody>
+        <tr><td data-label="문제">로그아웃 후에도 같은 토큰으로 자료 조회</td><td data-label="원인">JWT는 stateless라 signOut()은 리프레시 토큰만 무효화</td><td data-label="조치">모든 RLS 정책에 서버 쪽 세션 생존 검사 session_is_active() 추가</td><td data-label="검증 결과">200 + 내 자료 → 200 + 0건</td></tr>
+        <tr><td data-label="문제">격리 검사가 스키마 오류(400)를 "거절 성공"으로 오인할 뻔함</td><td data-label="원인">존재하지 않는 칼럼을 수정 대상으로 지정</td><td data-label="조치">실제 칼럼으로 교체, 판정 기준을 상태 코드에서 반영 행 수·전후 건수로 강화</td><td data-label="검증 결과">양방향 0행 반영, 건수 불변</td></tr>
+        <tr><td data-label="문제">비밀값 탐지 룰 오탐</td><td data-label="원인">라이브러리 안의 sb_secret_ 접두어 리터럴</td><td data-label="조치">접두어 + 20자 이상 실제 키 형태만 잡는 정규식으로 정밀화</td><td data-label="검증 결과">오탐 0건, 탐지 범위 유지</td></tr>
+        </tbody>
       </table>
       </div>
       <ul class="tick">
@@ -243,11 +372,13 @@
       <div class="proj-stack">2026-09-03 ~ 09-09 · WebAuthn/FIDO2 · SimpleWebAuthn · Vercel Serverless · Neon Postgres</div>
       <p>비밀번호 없이 패스키로만 여는 비공개 영역을 만들고, 실사용 중 발견한 삭제 경합과 계정 무한 생성 결함을 재현해 고친 뒤 회귀 검사로 남겼습니다. 최종 자동 검사는 43/43 통과입니다. 패스키가 유일한 자격증명이라 과제 7의 토큰 재사용 문제를 반복하지 않도록 처음부터 JWT 대신 서버 세션 테이블을 택했습니다.</p>
       <div class="table-wrap">
-      <table>
-        <tr><th>문제</th><th>원인</th><th>조치</th><th>검증 결과</th></tr>
-        <tr><td>패스키 하나를 지웠는데 계정이 통째로 사라짐</td><td>삭제 확인 왕복 동안 목록이 살아 있어 삭제 요청 두 개가 나란히 나감</td><td>삭제 중 목록 전체 잠금, 확인창 개수 변경 시 재확인, 연타 재현 검사 3개 추가</td><td>계정 소멸 → 하나만 삭제(200 · 1개 유지)</td></tr>
-        <tr><td>로그아웃 상태에서 계정이 무한 생성됨</td><td>비로그인이면 무조건 새 계정을 만드는 분기</td><td>IP당 10분 20회 제한, challenge 발급 단계에서 429</td><td>25회 연속 호출에서 11번째부터 429 유지</td></tr>
-        <tr><td>배포 후 공개 주소에서만 검사 실패</td><td>스키마 변경을 운영 DB에 적용하지 않고 코드만 배포</td><td>재실행해도 안전한 add column if not exists로 적용</td><td>41/42 → 42/42</td></tr>
+      <table class="stack">
+        <thead><tr><th>문제</th><th>원인</th><th>조치</th><th>검증 결과</th></tr></thead>
+        <tbody>
+        <tr><td data-label="문제">패스키 하나를 지웠는데 계정이 통째로 사라짐</td><td data-label="원인">삭제 확인 왕복 동안 목록이 살아 있어 삭제 요청 두 개가 나란히 나감</td><td data-label="조치">삭제 중 목록 전체 잠금, 확인창 개수 변경 시 재확인, 연타 재현 검사 3개 추가</td><td data-label="검증 결과">계정 소멸 → 하나만 삭제(200 · 1개 유지)</td></tr>
+        <tr><td data-label="문제">로그아웃 상태에서 계정이 무한 생성됨</td><td data-label="원인">비로그인이면 무조건 새 계정을 만드는 분기</td><td data-label="조치">IP당 10분 20회 제한, challenge 발급 단계에서 429</td><td data-label="검증 결과">25회 연속 호출에서 11번째부터 429 유지</td></tr>
+        <tr><td data-label="문제">배포 후 공개 주소에서만 검사 실패</td><td data-label="원인">스키마 변경을 운영 DB에 적용하지 않고 코드만 배포</td><td data-label="조치">재실행해도 안전한 add column if not exists로 적용</td><td data-label="검증 결과">41/42 → 42/42</td></tr>
+        </tbody>
       </table>
       </div>
       <ul class="tick">
@@ -263,13 +394,15 @@
       <div class="proj-stack">2026-09-10 · Chrome DevTools Protocol 가상 authenticator · Node.js 측정 스크립트 · 오픈소스 코드 리뷰</div>
       <p>패스키 시스템이 "자격증명이 클라우드로 넘어갔다"는 신호(BS 플래그)를 받고도 버리고 있음을 40회 반복 측정으로 입증했고, 신호가 사라지는 지점이 라이브러리가 아니라 그것을 쓰는 응용 쪽임을 소스 조사로 밝혔습니다. 산출물은 논문 1편(표 23개·그림 2개·참고문헌 21건)과 재현 패키지입니다.</p>
       <div class="table-wrap">
-      <table>
-        <tr><th>측정</th><th>결과</th></tr>
-        <tr><td>동기화를 켜면(BS 0→1) 전송 플래그가 실제로 0x0d → 0x1d로 바뀜</td><td>10/10</td></tr>
-        <tr><td>그런데도 로그인 응답 본문은 전이 전후 완전히 같음</td><td>10/10</td></tr>
-        <tr><td>오픈소스 라이브러리 11개 중 BE/BS를 노출하는 것</td><td>9/11</td></tr>
-        <tr><td>라이브러리 11개 중 보관값과 대조·갱신까지 하는 것</td><td>4/11</td></tr>
-        <tr><td>응용 3개(Spring Security·Keycloak·자체 시스템) 중 신호를 끝까지 사용하는 것</td><td>0/3</td></tr>
+      <table class="stack">
+        <thead><tr><th>측정</th><th>결과</th></tr></thead>
+        <tbody>
+        <tr><td data-label="측정">동기화를 켜면(BS 0→1) 전송 플래그가 실제로 0x0d → 0x1d로 바뀜</td><td data-label="결과">10/10</td></tr>
+        <tr><td data-label="측정">그런데도 로그인 응답 본문은 전이 전후 완전히 같음</td><td data-label="결과">10/10</td></tr>
+        <tr><td data-label="측정">오픈소스 라이브러리 11개 중 BE/BS를 노출하는 것</td><td data-label="결과">9/11</td></tr>
+        <tr><td data-label="측정">라이브러리 11개 중 보관값과 대조·갱신까지 하는 것</td><td data-label="결과">4/11</td></tr>
+        <tr><td data-label="측정">응용 3개(Spring Security·Keycloak·자체 시스템) 중 신호를 끝까지 사용하는 것</td><td data-label="결과">0/3</td></tr>
+        </tbody>
       </table>
       </div>
       <ul class="tick">
@@ -300,11 +433,21 @@
     <h2>Florography · 정서 케어 플랫폼</h2>
     <p>과제 밖에서 진행한 팀 프로젝트입니다. 감정 저널링과 가드닝을 결합해, 감정을 담은 편지를 쓰면 정원에 꽃이 자라는 방식으로 기록을 시각화하는 정서 케어 웹 서비스를 만들었습니다. React 프론트엔드와 Spring Boot 백엔드로 나뉜 풀스택 구조입니다.</p>
     <div class="badge-row">
-      <span class="badge">React 19</span><span class="badge">Vite</span><span class="badge">Zustand</span><span class="badge">TanStack Query</span><span class="badge">Emotion</span>
-      <span class="badge">Spring Boot 4</span><span class="badge">Java 21</span><span class="badge">Spring Security</span><span class="badge">MyBatis</span><span class="badge">MySQL</span><span class="badge">Docker</span>
+      <span class="badge b-blue">React 19</span><span class="badge b-blue">Vite</span><span class="badge b-blue">Zustand</span><span class="badge b-blue">TanStack Query</span><span class="badge b-blue">Emotion</span>
+      <span class="badge b-amber">Spring Boot 4</span><span class="badge b-amber">Java 21</span><span class="badge b-amber">MyBatis</span><span class="badge b-amber">MySQL</span>
+      <span class="badge b-violet">Spring Security</span><span class="badge b-violet">JWT</span><span class="badge b-violet">OAuth2</span>
+      <span class="badge b-gray">Docker</span><span class="badge b-gray">GitHub Actions</span>
     </div>
+
+    <div class="role">
+      <div class="meta">My Role · Security / Backend</div>
+      <ul class="tick">
+        <li><b>Spring Security 기반 JWT 무상태 인증 체인 구축 및 Google/Kakao/Naver OAuth2 소셜 로그인 구현</b> — 세션 없이 JWT(Bearer 토큰, HMAC-SHA512 서명)만으로 모든 요청을 인증합니다.</li>
+        <li><b>기존 계정과 소셜 계정 연동 시, 세션 기반 1회용 연동 토큰을 활용한 중복 연동 방지 및 인가 로직 설계</b> — 연동 흐름은 일반 로그인과 분리했고, 토큰은 세션에 저장했다가 검증 직후 바로 지웁니다. 중복 연동 여부를 확인한 뒤에만 연동이 끝납니다.</li>
+      </ul>
+    </div>
+
     <ul class="tick">
-      <li><b>인증 구조:</b> 세션 없이 JWT(Bearer 토큰, HMAC-SHA512 서명)만으로 요청을 인증하는 무상태 구조이고, Google·Kakao·Naver OAuth2 소셜 로그인을 지원합니다. 기존 계정에 새 소셜 계정을 연동하는 흐름은 일반 로그인과 분리해서, 1회용 연동 토큰을 세션에 저장했다가 검증 직후 바로 지우고 중복 연동 여부를 확인한 뒤에만 연동이 끝나도록 짜여 있습니다.</li>
       <li><b>협업:</b> GitHub Flow(기능 브랜치 → PR → 최소 1인 리뷰 승인 후 병합, 셀프 머지 금지)와 Conventional Commits 규칙을 따랐고, GitHub Actions로 CI를 구성했습니다.</li>
     </ul>
     <p>레포: <a href="https://github.com/Florography/florography-web" target="_blank" rel="noopener">florography-web</a> · <a href="https://github.com/Florography/florography-api" target="_blank" rel="noopener">florography-api</a></p>
@@ -315,19 +458,39 @@
     <h2>그 밖의 과제와 배운 점</h2>
     <p>나머지 과제에서는 입력 검증, 실패 처리, 개인정보 공개 범위 같은 보안의 기본기를 다졌습니다.</p>
     <div class="otherlist reveal">
-      <div class="card"><h3>1 · 자기소개 페이지 <a class="idx" href="https://aleph-passkey.vercel.app" target="_blank" rel="noopener">↗</a></h3><p>공개할 것과 공개하지 않을 것을 먼저 나눈 한 페이지 소개. 이 구분이 과제 8의 공개·잠금 영역으로 이어졌습니다.</p></div>
-      <div class="card"><h3>2 · 보안 개념 카드 매칭 게임 <a class="idx" href="https://aleph-gilt.vercel.app" target="_blank" rel="noopener">↗</a></h3><p>난이도를 플레이 기록 20회로 결정, 손상된 저장값에도 멈추지 않게 설계했습니다.</p></div>
-      <div class="card"><h3>3 · 짤·카드 스튜디오 <a class="idx" href="https://aleph-zzal.vercel.app" target="_blank" rel="noopener">↗</a></h3><p>캔버스에 다시 그려 EXIF·GPS 노출 차단, 확장자만 바꾼 위장 파일을 실제 디코딩으로 거부합니다.</p></div>
-      <div class="card"><h3>4 · 오늘의 진짜 정보판 <a class="idx" href="https://aleph-dash.vercel.app" target="_blank" rel="noopener">↗</a></h3><p>장애를 5종으로 나눠 실패해도 마지막 정상값을 유지. 공개 테스트 자료 17개를 SHA-256으로 대조합니다.</p></div>
-      <div class="card"><h3>5 · AI가 바뀌어도 작업 이어가기 <a class="idx" href="https://aleph-daup.vercel.app" target="_blank" rel="noopener">↗</a></h3><p>도중에 AI를 바꿔 본 인계 실험. 비교 기준을 작업 전에 커밋해 인수인계 품질을 검증했습니다.</p></div>
-      <div class="card"><h3>6 · 플랜두씨 다이어리 1 <a class="idx" href="https://aleph-pds.vercel.app" target="_blank" rel="noopener">↗</a></h3><p>DELETE 정책 없이 append-only로 설계해 피해 범위를 줄인 다이어리. 검사 17/17.</p></div>
+      <div class="card"><h3>1 · 자기소개 페이지 <a class="idx" href="https://aleph-passkey.vercel.app" target="_blank" rel="noopener" aria-label="과제 1 배포 주소">↗</a></h3><p>공개할 것과 공개하지 않을 것을 먼저 나눈 한 페이지 소개. 이 구분이 과제 8의 공개·잠금 영역으로 이어졌습니다.</p></div>
+      <div class="card"><h3>2 · 보안 개념 카드 매칭 게임 <a class="idx" href="https://aleph-gilt.vercel.app" target="_blank" rel="noopener" aria-label="과제 2 배포 주소">↗</a></h3><p>난이도를 플레이 기록 20회로 결정, 손상된 저장값에도 멈추지 않게 설계했습니다.</p></div>
+      <div class="card"><h3>3 · 짤·카드 스튜디오 <a class="idx" href="https://aleph-zzal.vercel.app" target="_blank" rel="noopener" aria-label="과제 3 배포 주소">↗</a></h3><p>캔버스에 다시 그려 EXIF·GPS 노출 차단, 확장자만 바꾼 위장 파일을 실제 디코딩으로 거부합니다.</p></div>
+      <div class="card"><h3>4 · 오늘의 진짜 정보판 <a class="idx" href="https://aleph-dash.vercel.app" target="_blank" rel="noopener" aria-label="과제 4 배포 주소">↗</a></h3><p>장애를 5종으로 나눠 실패해도 마지막 정상값을 유지. 공개 테스트 자료 17개를 SHA-256으로 대조합니다.</p></div>
+      <div class="card"><h3>5 · AI가 바뀌어도 작업 이어가기 <a class="idx" href="https://aleph-daup.vercel.app" target="_blank" rel="noopener" aria-label="과제 5 배포 주소">↗</a></h3><p>도중에 AI를 바꿔 본 인계 실험. 비교 기준을 작업 전에 커밋해 인수인계 품질을 검증했습니다.</p></div>
+      <div class="card"><h3>6 · 플랜두씨 다이어리 1 <a class="idx" href="https://aleph-pds.vercel.app" target="_blank" rel="noopener" aria-label="과제 6 배포 주소">↗</a></h3><p>DELETE 정책 없이 append-only로 설계해 피해 범위를 줄인 다이어리. 검사 17/17.</p></div>
       <div class="card"><h3>9 · 나를 말하는 에이전트</h3><p>21일 리추얼 기록으로 만든 강점 지도와 자기소개서 초안. 근거 부족한 항목은 직접 제외했습니다.</p></div>
     </div>
 
-    <h2 style="margin-top:40px; font-size:18px">워게임 실습</h2>
-    <p>DreamHack 문제 7개를 풀고 풀이 과정을 정리했습니다. 웹(CSRF·Command Injection 필터 우회), 리버싱(Ghidra), 시스템 해킹(ORW 셸코드, Return Address Overwrite)을 다뤘습니다. 플래그와 공격 페이로드는 싣지 않았습니다.</p>
+    <h2 class="sub">워게임 실습</h2>
+    <p>DreamHack 문제 7개를 풀고 풀이 과정을 정리했습니다. 분야별 핵심 공략 키워드는 아래와 같습니다. 플래그와 공격 페이로드는 싣지 않았습니다.</p>
+    <div class="grid3 wg">
+      <div class="card">
+        <h3><i>WEB</i>웹 해킹</h3>
+        <div class="badge-row">
+          <span class="badge b-blue">CSRF</span><span class="badge b-blue">Command Injection Filter Bypass</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3><i>REV</i>리버싱</h3>
+        <div class="badge-row">
+          <span class="badge b-violet">Ghidra 분석</span>
+        </div>
+      </div>
+      <div class="card">
+        <h3><i>SYS</i>시스템 해킹</h3>
+        <div class="badge-row">
+          <span class="badge b-amber">x86-64 ORW Shellcode</span><span class="badge b-amber">Return Address Overwrite</span>
+        </div>
+      </div>
+    </div>
 
-    <h2 style="margin-top:40px; font-size:18px">배운 점</h2>
+    <h2 class="sub">배운 점</h2>
     <ul class="tick">
       <li><b>통과 기준에 없는 경로는 검사도 없습니다.</b> 성공 응답이 아니라 실제로 바뀐 행 수를 봐야 합니다.</li>
       <li><b>작업자가 바뀌어도 이어지게 하는 힘은 검사 가능한 기준과 한 페이지 인계 문서입니다.</b></li>
@@ -336,14 +499,15 @@
   </section>
 
   <section id="next" class="reveal" style="padding-top:0">
-    <h2>마무리</h2>
+    <div class="section-head"><span class="kicker">Roadmap</span></div>
+    <h2>향후 개선 계획 (Security Roadmap)</h2>
     <p>다음 목표는 논문에서 제안만 한 조치를 시스템에 직접 적용하고, 문서에 적어 둔 한계를 하나씩 닫는 것입니다.</p>
-    <ul class="tick">
-      <li>과제 7의 "내 계정 삭제"를 삭제 전후 행 수 검사로 확인하고, 결과에 따라 DELETE 정책을 추가하거나 함수 권한을 바꿉니다.</li>
-      <li>과제 10의 조치를 과제 8에 적용합니다: 백업 상태 칼럼 3개, 인증 때 갱신, 자격증명 삭제 시 추가 인증.</li>
-      <li>Spring Security와 Keycloak 기본 예제를 띄워 같은 측정을 실행하는 동적 교차 검증을 합니다.</li>
-      <li>로그인 시도 제한, 계정 복구 코드, 비공개 자료의 애플리케이션 레벨 암호화를 추가합니다.</li>
-    </ul>
+    <div class="roadmap reveal">
+      <div class="card"><span class="no">01</span><p>과제 7의 "내 계정 삭제"를 삭제 전후 행 수 검사로 확인하고, 결과에 따라 DELETE 정책을 추가하거나 함수 권한을 바꿉니다.</p></div>
+      <div class="card"><span class="no">02</span><p>과제 10의 조치를 과제 8에 적용합니다: 백업 상태 칼럼 3개, 인증 때 갱신, 자격증명 삭제 시 추가 인증.</p></div>
+      <div class="card"><span class="no">03</span><p>Spring Security와 Keycloak 기본 예제를 띄워 같은 측정을 실행하는 동적 교차 검증을 합니다.</p></div>
+      <div class="card"><span class="no">04</span><p>로그인 시도 제한, 계정 복구 코드, 비공개 자료의 애플리케이션 레벨 암호화를 추가합니다.</p></div>
+    </div>
   </section>
 
 </main>
@@ -351,16 +515,15 @@
 <footer>
   <div class="wrap">
     <p>전체 과제 소스: <a href="https://github.com/ginye28/ALEPH" target="_blank" rel="noopener">github.com/ginye28/ALEPH</a></p>
+    <p>Contact: <a href="mailto:bisjiness@gmail.com">bisjiness@gmail.com</a> · <a href="https://github.com/ginye28" target="_blank" rel="noopener">GitHub @ginye28</a></p>
   </div>
 </footer>
 
 <script>
 (function(){
+  var root = document.documentElement;
   if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  if (!('IntersectionObserver' in window)) {
-    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in'); });
-    return;
-  }
+  if (!('IntersectionObserver' in window)) { root.classList.remove('js'); return; }
   var io = new IntersectionObserver(function(entries){
     entries.forEach(function(entry){
       if (entry.isIntersecting) {
