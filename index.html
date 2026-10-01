@@ -75,11 +75,9 @@
     transition:background .2s,border-color .2s;
   }
   .badge:hover{background:rgba(var(--c),.18); border-color:rgba(var(--c),.6)}
-  .b-blue{--c:124,196,255}
-  .b-amber{--c:252,211,77}
-  .b-violet{--c:196,181,253}
-  .b-gray{--c:176,188,199}
-  .b-green{--c:134,239,172}
+  /* 민트(보안·핵심) + 무채색 2단계로 통일 */
+  .b-soft{--c:200,210,220}
+  .b-mute{--c:150,162,174}
   .stack-label{font-family:var(--mono); font-size:12px; color:var(--text-dim); letter-spacing:.08em; text-transform:uppercase; margin:20px 0 -6px}
   .edu{margin:22px 0 0}
   .edu .meta{letter-spacing:.08em; text-transform:uppercase}
@@ -110,7 +108,8 @@
   .card .badge-row{margin:12px 0 0}
 
   /* ---------- projects ---------- */
-  .proj{margin-bottom:60px}
+  .proj{margin-bottom:44px; padding-bottom:44px; border-bottom:1px solid rgba(255,255,255,.08)}
+  #p10{margin-bottom:36px; padding-bottom:0; border-bottom:0}
   .proj-head{display:flex; flex-wrap:wrap; align-items:baseline; gap:6px 16px; margin-bottom:6px}
   .proj-head h3{margin:0; font-size:20px; line-height:1.4; color:var(--text)}
   .proj-links{font-family:var(--mono); font-size:13px}
@@ -246,6 +245,9 @@
     .stat{flex:1 1 calc(50% - 7px); min-width:0}
     .contact-label{width:100%}
     .btn{flex:1 1 auto; justify-content:center}
+    .proj{margin-bottom:36px; padding-bottom:36px}
+    #p10{margin-bottom:28px; padding-bottom:0}
+    .proj-head h3{font-size:18px}
   }
 
   /* ---------- entrance animation ---------- */
@@ -364,15 +366,15 @@
     <div class="stack-label">Languages · Frameworks · Auth</div>
     <div class="badge-row">
       <span class="badge">JavaScript</span><span class="badge">Java</span><span class="badge">SQL (PostgreSQL)</span><span class="badge">Node.js</span>
-      <span class="badge b-blue">React 19</span><span class="badge b-blue">Vite</span><span class="badge b-blue">Emotion</span><span class="badge b-blue">Canvas API</span>
-      <span class="badge b-amber">Spring Boot</span><span class="badge b-amber">Supabase (Auth·RLS)</span><span class="badge b-amber">Neon Postgres</span><span class="badge b-amber">Vercel Functions</span>
-      <span class="badge b-violet">WebAuthn / FIDO2</span><span class="badge b-violet">JWT</span><span class="badge b-violet">bcrypt</span><span class="badge b-violet">IDOR 방어</span>
-      <span class="badge b-gray">Chrome DevTools Protocol</span><span class="badge b-gray">Git</span>
+      <span class="badge b-soft">React 19</span><span class="badge b-soft">Vite</span><span class="badge b-soft">Emotion</span><span class="badge b-soft">Canvas API</span>
+      <span class="badge b-soft">Spring Boot</span><span class="badge b-soft">Supabase (Auth·RLS)</span><span class="badge b-soft">Neon Postgres</span><span class="badge b-soft">Vercel Functions</span>
+      <span class="badge">WebAuthn / FIDO2</span><span class="badge">JWT</span><span class="badge">bcrypt</span><span class="badge">IDOR 방어</span>
+      <span class="badge b-mute">Chrome DevTools Protocol</span><span class="badge b-mute">Git</span>
     </div>
     <div class="stack-label">Infrastructure / Security Tools</div>
     <div class="badge-row">
-      <span class="badge b-green">Kali Linux</span><span class="badge b-green">Ubuntu</span><span class="badge b-green">Wireshark</span>
-      <span class="badge b-green">Graylog</span><span class="badge b-green">n8n</span><span class="badge b-green">Nginx</span>
+      <span class="badge">Kali Linux</span><span class="badge">Ubuntu</span><span class="badge">Wireshark</span>
+      <span class="badge">Graylog</span><span class="badge">n8n</span><span class="badge">Nginx</span>
     </div>
 
     <h2 class="sub">왜 이 기술인가 (Why over What)</h2>
@@ -555,10 +557,10 @@
     <h2>Florography · 정서 케어 플랫폼</h2>
     <p>과제 밖에서 진행한 팀 프로젝트입니다. 감정 저널링과 가드닝을 결합해, 감정을 담은 편지를 쓰면 정원에 꽃이 자라는 방식으로 기록을 시각화하는 정서 케어 웹 서비스를 만들었습니다. React 프론트엔드와 Spring Boot 백엔드로 나뉜 풀스택 구조입니다.</p>
     <div class="badge-row">
-      <span class="badge b-blue">React 19</span><span class="badge b-blue">Vite</span><span class="badge b-blue">Zustand</span><span class="badge b-blue">TanStack Query</span><span class="badge b-blue">Emotion</span>
-      <span class="badge b-amber">Spring Boot 4</span><span class="badge b-amber">Java 21</span><span class="badge b-amber">MyBatis</span><span class="badge b-amber">MySQL</span>
-      <span class="badge b-violet">Spring Security</span><span class="badge b-violet">JWT</span><span class="badge b-violet">OAuth2</span>
-      <span class="badge b-gray">Docker</span><span class="badge b-gray">GitHub Actions</span>
+      <span class="badge b-soft">React 19</span><span class="badge b-soft">Vite</span><span class="badge b-soft">Zustand</span><span class="badge b-soft">TanStack Query</span><span class="badge b-soft">Emotion</span>
+      <span class="badge b-soft">Spring Boot 4</span><span class="badge b-soft">Java 21</span><span class="badge b-soft">MyBatis</span><span class="badge b-soft">MySQL</span>
+      <span class="badge">Spring Security</span><span class="badge">JWT</span><span class="badge">OAuth2</span>
+      <span class="badge b-mute">Docker</span><span class="badge b-mute">GitHub Actions</span>
     </div>
 
     <div class="role">
@@ -603,19 +605,19 @@
       <div class="card">
         <h3><i>WEB</i>웹 해킹</h3>
         <div class="badge-row">
-          <span class="badge b-blue">CSRF</span><span class="badge b-blue">Command Injection Filter Bypass</span>
+          <span class="badge">CSRF</span><span class="badge">Command Injection Filter Bypass</span>
         </div>
       </div>
       <div class="card">
         <h3><i>REV</i>리버싱</h3>
         <div class="badge-row">
-          <span class="badge b-violet">Ghidra 분석</span>
+          <span class="badge">Ghidra 분석</span>
         </div>
       </div>
       <div class="card">
         <h3><i>SYS</i>시스템 해킹</h3>
         <div class="badge-row">
-          <span class="badge b-amber">x86-64 ORW Shellcode</span><span class="badge b-amber">Return Address Overwrite</span>
+          <span class="badge">x86-64 ORW Shellcode</span><span class="badge">Return Address Overwrite</span>
         </div>
       </div>
     </div>
