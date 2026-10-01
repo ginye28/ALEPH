@@ -79,6 +79,13 @@
   .b-amber{--c:252,211,77}
   .b-violet{--c:196,181,253}
   .b-gray{--c:176,188,199}
+  .b-green{--c:134,239,172}
+  .stack-label{font-family:var(--mono); font-size:12px; color:var(--text-dim); letter-spacing:.08em; text-transform:uppercase; margin:20px 0 -6px}
+  .edu{margin:22px 0 0}
+  .edu .meta{letter-spacing:.08em; text-transform:uppercase}
+  .roadmap .done{margin-top:14px; padding-top:12px; border-top:1px solid rgba(255,255,255,.09)}
+  .roadmap .done ul.tick{margin:0}
+  .roadmap .done ul.tick li:last-child{margin-bottom:0}
 
   /* ---------- glass surfaces (card / stat / table / diagram) ---------- */
   .card,.stat,.table-wrap,.quote,.role{
@@ -258,6 +265,11 @@
     <p class="lede">인증·인가 구조를 직접 만들고, 무너뜨려 보고, "막았습니다"라는 말 대신 <b>막히는 장면</b>으로 증명하는 일을 반복해 왔습니다.</p>
     <p>게임, 제작 도구, 정보판에서 출발해 인증(Supabase Auth·RLS), 패스키(WebAuthn), 패스키 보안에 관한 실증 논문, 그리고 그 논문을 실제로 쓰는 진단 앱과 자기소개 사이트까지 총 13개 과제를 거치며 한 걸음씩 보안 쪽으로 깊어졌습니다. 모든 과제에 자동 검사 스크립트, 공개 배포 주소, 재현 명령을 함께 남겼고, 검사가 실패한 기록도 지우지 않았습니다.</p>
     <p>부당한 상황에서도 감정적으로 반응하지 않고 원인을 끝까지 추적하는 침착함, 흔들려도 하루 안에 제자리로 돌아오는 회복력이 제가 일하는 방식입니다.</p>
+    <div class="card edu">
+      <div class="meta">Education</div>
+      <h3>SKT 보안 과정 · 풀스택 국비 지원 교육</h3>
+      <p>체계적인 집중 훈련 과정에서 풀스택 개발 기초를 다진 뒤, 그 위에 인증·접근통제 중심의 보안 과제를 쌓아 올렸습니다.</p>
+    </div>
     <div class="stat-row">
       <div class="stat"><div class="n">13</div><div class="l">과제 + 팀 프로젝트 1건</div></div>
       <div class="stat"><div class="n">177</div><div class="l">자동 검사 통과 (과제 4·5·6·7·8·13)</div></div>
@@ -307,12 +319,18 @@
     </ul>
 
     <h2 class="sub">기술 스택</h2>
+    <div class="stack-label">Languages · Frameworks · Auth</div>
     <div class="badge-row">
       <span class="badge">JavaScript</span><span class="badge">Java</span><span class="badge">SQL (PostgreSQL)</span><span class="badge">Node.js</span>
       <span class="badge b-blue">React 19</span><span class="badge b-blue">Vite</span><span class="badge b-blue">Emotion</span><span class="badge b-blue">Canvas API</span>
       <span class="badge b-amber">Spring Boot</span><span class="badge b-amber">Supabase (Auth·RLS)</span><span class="badge b-amber">Neon Postgres</span><span class="badge b-amber">Vercel Functions</span>
       <span class="badge b-violet">WebAuthn / FIDO2</span><span class="badge b-violet">JWT</span><span class="badge b-violet">bcrypt</span><span class="badge b-violet">IDOR 방어</span>
       <span class="badge b-gray">Chrome DevTools Protocol</span><span class="badge b-gray">Git</span>
+    </div>
+    <div class="stack-label">Infrastructure / Security Tools</div>
+    <div class="badge-row">
+      <span class="badge b-green">Kali Linux</span><span class="badge b-green">Ubuntu</span><span class="badge b-green">Wireshark</span>
+      <span class="badge b-green">Graylog</span><span class="badge b-green">n8n</span><span class="badge b-green">Nginx</span>
     </div>
 
     <h2 class="sub">보안 취약점 유형별 대응 (OWASP Top 10 · CWE)</h2>
@@ -506,7 +524,16 @@
       <div class="card"><span class="no">01</span><p>과제 7의 "내 계정 삭제"를 삭제 전후 행 수 검사로 확인하고, 결과에 따라 DELETE 정책을 추가하거나 함수 권한을 바꿉니다.</p></div>
       <div class="card"><span class="no">02</span><p>과제 10의 조치를 과제 8에 적용합니다: 백업 상태 칼럼 3개, 인증 때 갱신, 자격증명 삭제 시 추가 인증.</p></div>
       <div class="card"><span class="no">03</span><p>Spring Security와 Keycloak 기본 예제를 띄워 같은 측정을 실행하는 동적 교차 검증을 합니다.</p></div>
-      <div class="card"><span class="no">04</span><p>로그인 시도 제한, 계정 복구 코드, 비공개 자료의 애플리케이션 레벨 암호화를 추가합니다.</p></div>
+      <div class="card"><span class="no">04</span><p>로그인 시도 제한, 계정 복구 코드, 비공개 자료의 애플리케이션 레벨 암호화를 추가합니다.</p>
+        <div class="done">
+          <div class="meta">완성 기준</div>
+          <ul class="tick">
+            <li><b>자동화 테스트 통과 비율</b>로 완성도를 판단합니다.</li>
+            <li><b>임계치 도달 시 차단과 알림 로그</b>가 정확히 기록되는지 확인합니다.</li>
+            <li>외부 피드백이 없어도 <b>스크립트 연타 테스트</b>의 성공 여부를 객관적 척도로 삼습니다.</li>
+          </ul>
+        </div>
+      </div>
     </div>
   </section>
 
