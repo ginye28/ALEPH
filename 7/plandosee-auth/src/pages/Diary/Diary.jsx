@@ -27,6 +27,14 @@ const scrollTo = (ref) => {
     window.scrollBy({ top: box.top - 20, behavior: reduceMotion ? "auto" : "smooth" });
 };
 
+// 계획 목록과 각 계획의 개정 이력을 서버에서 읽기만 합니다(상태는 건드리지 않습니다).
+const loadPlansWithHistory = async () => {
+    const { data } = await listPlans();
+    const rows = data ?? [];
+    const entries = await Promise.all(rows.map(async (p) => [p.id, (await planHistory(p.id)).data ?? []]));
+    return { rows, history: Object.fromEntries(entries) };
+};
+
 function Diary() {
     const session = useSession();
     const [plans, setPlans] = useState([]);
@@ -51,28 +59,22 @@ function Diary() {
     const reviewSectionRef = useRef(null);
 
     const refreshPlans = useCallback(async () => {
-        const { data } = await listPlans();
-        const rows = data ?? [];
+        const { rows, history: nextHistory } = await loadPlansWithHistory();
         setPlans(rows);
-        const entries = await Promise.all(rows.map(async (p) => [p.id, (await planHistory(p.id)).data ?? []]));
-        setHistory(Object.fromEntries(entries));
+        setHistory(nextHistory);
         return rows;
     }, []);
 
+    // 계획이 선택되지 않았을 때 화면에 보이는 할일·돌아보기는 아래에서 값을 비워 그립니다(selectedPlanId ? … : …).
+    // 그래서 여기서는 계획이 없으면 아무것도 읽지 않고 돌아갑니다.
     const refreshTasks = useCallback(async (planId, filters) => {
-        if (!planId) {
-            setTasks([]);
-            return;
-        }
+        if (!planId) return;
         const { data } = await listTasks({ planId, ...filters });
         setTasks(data ?? []);
     }, []);
 
     const refreshReview = useCallback(async (planId) => {
-        if (!planId) {
-            setReviewStats(null);
-            return;
-        }
+        if (!planId) return;
         const { data } = await getReview(planId, todayKey());
         setReviewStats(data);
     }, []);
@@ -84,11 +86,20 @@ function Diary() {
     }, []);
 
     useEffect(() => {
-        refreshPlans().then((rows) => {
+        let cancelled = false;
+        loadPlansWithHistory().then(({ rows, history: nextHistory }) => {
+            if (cancelled) return;
+            setPlans(rows);
+            setHistory(nextHistory);
             if (rows.length > 0) setSelectedPlanId(rows[0].id);
         });
-        refreshAllExecutions();
-    }, [refreshPlans, refreshAllExecutions]);
+        listAllExecutions().then(({ data }) => {
+            if (!cancelled) setAllExecutions(data ?? []);
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     // check.mjs가 window.__db로 직접 만든 계획을 화면(React 상태)에도 반영시키는 용도입니다.
     // 새로고침 없이 다시 읽어야 메모리 백엔드의 상태가 그대로 유지됩니다.
@@ -102,20 +113,41 @@ function Diary() {
         window.__reloadDaily = refreshAllExecutions;
     }, [refreshPlans, refreshAllExecutions, selectedPlanId]);
 
-    // 선택한 계획·필터가 바뀌면 할일·돌아보기를 다시 읽습니다.
-    useEffect(() => {
-        refreshTasks(selectedPlanId, taskFilters);
-        refreshReview(selectedPlanId);
+    // 선택한 계획·필터가 바뀌면 고른 할일과 돌아보기 필터를 풉니다. 효과 안에서 setState를 부르면
+    // 한 번 더 그려지므로, React 문서가 권하는 방식대로 "이전 값과 달라졌는지"를 그리는 중에 비교해 바로 바꿉니다.
+    const planFilterKey = `${selectedPlanId}|${JSON.stringify(taskFilters)}`;
+    const [prevPlanFilterKey, setPrevPlanFilterKey] = useState(planFilterKey);
+    if (planFilterKey !== prevPlanFilterKey) {
+        setPrevPlanFilterKey(planFilterKey);
         setSelectedTaskId(null);
         setReviewFilter(null);
-    }, [selectedPlanId, taskFilters, refreshTasks, refreshReview]);
+    }
+
+    // 선택한 계획·필터가 바뀌면 할일·돌아보기를 다시 읽습니다.
+    // 응답이 늦게 도착했을 때 이미 다른 계획으로 바뀐 화면을 덮어쓰지 않도록 취소 표시를 둡니다.
+    useEffect(() => {
+        if (!selectedPlanId) return;
+        let cancelled = false;
+        listTasks({ planId: selectedPlanId, ...taskFilters }).then(({ data }) => {
+            if (!cancelled) setTasks(data ?? []);
+        });
+        getReview(selectedPlanId, todayKey()).then(({ data }) => {
+            if (!cancelled) setReviewStats(data);
+        });
+        return () => {
+            cancelled = true;
+        };
+    }, [selectedPlanId, taskFilters]);
 
     useEffect(() => {
-        if (!selectedTaskId) {
-            setExecutionRecords([]);
-            return;
-        }
-        listExecutionsByTask(selectedTaskId).then(({ data }) => setExecutionRecords(data ?? []));
+        if (!selectedTaskId) return;
+        let cancelled = false;
+        listExecutionsByTask(selectedTaskId).then(({ data }) => {
+            if (!cancelled) setExecutionRecords(data ?? []);
+        });
+        return () => {
+            cancelled = true;
+        };
     }, [selectedTaskId]);
 
     const afterTaskMutation = async () => {
@@ -205,10 +237,14 @@ function Diary() {
     };
 
     const selectedPlan = plans.find((p) => p.id === selectedPlanId) ?? null;
-    const selectedTask = tasks.find((t) => t.id === selectedTaskId) ?? null;
+    // 계획이나 할일을 고르지 않았으면 예전에 읽어 둔 값이 남아 있어도 비어 있는 것으로 그립니다.
+    const shownTasks = selectedPlanId ? tasks : [];
+    const shownStats = selectedPlanId ? reviewStats : null;
+    const shownRecords = selectedTaskId ? executionRecords : [];
+    const selectedTask = shownTasks.find((t) => t.id === selectedTaskId) ?? null;
     const visibleTasks = reviewFilter
-        ? filterTasks(tasks, reviewFilter, { todayKey: todayKey(), blockedIds: reviewStats?.blockedIds ?? new Set() })
-        : tasks;
+        ? filterTasks(shownTasks, reviewFilter, { todayKey: todayKey(), blockedIds: shownStats?.blockedIds ?? new Set() })
+        : shownTasks;
 
     return (
         <main css={s.page}>
@@ -259,14 +295,14 @@ function Diary() {
                 <ExecutionSection
                     sectionRef={executionSectionRef}
                     task={selectedTask}
-                    records={executionRecords}
+                    records={shownRecords}
                     onCreate={handleCreateExecution}
                 />
 
                 <ReviewSection
                     sectionRef={reviewSectionRef}
                     plan={selectedPlan}
-                    stats={reviewStats ?? { planCount: 0, doneCount: 0, overdueCount: 0, blockedCount: 0, estimatedTotal: 0, actualTotal: 0, diff: 0 }}
+                    stats={shownStats ?? { planCount: 0, doneCount: 0, overdueCount: 0, blockedCount: 0, estimatedTotal: 0, actualTotal: 0, diff: 0 }}
                     onFilterClick={handleReviewFilterClick}
                     activeFilter={reviewFilter}
                     onAddNote={handleAddNote}
