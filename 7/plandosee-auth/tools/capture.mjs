@@ -314,7 +314,7 @@ record(
 
 console.log("I. 카드5 · 계정 관리 화면");
 await shotSectionByHeading("11_계정관리", "내 계정");
-record("11_계정관리", "로그아웃·계정 삭제 버튼과 삭제 범위 안내", "계정 삭제는 내 데이터 행까지만 지우고 가입 정보는 별도 절차임을 화면에 명시(T07-C134)");
+record("11_계정관리", "로그아웃·계정 삭제 버튼과 삭제 범위 안내", "계정 삭제는 내 데이터 행과 가입 정보까지 서버 함수가 지우고, 되돌릴 수 없다는 점과 재가입이 필요하다는 점을 화면에 명시(T07-C134)");
 
 console.log("J. 토큰이 URL에 없음 (텍스트 기록)");
 const currentUrl = await evaluate(`window.location.href`);
