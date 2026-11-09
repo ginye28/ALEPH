@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { deleteMyData, signOut } from "../../api/auth";
+import { clearAuthNotice, saveAuthNotice } from "../../api/authNotice";
 import * as c from "../../styles/controls";
 import * as s from "./styles";
 
@@ -44,7 +45,25 @@ function AccountSection({ email, onSignedOut, onDeleted }) {
         // 서버에서 지웠어도 화면은 예전 목록을 그대로 들고 있으면 "안 지워졌다"로 보입니다 —
         // 부모에게 알려 화면의 목록도 서버에서 다시 읽어 비우게 합니다.
         await onDeleted?.();
-        setMessage({ tone: "good", text: `내 데이터를 지웠습니다 — ${summary}. 화면 목록도 서버에서 다시 읽어 비웠습니다.` });
+
+        // 계정을 지웠으면 그 계정으로 계속 로그인해 있을 이유가 없습니다 — 로그아웃해서 로그인 화면으로
+        // 돌려보냅니다. 자료 화면이 사라지면 이 컴포넌트의 메시지도 같이 사라지므로, 결과는 로그인 화면이
+        // 한 번 읽어 보여 줄 수 있게 로그아웃 직전에 적어 둡니다.
+        // 가입 정보(이메일)는 남아 있다는 사실도 그대로 밝힙니다 — 같은 이메일로 다시 로그인할 수 있습니다.
+        const notice =
+            `내 데이터를 지우고 로그아웃했습니다 — ${summary}. ` +
+            `가입 정보(이메일)는 이 앱에서 지울 수 없어 남아 있으니, 같은 이메일로 다시 로그인하면 빈 상태로 시작합니다.`;
+        saveAuthNotice(notice);
+        const { error: signOutError } = await signOut();
+        if (signOutError) {
+            clearAuthNotice();
+            setMessage({
+                tone: "bad",
+                text: `내 데이터는 지웠습니다 — ${summary}. 다만 로그아웃하지 못했습니다: ${signOutError.message}`,
+            });
+            return;
+        }
+        onSignedOut?.();
     };
 
     return (

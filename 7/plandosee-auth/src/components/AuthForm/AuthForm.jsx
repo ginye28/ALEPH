@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { signIn, signUp } from "../../api/auth";
+import { clearAuthNotice, peekAuthNotice } from "../../api/authNotice";
 import * as c from "../../styles/controls";
 import * as f from "../../styles/form";
 import * as s from "./styles";
@@ -23,6 +24,12 @@ function AuthForm() {
     const [pending, setPending] = useState(false);
     const [error, setError] = useState(null);
     const [signedUp, setSignedUp] = useState(false);
+    // 계정 삭제 직후 로그아웃되어 온 경우에만 값이 있습니다. 읽기와 지우기를 나눈 것은
+    // 개발 모드에서 초기화 함수가 두 번 불려도 안내가 사라지지 않게 하기 위해서입니다.
+    const [notice] = useState(() => peekAuthNotice());
+    useEffect(() => {
+        clearAuthNotice();
+    }, []);
 
     const submit = async (event) => {
         event.preventDefault();
@@ -49,6 +56,12 @@ function AuthForm() {
                 <p css={c.note} data-testid="auth-no-login-notice">
                     로그인하지 않으면 자료 화면 자체가 열리지 않습니다. 계정마다 자기 계획·할일·실행기록만 보입니다.
                 </p>
+
+                {notice && (
+                    <p css={c.note} data-testid="auth-deleted-notice">
+                        {notice}
+                    </p>
+                )}
 
                 <form css={f.form} onSubmit={submit} noValidate>
                     <div css={[f.field, f.wide]}>
