@@ -11,7 +11,7 @@ import * as s from "./styles";
  * 고칠점)을 전부 지우는 것까지만 하고, 가입 정보(이메일)는 별도 절차로 지워진다는
  * 사실을 화면에 그대로 밝힙니다 — 다 막았다고 적지 않습니다.
  */
-function AccountSection({ email, onSignedOut }) {
+function AccountSection({ email, onSignedOut, onDeleted }) {
     const [confirming, setConfirming] = useState(false);
     const [pending, setPending] = useState(false);
     const [message, setMessage] = useState(null);
@@ -41,7 +41,10 @@ function AccountSection({ email, onSignedOut }) {
         ]
             .map(([label, n]) => `${label} ${Number(n ?? 0)}건`)
             .join(" · ");
-        setMessage({ tone: "good", text: `내 데이터를 지웠습니다 — ${summary}. 화면에 남은 목록은 새로고침하면 사라집니다.` });
+        // 서버에서 지웠어도 화면은 예전 목록을 그대로 들고 있으면 "안 지워졌다"로 보입니다 —
+        // 부모에게 알려 화면의 목록도 서버에서 다시 읽어 비우게 합니다.
+        await onDeleted?.();
+        setMessage({ tone: "good", text: `내 데이터를 지웠습니다 — ${summary}. 화면 목록도 서버에서 다시 읽어 비웠습니다.` });
     };
 
     return (
