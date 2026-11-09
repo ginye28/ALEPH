@@ -208,17 +208,63 @@ create policy review_notes_insert on review_notes for insert with check (auth.ui
 
 -- ── 계정 삭제 (카드 5) ───────────────────────────────────────────
 -- auth.users 레코드 자체를 지우려면 service_role 키(관리자 API)가 필요해 클라이언트에서
--- 직접 호출할 수 없습니다. 대신 로그인한 본인 권한으로 자신의 데이터 행만 전부 하드 삭제하는
--- 함수를 둡니다 — RLS 범위 안에서 동작하므로 남의 행은 건드릴 수 없습니다.
+-- 직접 호출할 수 없습니다. 대신 로그인한 본인의 데이터 행만 전부 하드 삭제하는 함수를 둡니다.
+--
+-- [수정 이력 2026-11-09] 예전 함수는 security invoker였습니다. 그런데 이 표들에는 하드 삭제를
+-- 막으려고 DELETE 정책을 일부러 두지 않았으므로, invoker 권한의 DELETE는 RLS가 대상 행을
+-- 전부 걸러내 **오류 없이 0행**을 지웠습니다 — 화면은 "모두 지웠습니다"라고 했지만 실제로는
+-- 아무것도 지워지지 않았습니다. 그래서 security definer로 바꾸되, 함수 안에서 직접
+-- (1) 로그인·세션 유효 여부를 검사하고 (2) 모든 DELETE를 user_id = auth.uid()로 한정합니다.
+-- 또 review_notes를 plans.carried_from_review_id가 가리키고 있으므로, 그 참조를 먼저 끊은 뒤
+-- review_notes를 지웁니다(예전 순서는 이월된 계획이 있으면 외래 키 오류가 났습니다).
+-- 지운 행 수를 돌려주어 화면과 검사가 "정말 지워졌는지"를 숫자로 확인할 수 있게 합니다.
+drop function if exists delete_my_data();
+
 create or replace function delete_my_data()
-returns void language plpgsql security invoker as $$
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid uuid := auth.uid();
+  n_exec int;
+  n_notes int;
+  n_tasks int;
+  n_revs int;
+  n_plans int;
 begin
-  delete from execution_records where user_id = auth.uid();
-  delete from review_notes where user_id = auth.uid();
-  update plans set carried_from_review_id = null where user_id = auth.uid();
-  delete from tasks where user_id = auth.uid();
-  delete from plan_revisions where user_id = auth.uid();
-  delete from plans where user_id = auth.uid();
+  if uid is null or not session_is_active() then
+    raise exception 'not authenticated' using errcode = '28000';
+  end if;
+
+  delete from execution_records where user_id = uid;
+  get diagnostics n_exec = row_count;
+
+  update plans set carried_from_review_id = null where user_id = uid;
+
+  delete from review_notes where user_id = uid;
+  get diagnostics n_notes = row_count;
+
+  delete from tasks where user_id = uid;
+  get diagnostics n_tasks = row_count;
+
+  delete from plan_revisions where user_id = uid;
+  get diagnostics n_revs = row_count;
+
+  delete from plans where user_id = uid;
+  get diagnostics n_plans = row_count;
+
+  return jsonb_build_object(
+    'execution_records', n_exec,
+    'review_notes', n_notes,
+    'tasks', n_tasks,
+    'plan_revisions', n_revs,
+    'plans', n_plans
+  );
 end;
 $$;
+
+-- security definer 함수는 기본적으로 PUBLIC에 실행 권한이 열리므로 명시적으로 닫고, 로그인한 사용자에게만 엽니다.
+revoke all on function delete_my_data() from public, anon;
 grant execute on function delete_my_data() to authenticated;

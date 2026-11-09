@@ -38,6 +38,7 @@ const TAG = "[검사]";
 const RUN_STAMP = Date.now();
 const EMAIL_A = `pds-auth-check-a-${RUN_STAMP}@example.com`;
 const EMAIL_B = `pds-auth-check-b-${RUN_STAMP}@example.com`;
+const EMAIL_C = `pds-auth-check-c-${RUN_STAMP}@example.com`; // 검사 41(계정 삭제) 전용 — 지워도 되는 계정
 const PASSWORD = "CheckPass!23456";
 const WRONG_PASSWORD = "WrongPass!99999";
 const NONEXISTENT_EMAIL = `pds-auth-check-none-${RUN_STAMP}@example.com`;
@@ -222,6 +223,7 @@ const CHECKS = [
     { n: 38, kind: "카드4", title: "내 행의 주인을 남에게 넘기려 하면 403으로 거절된다" },
     { n: 39, kind: "카드1", title: "과제 6에 넣어 둔 내 자료가 과제 7 계정으로 그대로 옮겨져 있다" },
     { n: 40, kind: "카드5", title: "화면이 그린 날짜별 합계·평균이 손으로 더한 값과 같다" },
+    { n: 41, kind: "카드5", title: "내 계정 삭제가 내 행을 실제로 지우고(전후 행 수) 남의 행은 그대로 둔다" },
 ];
 
 const results = new Map();
@@ -1374,6 +1376,72 @@ await guard(39, async () => {
         );
     } else {
         fail(39, `빠진 행 ${빠진것}건 — ${조각.join(" · ")}`);
+    }
+});
+
+// ───────────────────────────────────────── 검사 41 · 내 계정 삭제가 정말 행을 지우는가
+//
+// 2026-11-09 포트폴리오 정리 중 코드 리뷰로 발견한 결함의 재발 방지 검사입니다.
+// 예전 delete_my_data()는 security invoker였고, 이 표들에는 DELETE 정책이 없어 RLS가
+// 대상 행을 전부 걸러냈습니다 — 오류 없이 0행이 지워지고, 화면은 "모두 지웠습니다"라고 했습니다.
+// "오류가 없다"는 근거가 되지 못하므로, 지우기 전후의 행 수를 서버에서 직접 세어 대조합니다.
+// 지우는 대상은 이 검사가 방금 만든 스크래치 계정(C)뿐이고, 마지막에 B의 계획이 그대로인지도 봅니다.
+await guard(41, async () => {
+    if (backendMode !== "supabase") {
+        pass(41, `메모리 백엔드에는 RLS와 서버 함수가 없어 이 검사는 실제 Supabase 배포에서만 뜻이 있습니다`);
+        return;
+    }
+    const anonKey = await anonKeyOf();
+
+    const signedUpC = await evaluate(`window.__auth.signUp(${JSON.stringify(EMAIL_C)}, ${JSON.stringify(PASSWORD)})`);
+    await sleep(300);
+    if (signedUpC.error) throw new Error(`스크래치 계정 C 가입 실패: ${signedUpC.error.message}`);
+
+    await evaluate(`window.__db.plans.createWithRevision({
+        planId: crypto.randomUUID(), revisionId: crypto.randomUUID(), carriedFromReviewId: null,
+        revision: {
+            title: ${JSON.stringify(TAG + " C의 계획(삭제 검사용)")}, periodStart: "2026-08-25", periodEnd: "2026-08-26",
+            priority: "low", successCriteria: "삭제 검사용", estimatedMinutes: 10, note: null,
+        },
+    }).then(r => r.data.plan)`);
+
+    const token = await tokenOf();
+    const auth = { apikey: anonKey, Authorization: `Bearer ${token}` };
+    const countOf = async (table) => {
+        const r = await restCall({ path: `/rest/v1/${table}?select=id`, headers: auth });
+        return Array.isArray(r.body) ? r.body.length : -1;
+    };
+
+    const 전 = { plans: await countOf("plans"), plan_revisions: await countOf("plan_revisions") };
+    const 삭제 = await evaluate(`window.__auth.deleteMyData()`);
+    const 후 = { plans: await countOf("plans"), plan_revisions: await countOf("plan_revisions") };
+
+    // B의 계획이 그대로인지 — 남의 행을 건드리지 않았다는 증거.
+    let B그대로 = null;
+    if (planB) {
+        await signInAs(EMAIL_B);
+        B그대로 = !!(await evaluate(`window.__db.plans.get(${JSON.stringify(planB)}).then(r => r.data)`));
+    }
+
+    const 준비됨 = 전.plans >= 1 && 전.plan_revisions >= 1;
+    const 오류없음 = !삭제.error;
+    const 숫자일치 = 삭제.data?.plans === 전.plans && 삭제.data?.plan_revisions === 전.plan_revisions;
+    const 전부사라짐 = 후.plans === 0 && 후.plan_revisions === 0;
+    const 남의행무사 = B그대로 !== false;
+
+    if (준비됨 && 오류없음 && 숫자일치 && 전부사라짐 && 남의행무사) {
+        pass(
+            41,
+            `삭제 전 계획 ${전.plans}건·개정본 ${전.plan_revisions}건 → 함수가 돌려준 지운 행 수 ` +
+                `${삭제.data.plans}건·${삭제.data.plan_revisions}건 → 삭제 후 서버에서 다시 세면 ${후.plans}건·${후.plan_revisions}건 · ` +
+                `계정 B의 계획은 ${B그대로 === null ? "(B 준비 실패로 확인 못 함)" : "그대로 남아 있음"}`,
+        );
+    } else {
+        fail(
+            41,
+            `준비 ${준비됨} · 오류없음 ${오류없음} ${JSON.stringify(삭제.error)} · 전 ${JSON.stringify(전)} · ` +
+                `함수 응답 ${JSON.stringify(삭제.data)} · 후 ${JSON.stringify(후)} · B 계획 유지 ${B그대로}`,
+        );
     }
 });
 

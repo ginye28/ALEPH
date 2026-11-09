@@ -18,14 +18,30 @@ function AccountSection({ email, onSignedOut }) {
 
     const handleDelete = async () => {
         setPending(true);
-        const { error } = await deleteMyData();
+        const { data, error } = await deleteMyData();
         setPending(false);
         setConfirming(false);
         if (error) {
             setMessage({ tone: "bad", text: `지우지 못했습니다: ${error.message}` });
             return;
         }
-        setMessage({ tone: "good", text: "내 데이터를 모두 지웠습니다." });
+        // "오류가 없었다"만으로 성공이라고 말하지 않습니다 — 서버가 돌려준 지운 행 수를 그대로 밝힙니다.
+        // 지운 행 수가 오지 않았다면(예: 서버 함수가 옛 버전) 지워졌다고 확인할 수 없으니 그대로 말합니다.
+        if (!data) {
+            setMessage({ tone: "bad", text: "요청은 오류 없이 끝났지만 서버가 지운 행 수를 알려주지 않아, 지워졌다고 확인할 수 없습니다." });
+            return;
+        }
+        const counts = data;
+        const summary = [
+            ["계획", counts.plans],
+            ["계획 개정본", counts.plan_revisions],
+            ["할일", counts.tasks],
+            ["실행기록", counts.execution_records],
+            ["고칠 점", counts.review_notes],
+        ]
+            .map(([label, n]) => `${label} ${Number(n ?? 0)}건`)
+            .join(" · ");
+        setMessage({ tone: "good", text: `내 데이터를 지웠습니다 — ${summary}. 화면에 남은 목록은 새로고침하면 사라집니다.` });
     };
 
     return (

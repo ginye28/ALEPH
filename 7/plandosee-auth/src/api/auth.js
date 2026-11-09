@@ -73,16 +73,17 @@ export const onAuthStateChange = (callback) => client.onAuthStateChange(callback
 
 /**
  * 로그인한 본인 소유의 계획·이력·할일·실행기록·고칠점을 전부 하드 삭제합니다
- * (schema.sql의 delete_my_data() — RLS 범위 안에서만 동작해 남의 행은 건드릴 수 없습니다).
+ * (schema.sql의 delete_my_data() — 함수 안에서 user_id = auth.uid()로 한정해 남의 행은 건드릴 수 없습니다).
+ * 함수는 표마다 지운 행 수를 돌려줍니다 — "오류가 없다"가 아니라 "몇 줄이 지워졌다"로 판정하기 위해서입니다.
  * auth.users의 가입 정보 자체는 service_role 관리자 API가 필요해 이 앱에서는 지우지
  * 못합니다 — AccountSection이 그 사실을 화면에 안내합니다.
  */
 export const deleteMyData = async () => {
     if (backendMode !== "supabase") {
-        return { error: { message: "메모리 저장소에서는 계정 삭제를 시험해 볼 수 없습니다 (Supabase 미설정)" } };
+        return { data: null, error: { message: "메모리 저장소에서는 계정 삭제를 시험해 볼 수 없습니다 (Supabase 미설정)" } };
     }
-    const { error } = await supabase.rpc("delete_my_data");
-    return { error };
+    const { data, error } = await supabase.rpc("delete_my_data");
+    return { data, error };
 };
 
 // Error의 message는 기본적으로 열거 불가능(non-enumerable) 속성이라, CDP의
@@ -106,8 +107,8 @@ if (typeof window !== "undefined") {
         signOut,
         getSession,
         deleteMyData: async () => {
-            const { error } = await deleteMyData();
-            return { error: serializable(error) };
+            const { data, error } = await deleteMyData();
+            return { data, error: serializable(error) };
         },
     };
 }
