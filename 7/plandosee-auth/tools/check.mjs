@@ -223,7 +223,7 @@ const CHECKS = [
     { n: 38, kind: "카드4", title: "내 행의 주인을 남에게 넘기려 하면 403으로 거절된다" },
     { n: 39, kind: "카드1", title: "과제 6에 넣어 둔 내 자료가 과제 7 계정으로 그대로 옮겨져 있다" },
     { n: 40, kind: "카드5", title: "화면이 그린 날짜별 합계·평균이 손으로 더한 값과 같다" },
-    { n: 41, kind: "카드5", title: "내 계정 삭제가 내 행을 실제로 지우고(전후 행 수) 남의 행은 그대로 둔다" },
+    { n: 41, kind: "카드5", title: "내 계정 삭제가 내 행과 가입 정보를 실제로 지우고(전후 행 수·재로그인 실패) 남의 행은 그대로 둔다" },
 ];
 
 const results = new Map();
@@ -1416,6 +1416,15 @@ await guard(41, async () => {
     const 삭제 = await evaluate(`window.__auth.deleteMyData()`);
     const 후 = { plans: await countOf("plans"), plan_revisions: await countOf("plan_revisions") };
 
+    // 가입 정보까지 지워졌는지 — 같은 이메일·비밀번호로 다시 로그인해 보고, 지운 계정의 옛 토큰도 거절되는지 봅니다.
+    // (예전에는 데이터만 지우고 가입 레코드를 남겨 두어, 삭제한 계정으로 다시 로그인이 되었습니다.)
+    await evaluate(`window.__auth.signOut()`);
+    await sleep(300);
+    const 재로그인 = await evaluate(`window.__auth.signIn(${JSON.stringify(EMAIL_C)}, ${JSON.stringify(PASSWORD)})`);
+    const 옛토큰 = await restCall({ path: `/auth/v1/user`, headers: auth });
+    const 재로그인막힘 = !!재로그인.error && !재로그인.data?.session;
+    const 옛토큰거절 = 옛토큰.status === 401 || 옛토큰.status === 403 || 옛토큰.status === 404;
+
     // B의 계획이 그대로인지 — 남의 행을 건드리지 않았다는 증거.
     let B그대로 = null;
     if (planB) {
@@ -1428,19 +1437,22 @@ await guard(41, async () => {
     const 숫자일치 = 삭제.data?.plans === 전.plans && 삭제.data?.plan_revisions === 전.plan_revisions;
     const 전부사라짐 = 후.plans === 0 && 후.plan_revisions === 0;
     const 남의행무사 = B그대로 !== false;
+    const 계정지움 = 삭제.data?.account === 1 && 재로그인막힘 && 옛토큰거절;
 
-    if (준비됨 && 오류없음 && 숫자일치 && 전부사라짐 && 남의행무사) {
+    if (준비됨 && 오류없음 && 숫자일치 && 전부사라짐 && 계정지움 && 남의행무사) {
         pass(
             41,
             `삭제 전 계획 ${전.plans}건·개정본 ${전.plan_revisions}건 → 함수가 돌려준 지운 행 수 ` +
                 `${삭제.data.plans}건·${삭제.data.plan_revisions}건 → 삭제 후 서버에서 다시 세면 ${후.plans}건·${후.plan_revisions}건 · ` +
+                `가입 정보도 삭제(함수 응답 account=${삭제.data.account}, 같은 이메일 재로그인 거절: "${재로그인.error?.message}", 옛 토큰 ${옛토큰.status}) · ` +
                 `계정 B의 계획은 ${B그대로 === null ? "(B 준비 실패로 확인 못 함)" : "그대로 남아 있음"}`,
         );
     } else {
         fail(
             41,
             `준비 ${준비됨} · 오류없음 ${오류없음} ${JSON.stringify(삭제.error)} · 전 ${JSON.stringify(전)} · ` +
-                `함수 응답 ${JSON.stringify(삭제.data)} · 후 ${JSON.stringify(후)} · B 계획 유지 ${B그대로}`,
+                `함수 응답 ${JSON.stringify(삭제.data)} · 후 ${JSON.stringify(후)} · 재로그인 막힘 ${재로그인막힘} ${JSON.stringify(재로그인.error)} · ` +
+                `옛 토큰 거절 ${옛토큰거절}(${옛토큰.status}) · B 계획 유지 ${B그대로}`,
         );
     }
 });

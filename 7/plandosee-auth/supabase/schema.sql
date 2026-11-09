@@ -207,8 +207,10 @@ create policy review_notes_insert on review_notes for insert with check (auth.ui
 -- UPDATE/DELETE 정책 없음 → 고칠 점 이력도 항상 append-only입니다.
 
 -- ── 계정 삭제 (카드 5) ───────────────────────────────────────────
--- auth.users 레코드 자체를 지우려면 service_role 키(관리자 API)가 필요해 클라이언트에서
--- 직접 호출할 수 없습니다. 대신 로그인한 본인의 데이터 행만 전부 하드 삭제하는 함수를 둡니다.
+-- 로그인한 본인의 데이터 행을 전부 하드 삭제하고, 마지막에 auth.users의 내 가입 레코드까지 지웁니다.
+-- (예전에는 "auth.users는 service_role 관리자 API가 있어야 지울 수 있다"고 적었지만, security definer
+-- 함수는 함수 소유자(postgres) 권한으로 실행되므로 클라이언트에 관리자 키를 내려 주지 않고도
+-- 이 함수 안에서 본인 행 하나만 지울 수 있습니다.)
 --
 -- [수정 이력 2026-11-09] 예전 함수는 security invoker였습니다. 그런데 이 표들에는 하드 삭제를
 -- 막으려고 DELETE 정책을 일부러 두지 않았으므로, invoker 권한의 DELETE는 RLS가 대상 행을
@@ -218,6 +220,12 @@ create policy review_notes_insert on review_notes for insert with check (auth.ui
 -- 또 review_notes를 plans.carried_from_review_id가 가리키고 있으므로, 그 참조를 먼저 끊은 뒤
 -- review_notes를 지웁니다(예전 순서는 이월된 계획이 있으면 외래 키 오류가 났습니다).
 -- 지운 행 수를 돌려주어 화면과 검사가 "정말 지워졌는지"를 숫자로 확인할 수 있게 합니다.
+--
+-- [수정 이력 2026-11-09 (2)] 데이터만 지우고 가입 레코드는 남겨 두었더니, 삭제한 계정으로 다시
+-- 로그인이 되었습니다("삭제"라는 이름과 다름). 이제 같은 트랜잭션 안에서 auth.users의 내 행도 지웁니다.
+-- auth.sessions·auth.identities·auth.refresh_tokens는 auth.users에 ON DELETE CASCADE라 같이 사라지므로
+-- 다른 기기의 로그인도 함께 끊깁니다. 한 트랜잭션이라 중간에 하나라도 실패하면 전부 되돌아가
+-- "데이터는 지워졌는데 계정은 남음" 같은 반쪽 상태가 생기지 않습니다.
 drop function if exists delete_my_data();
 
 create or replace function delete_my_data()
@@ -233,6 +241,7 @@ declare
   n_tasks int;
   n_revs int;
   n_plans int;
+  n_account int;
 begin
   if uid is null or not session_is_active() then
     raise exception 'not authenticated' using errcode = '28000';
@@ -255,12 +264,20 @@ begin
   delete from plans where user_id = uid;
   get diagnostics n_plans = row_count;
 
+  -- 내 데이터 행을 모두 지웠으니 이제 이 표들을 가리키는 외래 키가 없어 가입 레코드를 지울 수 있습니다.
+  delete from auth.users where id = uid;
+  get diagnostics n_account = row_count;
+  if n_account <> 1 then
+    raise exception 'account row was not deleted' using errcode = 'P0001';
+  end if;
+
   return jsonb_build_object(
     'execution_records', n_exec,
     'review_notes', n_notes,
     'tasks', n_tasks,
     'plan_revisions', n_revs,
-    'plans', n_plans
+    'plans', n_plans,
+    'account', n_account
   );
 end;
 $$;

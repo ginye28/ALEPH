@@ -72,11 +72,10 @@ export const getSession = () => client.getSession();
 export const onAuthStateChange = (callback) => client.onAuthStateChange(callback);
 
 /**
- * 로그인한 본인 소유의 계획·이력·할일·실행기록·고칠점을 전부 하드 삭제합니다
+ * 로그인한 본인 소유의 계획·이력·할일·실행기록·고칠점을 전부 하드 삭제하고, 가입 레코드(auth.users)까지 지웁니다
  * (schema.sql의 delete_my_data() — 함수 안에서 user_id = auth.uid()로 한정해 남의 행은 건드릴 수 없습니다).
  * 함수는 표마다 지운 행 수를 돌려줍니다 — "오류가 없다"가 아니라 "몇 줄이 지워졌다"로 판정하기 위해서입니다.
- * auth.users의 가입 정보 자체는 service_role 관리자 API가 필요해 이 앱에서는 지우지
- * 못합니다 — AccountSection이 그 사실을 화면에 안내합니다.
+ * 성공하면 이 계정의 세션도 서버에서 사라져 있으므로, 호출한 쪽은 곧바로 로그아웃 처리해야 합니다.
  */
 export const deleteMyData = async () => {
     if (backendMode !== "supabase") {

@@ -102,14 +102,6 @@ function Diary() {
         window.__reloadDaily = refreshAllExecutions;
     }, [refreshPlans, refreshAllExecutions, selectedPlanId]);
 
-    // "내 계정 삭제"가 서버에서 끝난 뒤 호출됩니다. 화면이 예전 계획·할일을 그대로 들고 있으면
-    // 서버에서는 지워졌는데도 안 지워진 것처럼 보이므로, 선택을 비우고 서버에서 다시 읽습니다.
-    const handleAccountDeleted = useCallback(async () => {
-        setSelectedPlanId(null);
-        setSelectedTaskId(null);
-        await Promise.all([refreshPlans(), refreshAllExecutions()]);
-    }, [refreshPlans, refreshAllExecutions]);
-
     // 선택한 계획·필터가 바뀌면 할일·돌아보기를 다시 읽습니다.
     useEffect(() => {
         refreshTasks(selectedPlanId, taskFilters);
@@ -285,7 +277,7 @@ function Diary() {
 
                 <ExportSection onExportAll={exportAllData} />
 
-                <AccountSection email={session?.user?.email ?? ""} onSignedOut={() => {}} onDeleted={handleAccountDeleted} />
+                <AccountSection email={session?.user?.email ?? ""} onSignedOut={() => {}} />
             </div>
 
             <footer css={s.footer}>

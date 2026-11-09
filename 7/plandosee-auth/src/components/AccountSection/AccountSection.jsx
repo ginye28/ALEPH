@@ -7,12 +7,12 @@ import * as s from "./styles";
 /**
  * 로그아웃 + 계정 삭제 (카드 5, T07-C134).
  *
- * auth.users 레코드 자체를 지우려면 service_role 관리자 API가 필요해 클라이언트에서
- * 직접 호출할 수 없습니다. 그래서 "삭제"는 내 소유 데이터 행(계획·이력·할일·실행기록·
- * 고칠점)을 전부 지우는 것까지만 하고, 가입 정보(이메일)는 별도 절차로 지워진다는
- * 사실을 화면에 그대로 밝힙니다 — 다 막았다고 적지 않습니다.
+ * "삭제"는 서버 함수 delete_my_data()가 내 소유 데이터 행(계획·이력·할일·실행기록·고칠점)을
+ * 전부 지우고 가입 레코드(auth.users)까지 지우는 것입니다. 서버가 돌려준 지운 행 수로 계정까지
+ * 지워졌는지 확인하고, 확인되지 않으면 지웠다고 말하지 않습니다. 성공하면 이 계정은 더 이상
+ * 존재하지 않으므로 로그아웃해 로그인 화면으로 돌려보냅니다.
  */
-function AccountSection({ email, onSignedOut, onDeleted }) {
+function AccountSection({ email, onSignedOut }) {
     const [confirming, setConfirming] = useState(false);
     const [pending, setPending] = useState(false);
     const [message, setMessage] = useState(null);
@@ -42,24 +42,28 @@ function AccountSection({ email, onSignedOut, onDeleted }) {
         ]
             .map(([label, n]) => `${label} ${Number(n ?? 0)}건`)
             .join(" · ");
-        // 서버에서 지웠어도 화면은 예전 목록을 그대로 들고 있으면 "안 지워졌다"로 보입니다 —
-        // 부모에게 알려 화면의 목록도 서버에서 다시 읽어 비우게 합니다.
-        await onDeleted?.();
 
-        // 계정을 지웠으면 그 계정으로 계속 로그인해 있을 이유가 없습니다 — 로그아웃해서 로그인 화면으로
-        // 돌려보냅니다. 자료 화면이 사라지면 이 컴포넌트의 메시지도 같이 사라지므로, 결과는 로그인 화면이
-        // 한 번 읽어 보여 줄 수 있게 로그아웃 직전에 적어 둡니다.
-        // 가입 정보(이메일)는 남아 있다는 사실도 그대로 밝힙니다 — 같은 이메일로 다시 로그인할 수 있습니다.
-        const notice =
-            `내 데이터를 지우고 로그아웃했습니다 — ${summary}. ` +
-            `가입 정보(이메일)는 이 앱에서 지울 수 없어 남아 있으니, 같은 이메일로 다시 로그인하면 빈 상태로 시작합니다.`;
-        saveAuthNotice(notice);
+        // 서버 함수가 가입 레코드까지 지웠다고 알려 주지 않으면(예: 서버에 옛 함수가 남아 있음)
+        // 계정이 지워졌다고 말하지 않습니다.
+        if (counts.account !== 1) {
+            setMessage({
+                tone: "bad",
+                text: `내 데이터는 지웠습니다 — ${summary}. 그러나 서버가 가입 레코드를 지웠다고 알려 주지 않아, 계정이 지워졌다고 확인할 수 없습니다.`,
+            });
+            return;
+        }
+
+        // 계정이 사라졌으니 로그아웃해서 로그인 화면으로 돌려보냅니다. 자료 화면이 사라지면 이 컴포넌트의
+        // 메시지도 같이 사라지므로, 결과는 로그인 화면이 한 번 읽어 보여 줄 수 있게 로그아웃 직전에 적어 둡니다.
+        // (서버에서 이미 세션이 사라져 signOut 요청이 401/403/404를 받아도 supabase-js가 무시하고
+        // 이 브라우저의 로컬 세션을 지웁니다.)
+        saveAuthNotice(`계정을 삭제하고 로그아웃했습니다 — ${summary}. 같은 이메일로 다시 쓰려면 새로 가입해야 합니다.`);
         const { error: signOutError } = await signOut();
         if (signOutError) {
             clearAuthNotice();
             setMessage({
                 tone: "bad",
-                text: `내 데이터는 지웠습니다 — ${summary}. 다만 로그아웃하지 못했습니다: ${signOutError.message}`,
+                text: `계정은 삭제했습니다 — ${summary}. 다만 이 브라우저에서 로그아웃하지 못했습니다: ${signOutError.message}. 페이지를 새로고침해 주세요.`,
             });
             return;
         }
@@ -82,9 +86,8 @@ function AccountSection({ email, onSignedOut, onDeleted }) {
             <div css={s.dangerZone}>
                 <p css={s.dangerLabel}>⚠ 위험 구역</p>
                 <p css={c.note}>
-                    <b>계정 삭제</b>는 내 계획·할일·실행기록·고칠 점을 전부 지웁니다. 다만{" "}
-                    <b>가입 정보(이메일) 자체는 이 버튼으로 지워지지 않고 별도 절차가 필요합니다</b>{" "}
-                    — Auth 계정 레코드의 하드 삭제는 관리자 권한이 있어야 해 이 화면에서는 못 만들었습니다.
+                    <b>계정 삭제</b>는 내 계획·할일·실행기록·고칠 점을 전부 지우고 <b>가입 정보(이메일·비밀번호)까지 지웁니다.</b>{" "}
+                    지운 뒤에는 같은 이메일로 로그인할 수 없고 새로 가입해야 하며, 다른 기기의 로그인도 끊깁니다.
                 </p>
 
                 {!confirming && (
@@ -95,9 +98,9 @@ function AccountSection({ email, onSignedOut, onDeleted }) {
 
                 {confirming && (
                     <div css={c.note}>
-                        <p>정말 지울까요? 계획·할일·실행기록이 전부 사라지고 되돌릴 수 없습니다.</p>
+                        <p>정말 지울까요? 계정과 모든 기록이 사라지고 되돌릴 수 없습니다.</p>
                         <button type="button" css={c.dangerButton} data-testid="account-delete-confirm" disabled={pending} onClick={handleDelete}>
-                            네, 지웁니다 — 되돌릴 수 없습니다
+                            네, 계정을 지웁니다 — 되돌릴 수 없습니다
                         </button>{" "}
                         <button type="button" css={c.button} onClick={() => setConfirming(false)}>
                             취소
