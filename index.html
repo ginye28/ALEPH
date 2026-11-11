@@ -570,7 +570,7 @@
   <section id="florography" class="reveal">
     <div class="section-head"><span class="kicker">Team Project</span></div>
     <h2>Florography · 정서 케어 플랫폼</h2>
-    <p class="tldr">Spring Security 기반 JWT 무상태 인증과 Google·Kakao·Naver OAuth2 로그인을 맡아 구현했습니다.</p>
+    <p class="tldr">백엔드의 기분·속마음 편지·오늘의 한마디 API와 프론트의 홈·편지·한마디 화면을 구현했습니다. JWT·소셜 로그인은 팀원이 만든 구조 위에서 작업했습니다.</p>
     <p>과제 밖에서 진행한 팀 프로젝트입니다. 감정 저널링과 가드닝을 결합해, 감정을 담은 편지를 쓰면 정원에 꽃이 자라는 방식으로 기록을 시각화하는 정서 케어 웹 서비스를 만들었습니다. React 프론트엔드와 Spring Boot 백엔드로 나뉜 풀스택 구조입니다.</p>
     <div class="badge-row">
       <span class="badge b-soft">React 19</span><span class="badge b-soft">Vite</span><span class="badge b-soft">Zustand</span><span class="badge b-soft">TanStack Query</span><span class="badge b-soft">Emotion</span>
@@ -580,23 +580,17 @@
     </div>
 
     <div class="role">
-      <div class="meta">My Role · Security / Backend</div>
+      <div class="meta">My Role · Backend / Frontend</div>
       <ul class="tick">
-        <li><b>Spring Security 기반 JWT 무상태 인증 체인 구축 및 Google/Kakao/Naver OAuth2 소셜 로그인 구현</b> — 세션 없이 JWT(Bearer 토큰, HMAC-SHA512 서명)만으로 모든 요청을 인증합니다.</li>
-        <li><b>기존 계정과 소셜 계정 연동 시, 세션 기반 1회용 연동 토큰을 활용한 중복 연동 방지 및 인가 로직 설계</b> — 연동 흐름은 일반 로그인과 분리했고, 토큰은 세션에 저장했다가 검증 직후 바로 지웁니다. 중복 연동 여부를 확인한 뒤에만 연동이 끝납니다.</li>
+        <li><b>백엔드(Spring Boot · MyBatis)</b> — 기분 목록 조회, 속마음 편지 등록·조회·수정·삭제, 오늘의 한마디 등록·수정(이후 씨앗 기록 API로 개편) 기능을 구현했습니다. 커밋 8개(병합 제외).</li>
+        <li><b>프론트(React)</b> — 홈 화면(그날의 나), 속마음 편지·한마디 목록, 글쓰기 화면을 구현했습니다. 커밋 13개(병합 제외).</li>
+        <li><b>인증은 팀원 구현:</b> JWT 무상태 인증과 Google·Kakao·Naver OAuth2 로그인은 팀원이 구현했고, 저는 그 구조 위에서 기능을 만들었습니다.</li>
+        <li><b>배운 점:</b> 속마음 편지 API가 사용자 id를 로그인 정보가 아니라 요청에서 받는다는 것을 나중에 발견했습니다. 로그인한 사용자가 다른 id를 보내면 남의 편지가 열릴 수 있어, 서버가 로그인 정보에서 id를 꺼내 쓰도록 고쳐야 합니다.</li>
       </ul>
-      <div class="stack-label" style="margin-top:18px">계정 연동 흐름</div>
-      <div class="steps s5">
-        <div class="step"><div class="k">Step 1</div><p>1회용 연동 토큰을 세션에 저장</p></div>
-        <div class="step"><div class="k">Step 2</div><p>연동 요청 시 토큰 검증</p></div>
-        <div class="step"><div class="k">Step 3</div><p>검증 직후 토큰 즉시 삭제</p></div>
-        <div class="step"><div class="k">Step 4</div><p>이미 연동된 소셜 계정인지 중복 확인</p></div>
-        <div class="step"><div class="k">Step 5</div><p>통과한 경우에만 연동 완료</p></div>
-      </div>
     </div>
 
     <ul class="tick">
-      <li><b>협업:</b> GitHub Flow(기능 브랜치 → PR → 최소 1인 리뷰 승인 후 병합, 셀프 머지 금지)와 Conventional Commits 규칙을 따랐고, GitHub Actions로 CI를 구성했습니다.</li>
+      <li><b>협업:</b> 팀은 GitHub Flow(기능 브랜치 → PR → 최소 1인 리뷰 승인 후 병합, 셀프 머지 금지)와 Conventional Commits 규칙을 따랐고, CI는 GitHub Actions로 돌렸습니다.</li>
     </ul>
     <div class="contact-row" style="margin-top:6px">
       <span class="contact-label">Repo</span>
